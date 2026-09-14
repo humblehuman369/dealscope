@@ -12,6 +12,7 @@
  */
 
 import type { FaqItem } from '@/lib/seo/metadata'
+import { SPEED_CLAIM, SPEED_CLAIM_SENTENCE } from '@/lib/claims'
 
 export type ProblemPersona =
   | 'first-time'
@@ -61,8 +62,8 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'Is this a good investment property?',
     agitate:
       'The listing shows a price. It does not show what the property is worth as a rental, what it costs to carry, or how far the asking price sits from a number that works. Most investors find out after the tour.',
-    nextStep: 'Paste the address. Discovery runs free in 15 seconds and shows the Deal Gap.',
-    metaTitle: 'Is This a Good Investment Property? Free 15-Second Discovery',
+    nextStep: `Paste the address. Discovery runs free ${SPEED_CLAIM} and shows the Deal Gap.`,
+    metaTitle: `Is This a Good Investment Property? Free ${SPEED_CLAIM_SENTENCE} Discovery`,
     metaDescription:
       'Paste any US address and get a free investor Discovery: multi-source value, rent estimate, Deal Gap between asking and target buy, and six strategy snapshots. No signup.',
     persona: 'first-time',

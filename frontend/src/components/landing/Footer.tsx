@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 const footerLinks = {
   product: [
@@ -37,7 +38,7 @@ export function Footer() {
               <span className="logo-subtext">by DealGapIQ</span>
             </Link>
             <p className="footer-tagline">
-              Know exactly what to offer in 60 seconds. Price<span className="iq">IQ</span> gives
+              Know exactly what to offer {SPEED_CLAIM}. Price<span className="iq">IQ</span> gives
               you the three numbers that define every deal.
             </p>
           </div>

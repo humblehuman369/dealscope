@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import Image from 'next/image'
 
+import { SOURCE_COUNT, SPEED_CLAIM } from '@/lib/claims'
 import './hero-v5.css'
 
 /**
@@ -201,7 +202,7 @@ export function HeroSampleResult({
         </div>
 
         <div className="hero-sample-result__foot hero-sample-result__anim" style={delayStyle(820)}>
-          <span>5 sources · under 60s · math shown</span>
+          <span>{SOURCE_COUNT} sources · {SPEED_CLAIM} · math shown</span>
         </div>
       </div>
     </div>

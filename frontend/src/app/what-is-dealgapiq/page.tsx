@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import WhatIsDealGapIQ from './WhatIsDealGapIQ'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 export const metadata: Metadata = {
   title: 'What is DealGapIQ? — DealGapIQ',
@@ -28,7 +29,7 @@ const WHAT_IS_FAQ = [
   {
     question: 'What problem does DealGapIQ solve?',
     answer:
-      'Investors waste hours on spreadsheets for deals that never pencil. DealGapIQ answers “Is this actually a deal?” in about 60 seconds and shows the Deal Gap — how far the asking price is from what works.',
+      `Investors waste hours on spreadsheets for deals that never pencil. DealGapIQ answers “Is this actually a deal?” ${SPEED_CLAIM} and shows the Deal Gap — how far the asking price is from what works.`,
   },
   {
     question: 'Who is DealGapIQ for?',

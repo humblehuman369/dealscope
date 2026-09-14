@@ -15,7 +15,7 @@ vi.mock('@/lib/attribution', () => ({
   getMetaClickIds: () => ({}),
 }))
 
-import { trackEvent, WORKFLOW_EVENTS } from '@/lib/eventTracking'
+import { trackCardOpened, trackEvent, WORKFLOW_EVENTS } from '@/lib/eventTracking'
 
 describe('WORKFLOW_EVENTS', () => {
   beforeEach(() => {
@@ -24,11 +24,46 @@ describe('WORKFLOW_EVENTS', () => {
     hasAnalyticsConsent.mockReturnValue(true)
   })
 
-  it('exports the Plan funnel event names', () => {
+  it('exports card_opened plus the Plan funnel event names', () => {
     expect(WORKFLOW_EVENTS).toEqual({
+      card_opened: 'card_opened',
       plan_built: 'plan_built',
       deal_started: 'deal_started',
     })
+  })
+
+  it('forwards card_opened with property_id, property_state, days_on_market, and price_cuts', () => {
+    trackEvent(WORKFLOW_EVENTS.card_opened, {
+      property_id: 'zpid-1766',
+      property_state: 'FL',
+      days_on_market: 224,
+      price_cuts: 10,
+    })
+    const props = {
+      property_id: 'zpid-1766',
+      property_state: 'FL',
+      days_on_market: 224,
+      price_cuts: 10,
+    }
+    expect(vercelTrack).toHaveBeenCalledWith('card_opened', props)
+    expect(capturePostHog).toHaveBeenCalledWith('card_opened', props)
+  })
+
+  it('never sends a street address on card_opened', () => {
+    trackCardOpened({
+      property_id: 'zpid-1766',
+      property_state: 'FL',
+      days_on_market: 12,
+      price_cuts: 2,
+    })
+    const [, props] = vercelTrack.mock.calls[0] as [string, Record<string, unknown>]
+    expect(props).toEqual({
+      property_id: 'zpid-1766',
+      property_state: 'FL',
+      days_on_market: 12,
+      price_cuts: 2,
+    })
+    expect(props).not.toHaveProperty('address')
   })
 
   it('forwards plan_built with option, targets_met, plan, and property_id', () => {

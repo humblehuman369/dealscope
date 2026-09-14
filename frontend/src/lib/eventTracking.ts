@@ -63,11 +63,26 @@ import { captureMetaPixel, META_STANDARD_EVENTS } from '@/lib/metaPixel'
 import { firstTouchEventProps, getMetaClickIds } from '@/lib/attribution'
 import { API_BASE_URL } from '@/lib/env'
 
-/** Workflow v1 funnel events (P0-2). `plan` is the billing tier. */
+/** Workflow funnel events. `plan` is the billing tier. Never send a street address. */
 export const WORKFLOW_EVENTS = {
+  card_opened: 'card_opened',
   plan_built: 'plan_built',
   deal_started: 'deal_started',
 } as const
+
+export function trackCardOpened(props: {
+  property_id: string
+  property_state?: string | null
+  days_on_market?: number | null
+  price_cuts?: number | null
+}): void {
+  trackEvent(WORKFLOW_EVENTS.card_opened, {
+    property_id: props.property_id,
+    property_state: props.property_state ?? '',
+    days_on_market: props.days_on_market ?? 0,
+    price_cuts: props.price_cuts ?? 0,
+  })
+}
 
 /** localStorage key marking that the activation milestone already fired for this device. */
 const ACTIVATION_FLAG = 'dgiq_activated_v1'

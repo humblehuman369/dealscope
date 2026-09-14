@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { LENDER_TOTAL } from '@/lib/claims'
 
 const mockUseSubscription = vi.fn()
 const mockApiGet = vi.fn()
@@ -101,7 +102,7 @@ const sampleLender = {
 }
 
 const statsResponse = {
-  total: 484,
+  total: LENDER_TOTAL,
   byState: { CA: 120, FL: 96 },
   byProduct: { fix_flip: 300, brrrr: 180 },
   byCreditPolicy: { soft_pull: 40, unknown: 141 },

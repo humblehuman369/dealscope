@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { PRO_MONTHLY_PRICE, PRO_YEARLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
 
 interface FAQItem {
   question: string
@@ -19,7 +20,7 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'How do I analyze a property?',
     answer:
-      'On the web, click "Analyze a Property" on the homepage and enter an address. On mobile, you can either enter an address or point your phone\'s camera at any property to scan it. DealGapIQ will pull real market data and run a full financial analysis in about 60 seconds.',
+      `On the web, click "Analyze a Property" on the homepage and enter an address. On mobile, you can either enter an address or point your phone's camera at any property to scan it. DealGapIQ will pull real market data and run a full financial analysis ${SPEED_CLAIM}.`,
   },
   {
     category: 'Getting Started',
@@ -31,7 +32,7 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'Is DealGapIQ free?',
     answer:
-      'The Starter plan is free forever: 2 property analyses per month, the full Discovery with all 6 strategy snapshots, and up to 10 saved properties. Pro Investor ($34.99/mo or $349.99/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.',
+      `The Starter plan is free forever: 2 property analyses per month, the full Discovery with all 6 strategy snapshots, and up to 10 saved properties. Pro Investor (${PRO_MONTHLY_PRICE}/mo or ${PRO_YEARLY_PRICE}/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.`,
   },
   {
     category: 'Analysis & Scoring',

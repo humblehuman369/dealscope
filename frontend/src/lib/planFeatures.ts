@@ -74,10 +74,8 @@ export function homepageProFeatures(buyerTotalLabel: string, lenderTotalLabel: s
 export const DIRECTORY_ACCESS_NOTE = 'Directories and exports unlock with your first payment.'
 
 /**
- * Pro price points and trial length as marketed. Must match the Stripe and
- * RevenueCat products; the /for landing pages render these rather than
- * hardcoding a price that can go stale.
+ * Pro price points and trial length as marketed. Prices come from claims.ts
+ * so checkout, landing, and JSON-LD cannot drift.
  */
-export const PRO_PRICE_MONTHLY = '$34.99'
-export const PRO_PRICE_ANNUAL = '$349.99'
+export { PRO_MONTHLY_PRICE as PRO_PRICE_MONTHLY, PRO_YEARLY_PRICE as PRO_PRICE_ANNUAL } from '@/lib/claims'
 export const PRO_TRIAL_DAYS = 7

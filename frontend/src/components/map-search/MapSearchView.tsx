@@ -64,6 +64,7 @@ import { resolveMapUserLocation, readZipCache, writeZipCache } from './mapUserLo
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
 import { brandMark } from '@/lib/brand'
+import { trackCardOpened } from '@/lib/eventTracking'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -1576,12 +1577,22 @@ export function MapSearchView() {
     [applySavedSearch, drawingPolygon],
   )
 
+  const openListingCard = useCallback((listing: MapListing) => {
+    setSelectedListing(listing)
+    trackCardOpened({
+      property_id: listing.id,
+      property_state: listing.state,
+      days_on_market: listing.days_on_market,
+      price_cuts: listing.price_cuts,
+    })
+  }, [])
+
   const handleListSelect = useCallback(
     (listing: MapListing) => {
-      setSelectedListing(listing)
+      openListingCard(listing)
       clearGeocode()
     },
-    [clearGeocode],
+    [clearGeocode, openListingCard],
   )
 
   const handleToggleSelect = useCallback((id: string) => {
@@ -1673,9 +1684,13 @@ export function MapSearchView() {
   const handleMarkerSelect = useCallback(
     (listing: MapListing | null) => {
       clearGeocode()
-      setSelectedListing(listing)
+      if (listing) {
+        openListingCard(listing)
+      } else {
+        setSelectedListing(null)
+      }
     },
-    [clearGeocode],
+    [clearGeocode, openListingCard],
   )
 
   const propertyFocusAppliedKeyRef = useRef<string | null>(null)
@@ -1694,9 +1709,9 @@ export function MapSearchView() {
     )
     if (match) {
       propertyFocusAppliedKeyRef.current = focusKey
-      setSelectedListing(match)
+      openListingCard(match)
     }
-  }, [propertyFocus, listings])
+  }, [propertyFocus, listings, openListingCard])
 
   useEffect(() => {
     if (!isZoomedIn || hintShownRef.current) {

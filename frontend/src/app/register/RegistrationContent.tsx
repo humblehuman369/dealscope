@@ -11,6 +11,7 @@ import { authApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH, PRO_YEARLY_PRICE } from '@/lib/claims'
 
 // ─── Icons ───
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
@@ -168,9 +169,9 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
   annual = true,
 }) => {
   const isPro = plan === 'pro'
-  const proPrice = annual ? '$29.17' : '$34.99'
+  const proPrice = annual ? `$${PRO_YEARLY_PER_MONTH}` : PRO_MONTHLY_PRICE
   const proBillingNote = annual
-    ? 'Billed annually at $349.99 · Cancel anytime'
+    ? `Billed annually at ${PRO_YEARLY_PRICE} · Cancel anytime`
     : 'Billed monthly · Cancel anytime'
 
   const features = isPro
@@ -1200,7 +1201,7 @@ function RegistrationInner() {
                 >
                   {p === 'starter'
                     ? 'Starter \u00B7 Free'
-                    : `Pro \u00B7 ${isAnnual ? '$29.17' : '$34.99'}/mo`}
+                    : `Pro \u00B7 ${isAnnual ? `$${PRO_YEARLY_PER_MONTH}` : PRO_MONTHLY_PRICE}/mo`}
                 </button>
               ))}
             </div>

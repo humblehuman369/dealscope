@@ -16,9 +16,10 @@ import { trackEvent } from '@/lib/eventTracking'
 import { isAndroid, usesNativeIap, usesAppleIap } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
+import { PRO_MONTHLY_AMOUNT, PRO_MONTHLY_PRICE, PRO_YEARLY_AMOUNT, PRO_YEARLY_PER_MONTH, PRO_YEARLY_PRICE } from '@/lib/claims'
 
-const FALLBACK_PRICE_MONTHLY = '$34.99'
-const FALLBACK_PRICE_ANNUAL = '$349.99'
+const FALLBACK_PRICE_MONTHLY = PRO_MONTHLY_PRICE
+const FALLBACK_PRICE_ANNUAL = PRO_YEARLY_PRICE
 
 interface PricingPlan {
   id: string
@@ -109,10 +110,10 @@ export function UpgradeModal({
 
   const displayPriceMonthly = usesNativeIap()
     ? (rcPkgMonthly?.product.priceString ?? FALLBACK_PRICE_MONTHLY)
-    : `$${proPlan ? proPlan.price_monthly / 100 : 34.99}`
+    : `$${proPlan ? proPlan.price_monthly / 100 : PRO_MONTHLY_AMOUNT}`
   const displayPriceAnnual = usesNativeIap()
     ? (rcPkgAnnual?.product.priceString ?? FALLBACK_PRICE_ANNUAL)
-    : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
+    : `$${proPlan ? proPlan.price_yearly / 100 : PRO_YEARLY_AMOUNT}`
 
   const startCheckout = useCallback(async () => {
     if (usesNativeIap()) {
@@ -268,7 +269,7 @@ export function UpgradeModal({
                 {usesNativeIap() ? (
                   <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
                 ) : (
-                  <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : '29.17') : proPlan ? proPlan.price_monthly / 100 : 34.99}`}</PriceCents>
+                  <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : PRO_YEARLY_PER_MONTH) : proPlan ? proPlan.price_monthly / 100 : PRO_MONTHLY_AMOUNT}`}</PriceCents>
                 )}
               </span>
             )}

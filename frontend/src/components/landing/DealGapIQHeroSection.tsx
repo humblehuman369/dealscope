@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 export interface DealGapIQHeroSectionProps {
   onAnalyzeAddress: (address: string) => void
@@ -159,7 +160,7 @@ export function DealGapIQHeroSection({
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          <div className="stat-number">60s</div>
+          <div className="stat-number">{SPEED_CLAIM}</div>
           <div className="stat-label">Income Value + Deal Gap</div>
           <div className="stat-detail">for any address</div>
         </div>

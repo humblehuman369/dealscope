@@ -10,6 +10,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { brandLogo, BRAND_LOGO_SIZE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 import './dealgapiq-homepage.css'
 import { DataSourcesSection } from './DataSourcesSection'
+import { SOURCE_COUNT } from '@/lib/claims'
 
 function AuthParamHandler() {
   const { openAuthModal } = useAuthModal()
@@ -286,7 +287,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               <p className="compare-tagline">Built for residential real estate investors</p>
               <ul className="compare-list">
                 <li>Numbers that tell the truth</li>
-                <li>Cross-referenced data from 5 sources</li>
+                <li>Cross-referenced data from {SOURCE_COUNT} sources</li>
                 <li>IQ Estimate built for investors</li>
                 <li>Rental income analysis included</li>
                 <li>Full cash flow &amp; DSCR breakdown</li>

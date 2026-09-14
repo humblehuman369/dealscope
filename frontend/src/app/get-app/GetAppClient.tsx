@@ -14,9 +14,10 @@ import { useRouter } from 'next/navigation'
 import { isCapacitor } from '@/lib/env'
 import { APP_STORE_URL, PLAY_STORE_URL, detectWebPlatform } from '@/lib/appStore'
 import { trackEvent } from '@/lib/eventTracking'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 const VALUE_PROPS = [
-  'Score any property in 60 seconds',
+  `Score any property ${SPEED_CLAIM}`,
   'See the Deal Gap between asking price and what works',
   'Six strategies analyzed at once — LTR, STR, BRRRR, Flip, House Hack, Wholesale',
   'Point & Scan: point your phone at any house and get the numbers',

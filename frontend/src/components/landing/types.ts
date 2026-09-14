@@ -1,3 +1,5 @@
+import { SPEED_CLAIM } from '@/lib/claims'
+
 // Landing page types and constants
 
 export interface Strategy {
@@ -308,7 +310,7 @@ export const strategies: Strategy[] = [
 export const features: Feature[] = [
   {
     icon: 'scan',
-    title: "Know if it's a deal in 60 seconds",
+    title: `Know if it's a deal ${SPEED_CLAIM}`,
     description: 'Point your camera at any property and get instant analysis without spreadsheets.',
   },
   {
@@ -347,12 +349,12 @@ export const floatingCards: FloatingCard[] = [
 export const stats = [
   { value: '10K+', label: 'Properties Analyzed' },
   { value: '$2.4M', label: 'Profit Discovered' },
-  { value: '60s', label: 'Average Analysis Time' },
+  { value: SPEED_CLAIM, label: 'Average Analysis Time' },
 ]
 
 // Capability Stats for launch (replaces social proof)
 export const capabilityStats = [
-  { value: '60s', label: 'Analysis Time' },
+  { value: SPEED_CLAIM, label: 'Analysis Time' },
   { value: '6', label: 'Strategies Per Property' },
   { value: '15+', label: 'Variables You Control' },
   { value: '100%', label: 'Free to Start' },

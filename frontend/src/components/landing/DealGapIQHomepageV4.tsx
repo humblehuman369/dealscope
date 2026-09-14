@@ -32,6 +32,12 @@ import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSectio
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
+import {
+  PRO_MONTHLY_PRICE,
+  PRO_YEARLY_PER_MONTH,
+  SOURCE_COUNT,
+  SPEED_CLAIM,
+} from '@/lib/claims'
 import './hero-v5.css'
 import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
 
@@ -260,8 +266,8 @@ function QuickStatsBar() {
   const lenderTotalLabel = formatLenderDirectoryTotal()
 
   const stats = [
-    { icon: Database, label: 'Data Sources', value: '6 live' },
-    { icon: Clock, label: 'Avg Analysis Time', value: '15 seconds' },
+    { icon: Database, label: 'Data Sources', value: `${SOURCE_COUNT} live` },
+    { icon: Clock, label: 'Avg Analysis Time', value: SPEED_CLAIM },
     { icon: Users, label: 'Cash Buyers', value: buyerTotalLabel },
     { icon: Banknote, label: 'Hard Money', value: lenderTotalLabel },
   ]
@@ -570,9 +576,9 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             featured
             title="Pro"
             subtitle="For active deal makers"
-            price="$34.99"
+            price={PRO_MONTHLY_PRICE}
             priceSuffix="/mo"
-            subprice="or $29.17/mo billed annually"
+            subprice={`or $${PRO_YEARLY_PER_MONTH}/mo billed annually`}
             features={homepageProFeatures(buyerTotalLabel, lenderTotalLabel)}
             cta="Start 7-day Pro trial - no card required"
             onClick={onPro}

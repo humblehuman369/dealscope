@@ -310,7 +310,7 @@ export function IQEstimateSelector({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
+        {/* Property Value column (IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
           <p
             className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`}
