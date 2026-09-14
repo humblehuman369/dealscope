@@ -19,6 +19,7 @@ export { NavTabs } from './NavTabs'
 // IQ Estimate 3-value source selector
 export {
   IQEstimateSelector,
+  resolveSelectedLiveRent,
   useIQSourceSelection,
   type IQEstimateSources,
   type DataSourceId,

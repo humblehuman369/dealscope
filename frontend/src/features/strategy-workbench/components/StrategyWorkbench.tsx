@@ -63,6 +63,7 @@ import { computeDealGapIncomeValue } from '@/lib/dealGapIncomeValue'
 import { computeLtrMetricsFromState } from '@/lib/ltrWorksheetMetrics'
 import {
   IQEstimateSelector,
+  resolveSelectedLiveRent,
   type IQEstimateSources,
 } from '@/components/iq-verdict/IQEstimateSelector'
 import {
@@ -73,10 +74,8 @@ import {
 } from '@/utils/verdictPayload'
 import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
-import {
-  effectiveMarketValueFromRecord,
-  effectiveMonthlyRentFromRecord,
-} from '@/lib/dealMakerOverrides'
+import { effectiveMarketValueFromRecord } from '@/lib/dealMakerOverrides'
+import { resolveSessionMonthlyRent, stripMonthlyRentFromOverrides } from '@/lib/sessionRent'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { StrategyUnlockPanel } from '@/components/auth/StrategyUnlockPanel'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
@@ -118,10 +117,12 @@ import {
   askingGapDisplayPct,
   closeDeltas,
   gapLeftPct,
+  isRentChangingPlanOption,
   ltrStateFromPreLoadedRecord,
   optionKeyFromFamily,
   PLAN_SLOT_ORDER,
   PLAN_TARGET_DEFAULTS,
+  rentForPlanOption,
   scoreAgainstTargets,
   scorePlanOptions,
   tuneGroupForOption,
@@ -273,6 +274,8 @@ export function StrategyWorkbench({
   const [sourceOverrides, setSourceOverrides] = useState<{ price?: number; monthlyRent?: number }>(
     {},
   )
+  const sourceOverridesRef = useRef(sourceOverrides)
+  sourceOverridesRef.current = sourceOverrides
   const [isRecalculating, setIsRecalculating] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
@@ -474,10 +477,19 @@ export function StrategyWorkbench({
             '[StrategyIQ] Loaded eligible DealMaker overrides from sessionStorage:',
             parsed,
           )
-          setInitialOverrides(parsed)
+          const savedOrigin = parsed.origin === 'saved_property'
+          const { monthlyRent: savedRecordRent, ...withoutFrozenRent } = parsed
+          setInitialOverrides(savedOrigin ? withoutFrozenRent : parsed)
           const storedListPrice = typeof parsed.listPrice === 'number' ? parsed.listPrice : null
           if (storedListPrice != null && storedListPrice > 0) {
             setSourceOverrides((prev) => ({ ...prev, price: storedListPrice }))
+          }
+          if (
+            parsed.origin === 'dealmaker_edit' &&
+            typeof savedRecordRent === 'number' &&
+            savedRecordRent > 0
+          ) {
+            setSourceOverrides((prev) => ({ ...prev, monthlyRent: savedRecordRent }))
           }
           if (!strategyParam && typeof parsed.strategy === 'string' && parsed.strategy) {
             setSelectedStrategyId(parsed.strategy)
@@ -633,6 +645,17 @@ export function StrategyWorkbench({
     propertySnapshot: savePropertySnapshot,
   })
   const { record: dealRecord } = useDealSnapshot(savedPropertyId)
+
+  const sessionMonthlyRent =
+    resolveSessionMonthlyRent({
+      savedOverride: dealRecord?.monthly_rent_override,
+      selectedLiveSource:
+        sourceOverrides.monthlyRent ??
+        resolveSelectedLiveRent(iqSources) ??
+        (typeof propertyInfo?.monthlyRent === 'number' ? propertyInfo.monthlyRent : null),
+    }) ?? 0
+  const sessionMonthlyRentRef = useRef(sessionMonthlyRent)
+  sessionMonthlyRentRef.current = sessionMonthlyRent
 
   const strategyTypeForPersistence = toStrategyType(
     selectedStrategyId ?? strategyParam ?? 'long-term-rental',
@@ -865,10 +888,17 @@ export function StrategyWorkbench({
           monthlyRentOverride:
             dealRecord?.monthly_rent_override ?? srcOverrides.monthlyRentOverride,
         }
+        const sessionRent =
+          resolveSessionMonthlyRent({
+            savedOverride: mergedSrc.monthlyRentOverride,
+            selectedLiveSource: mergedSrc.monthlyRent ?? propInfo?.monthlyRent,
+          }) ??
+          propInfo?.monthlyRent ??
+          0
         const payload = buildVerdictAnalysisPayload(
-          toPayloadBase(propInfo),
-          overrides,
-          mergedSrc,
+          { ...toPayloadBase(propInfo), monthlyRent: sessionRent },
+          stripMonthlyRentFromOverrides(overrides),
+          { ...mergedSrc, monthlyRent: sessionRent },
         )
         const analysis = await api.post<BackendAnalysisResponse>(
           '/api/v1/analysis/verdict',
@@ -932,7 +962,12 @@ export function StrategyWorkbench({
           ...appraiserOverrides,
         })
         let price = baseDefaults.listPrice
-        let monthlyRent = baseDefaults.monthlyRent
+        const liveRent = resolveSelectedLiveRent(mapPropertyToIQSources(propData, appraiserOverrides))
+        const monthlyRent =
+          resolveSessionMonthlyRent({
+            savedOverride: dealRecord?.monthly_rent_override,
+            selectedLiveSource: sourceOverridesRef.current.monthlyRent ?? liveRent,
+          }) ?? baseDefaults.monthlyRent
         let propertyTaxes = baseDefaults.propertyTaxes
         let insuranceVal = baseDefaults.insurance
 
@@ -942,7 +977,6 @@ export function StrategyWorkbench({
           } else if (dealMakerOverrides.price != null && dealMakerOverrides.price > 0) {
             price = dealMakerOverrides.price
           }
-          if (dealMakerOverrides.monthlyRent != null) monthlyRent = dealMakerOverrides.monthlyRent
           if (dealMakerOverrides.propertyTaxes != null)
             propertyTaxes = dealMakerOverrides.propertyTaxes
           if (dealMakerOverrides.insurance != null) insuranceVal = dealMakerOverrides.insurance
@@ -963,8 +997,8 @@ export function StrategyWorkbench({
 
         const payload = buildVerdictAnalysisPayload(
           toPayloadBase(enrichedPropInfo),
-          dealMakerOverrides,
-          appraiserOverrides,
+          stripMonthlyRentFromOverrides(dealMakerOverrides),
+          { ...appraiserOverrides, monthlyRent },
         )
         const analysis = await api.post<BackendAnalysisResponse>(
           '/api/v1/analysis/verdict',
@@ -1002,9 +1036,25 @@ export function StrategyWorkbench({
     if (recalcDebounceRef.current) clearTimeout(recalcDebounceRef.current)
     recalcDebounceRef.current = setTimeout(() => {
       const merged = { ...(initialOverrides ?? {}), ...inlineOverridesRef.current }
-      recalcVerdict(propertyInfo, merged, verdictSourceOverrides)
+      recalcVerdict(propertyInfo, merged, {
+        ...sourceOverridesRef.current,
+        marketValueOverride: dealRecord?.market_value_override ?? null,
+        monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+      })
     }, 300)
-  }, [initialOverrides, propertyInfo, verdictSourceOverrides, recalcVerdict])
+  }, [initialOverrides, propertyInfo, recalcVerdict, dealRecord?.market_value_override, dealRecord?.monthly_rent_override])
+
+  const lastSolvedSessionRentRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (!propertyInfo || !(sessionMonthlyRent > 0)) return
+    if (lastSolvedSessionRentRef.current == null) {
+      lastSolvedSessionRentRef.current = sessionMonthlyRent
+      return
+    }
+    if (lastSolvedSessionRentRef.current === sessionMonthlyRent) return
+    lastSolvedSessionRentRef.current = sessionMonthlyRent
+    scheduleRecalc()
+  }, [sessionMonthlyRent, propertyInfo, scheduleRecalc])
 
   // Fire the pending recalc once property data is available for a scenario that
   // was applied from the URL before the property finished loading.
@@ -1042,6 +1092,9 @@ export function StrategyWorkbench({
       const overrideValue = mapping.toOverride ? mapping.toOverride(value) : value
       if (field === 'marketValue') {
         setSourceOverrides((prev) => ({ ...prev, price: value }))
+      }
+      if (field === 'monthlyRent') {
+        setSourceOverrides((prev) => ({ ...prev, monthlyRent: value }))
       }
       setInlineOverrides((prev) => {
         const next = { ...prev, [mapping.key]: overrideValue }
@@ -1136,6 +1189,16 @@ export function StrategyWorkbench({
   const applyPathPatch = useCallback(
     (structure: DealStructure, idx: number, options?: { track?: boolean }) => {
       const patch = preLoadedRecordToDealMakerPatch(structure.preLoadedRecord ?? {})
+      const worksheetRent = sessionMonthlyRentRef.current
+      if (isRentChangingPlanOption(structure.family)) {
+        patch.monthlyRent = rentForPlanOption(
+          structure.family,
+          structure.preLoadedRecord ?? {},
+          worksheetRent,
+        )
+      } else {
+        delete patch.monthlyRent
+      }
       setInlineOverrides((prev) => {
         // Reset any prior path-applied fields back to baseline before layering
         // the new patch — otherwise switching Path 1 → Path 2 leaves stale
@@ -1179,7 +1242,7 @@ export function StrategyWorkbench({
         const current = worksheetStateRef.current as LTRDealMakerState | undefined
         const baseline: PlanBaseline = {
           listPrice: current?.buyPrice || propertyInfo?.price || 0,
-          monthlyRent: current?.monthlyRent || 0,
+          monthlyRent: sessionMonthlyRentRef.current,
           downPaymentPercent: current?.downPaymentPercent,
           closingCostsPercent: current?.closingCostsPercent,
           interestRate: current?.interestRate,
@@ -1188,6 +1251,7 @@ export function StrategyWorkbench({
         const scoredState = ltrStateFromPreLoadedRecord(
           structure.preLoadedRecord ?? {},
           baseline,
+          structure.family,
         )
         emitPlanBuilt(optionKeyFromFamily(structure.family), scoreTargetsMetFromState(scoredState))
       }
@@ -1217,6 +1281,34 @@ export function StrategyWorkbench({
     option3SeededRef.current = true
     applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'), { track: false })
   }, [workflowV1, scenarioParam, appliedPathId, displayDealStructurePaths, applyPathPatch])
+
+  useEffect(() => {
+    if (!appliedPathId) return
+    const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+    if (!structure) return
+    const nextRent = rentForPlanOption(
+      structure.family,
+      structure.preLoadedRecord ?? {},
+      sessionMonthlyRent,
+    )
+    const current = inlineOverridesRef.current.monthlyRent
+    if (isRentChangingPlanOption(structure.family)) {
+      if (current === nextRent) return
+      setInlineOverrides((prev) => {
+        const next = { ...prev, monthlyRent: nextRent }
+        inlineOverridesRef.current = next
+        return next
+      })
+      return
+    }
+    if (current == null) return
+    setInlineOverrides((prev) => {
+      const next = { ...prev }
+      delete next.monthlyRent
+      inlineOverridesRef.current = next
+      return next
+    })
+  }, [appliedPathId, displayDealStructurePaths, sessionMonthlyRent])
 
   const handlePlanApply = useCallback(
     (structureId: string) => {
@@ -1400,11 +1492,9 @@ export function StrategyWorkbench({
   >
 
   // All derived financials come from the backend breakdown
-  const effectiveRent = effectiveMonthlyRentFromRecord(dealRecord)
-  const monthlyRent =
-    effectiveRent != null && effectiveRent > 0
-      ? effectiveRent
-      : (bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0)
+  const monthlyRent = sessionMonthlyRent > 0
+    ? sessionMonthlyRent
+    : (bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0)
   const propertyTaxes = bd?.property_taxes ?? propertyInfo?.propertyTaxes ?? 0
   const insurance = bd?.insurance ?? propertyInfo?.insurance ?? 0
   // Prefer explicit DealMaker/session rehab so sliders win over stale breakdown during debounce;

@@ -73,7 +73,9 @@ import {
 import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
-import { effectiveMarketValueFromRecord, effectiveMonthlyRentFromRecord } from '@/lib/dealMakerOverrides'
+import { effectiveMarketValueFromRecord } from '@/lib/dealMakerOverrides'
+import { resolveSessionMonthlyRent } from '@/lib/sessionRent'
+import { resolveSelectedLiveRent } from '@/components/iq-verdict/IQEstimateSelector'
 import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
 import {
   VerdictGapGuidance,
@@ -618,12 +620,21 @@ function VerdictContent() {
         // Discard if a newer address search has started since this fetch began
         if (generation !== fetchGenerationRef.current) return
 
-        // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
-        let monthlyRent = data.rentals?.monthly_rent_ltr ?? 0
-        const persistedRent = effectiveMonthlyRentFromRecord(dealSnapshotRecord)
-        if (persistedRent != null && persistedRent > 0) {
-          monthlyRent = persistedRent
-        }
+        // One session rent: saved override if set, else the selected live source.
+        // Frozen record.monthly_rent must not win over live IQ.
+        const iqSourcesForRent = mapPropertyToIQSources(data, {
+          marketValueOverride: dealSnapshotRecord?.market_value_override,
+          monthlyRentOverride: dealSnapshotRecord?.monthly_rent_override,
+        })
+        const monthlyRent =
+          resolveSessionMonthlyRent({
+            savedOverride:
+              dealSnapshotRecord?.monthly_rent_override ??
+              dealMakerStore.record?.monthly_rent_override,
+            selectedLiveSource: resolveSelectedLiveRent(iqSourcesForRent),
+          }) ??
+          data.rentals?.monthly_rent_ltr ??
+          0
 
         const price = resolveMarketPriceFromPropertyResponse(data, {
           fallback: 1,
@@ -750,11 +761,11 @@ function VerdictContent() {
         let arvForCalc: number | null
 
         if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
-          // Use values from DealMakerRecord (single source of truth for saved properties)
-          // list_price stays as market price; purchase_price override is sent separately
+          // Use values from DealMakerRecord for expenses / ARV. Rent follows the
+          // session rule (override else live source), not frozen monthly_rent.
           const record = dealMakerStore.record
           listPriceForCalc = propertyData.price
-          rentForCalc = record.monthly_rent
+          rentForCalc = monthlyRent
           taxesForCalc = record.annual_property_tax
           insuranceForCalc = record.annual_insurance
           arvForCalc = record.arv
@@ -776,12 +787,9 @@ function VerdictContent() {
             : persistedMarket != null && persistedMarket > 0
               ? persistedMarket
               : propertyData.price
-          const persistedRentCalc = effectiveMonthlyRentFromRecord(dealSnapshotRecord)
           rentForCalc = overrideMonthlyRent
             ? parseFloat(overrideMonthlyRent)
-            : persistedRentCalc != null && persistedRentCalc > 0
-              ? persistedRentCalc
-              : propertyData.monthlyRent || 0
+            : monthlyRent
           taxesForCalc = overridePropertyTaxes
             ? parseFloat(overridePropertyTaxes)
             : propertyData.propertyTaxes || 0
@@ -857,10 +865,22 @@ function VerdictContent() {
           state: propertyData.state || undefined,
           dismissedFamilies: getDismissedFamilies(),
         }
-        const analysisBody = buildVerdictAnalysisPayload(
-          payloadBase,
-          purchasePriceOverride != null ? { purchasePrice: purchasePriceOverride } : null,
-        )
+        const savedExpenseOverrides =
+          isSavedPropertyMode && dealMakerStore.record
+            ? {
+                propertyTaxes: dealMakerStore.record.annual_property_tax,
+                insurance: dealMakerStore.record.annual_insurance,
+                vacancyRate: Math.round((dealMakerStore.record.vacancy_rate ?? 0.05) * 100),
+                managementRate: Math.round((dealMakerStore.record.management_pct ?? 0) * 100),
+                maintenanceRate: dealMakerStore.record.maintenance_pct,
+                capexRate: dealMakerStore.record.capex_pct,
+                monthlyHoa: dealMakerStore.record.monthly_hoa,
+              }
+            : null
+        const analysisBody = buildVerdictAnalysisPayload(payloadBase, {
+          ...(purchasePriceOverride != null ? { purchasePrice: purchasePriceOverride } : {}),
+          ...(savedExpenseOverrides ?? {}),
+        })
         analysisInputsRef.current = analysisBody
 
         const analysisPromise = api.post<IQVerdictResponse & Record<string, any>>(
@@ -914,7 +934,6 @@ function VerdictContent() {
                 parsed.address = canonicalAddress
                 parsed.purchasePrice = record.buy_price
                 parsed.buyPrice = record.buy_price
-                parsed.monthlyRent = record.monthly_rent
                 parsed.propertyTaxes = record.annual_property_tax
                 parsed.insurance = record.annual_insurance
                 parsed.arv = record.arv

@@ -5,6 +5,7 @@ import {
   PLAN_TARGET_DEFAULTS,
   metricsFromPreLoadedRecord,
   optionKeyFromFamily,
+  rentForPlanOption,
   scoreAgainstTargets,
   scorePlanOptions,
   tuneGroupForOption,
@@ -167,7 +168,11 @@ describe('scorePlanOptions', () => {
           id: 'opt-1',
           headline: 'Prove rent',
           familyLabel: 'Income',
-          preLoadedRecord: { custom_purchase_price: 625_999, custom_rent_estimate: 6_000 },
+          preLoadedRecord: {
+            custom_purchase_price: 625_999,
+            custom_rent_estimate: 6_000,
+            solve_monthly_rent: 4_345,
+          },
         },
         {
           family: 'financing',
@@ -191,6 +196,7 @@ describe('scorePlanOptions', () => {
           preLoadedRecord: {
             custom_purchase_price: 500_000,
             custom_rent_estimate: 6_000,
+            solve_monthly_rent: 4_345,
             pending_extras: {
               seller_carry_amount: 115_228,
               seller_carry_rate: 0,
@@ -226,14 +232,21 @@ describe('scorePlanOptions', () => {
           id: 'lower-cf',
           headline: 'Lower cash flow',
           familyLabel: 'Price',
-          preLoadedRecord: { custom_purchase_price: 400_000, custom_rent_estimate: 2_000 },
+          preLoadedRecord: { custom_purchase_price: 400_000 },
         },
         {
           family: 'financing',
           id: 'higher-cf',
           headline: 'Higher cash flow',
           familyLabel: 'Financing',
-          preLoadedRecord: { custom_purchase_price: 400_000, custom_rent_estimate: 4_000 },
+          preLoadedRecord: {
+            custom_purchase_price: 400_000,
+            pending_extras: {
+              seller_carry_amount: 80_000,
+              seller_carry_rate: 0,
+              seller_carry_interest_only: true,
+            },
+          },
         },
       ],
       {
@@ -249,6 +262,38 @@ describe('scorePlanOptions', () => {
     const lower = scored.find((option) => option.structureId === 'lower-cf')
     expect(higher?.metrics.monthlyCashFlow).toBeGreaterThan(lower?.metrics.monthlyCashFlow ?? 0)
     expect(scored.find((option) => option.isBest)?.structureId).toBe('higher-cf')
+  })
+})
+
+describe('rentForPlanOption', () => {
+  it('ignores frozen custom_rent on price, financing, and down-payment levers', () => {
+    const levers = { custom_rent_estimate: 4_345 }
+    expect(rentForPlanOption('price', levers, 4_385)).toBe(4_385)
+    expect(rentForPlanOption('financing', levers, 4_385)).toBe(4_385)
+    expect(rentForPlanOption('capital_stack', levers, 4_385)).toBe(4_385)
+  })
+
+  it('applies option 1 and blend rent lift on the worksheet rent, not the solve-time rent', () => {
+    const levers = { custom_rent_estimate: 4_500, solve_monthly_rent: 4_345 }
+    expect(rentForPlanOption('income', levers, 4_385)).toBe(4_540)
+    expect(rentForPlanOption('blended', levers, 4_385)).toBe(4_540)
+  })
+})
+
+describe('scorePlanOptions worksheet rent', () => {
+  it('scores price and financing from the worksheet rent when the record froze a different rent', () => {
+    const worksheet = metricsFromPreLoadedRecord(
+      { custom_purchase_price: 400_000 },
+      { listPrice: 400_000, monthlyRent: 4_385, annualPropertyTax: 0, annualInsurance: 0 },
+      'price',
+    )
+    const frozen = metricsFromPreLoadedRecord(
+      { custom_purchase_price: 400_000, custom_rent_estimate: 4_345 },
+      { listPrice: 400_000, monthlyRent: 4_385, annualPropertyTax: 0, annualInsurance: 0 },
+      'price',
+    )
+    expect(frozen.monthlyRent).toBe(4_385)
+    expect(frozen.monthlyCashFlow).toBeCloseTo(worksheet.monthlyCashFlow, 6)
   })
 })
 
