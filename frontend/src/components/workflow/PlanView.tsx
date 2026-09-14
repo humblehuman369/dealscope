@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
-import { PLAN_GUIDE_WHY, PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
+import { PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
 
 export interface PlanViewProps {
   model: PlanViewModel
@@ -192,7 +192,7 @@ export function PlanView({
           >
             {model.guideApplyKind === 'start' && startingDeal ? 'Starting…' : model.guideApplyLabel}
           </button>
-          <WhyToggle id={whyGuideId} label="Where do these numbers come from?" text={PLAN_GUIDE_WHY} />
+          <WhyToggle id={whyGuideId} label="Where do these numbers come from?" text={model.guideWhy} />
         </div>
       </article>
 

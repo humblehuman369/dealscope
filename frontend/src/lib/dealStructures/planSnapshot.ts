@@ -12,8 +12,10 @@ import {
   formatClosePurchaseCaption,
   formatCloseSellerCaption,
   formatGapLine,
+  formatGuideBreakeven,
   formatGuideCompare,
   formatGuideStrong,
+  formatGuideWhy,
   formatNextMoves,
   formatOptionsFooter,
   formatPlanSentence,
@@ -52,6 +54,7 @@ export interface PlanSnapshotNumbers {
   options: readonly ScoredPlanOption[]
   appliedStructureId: string | null
   targets?: PlanTargetDefaults
+  monthlyCashFlowTarget?: number | null
 }
 
 export interface PlanOptionCardModel {
@@ -88,6 +91,7 @@ export interface PlanViewModel {
   cashFlowNegative: boolean
   gapLine: string
   guideText: string
+  guideWhy: string
   guideIsStrong: boolean
   guideApplyLabel: string
   guideApplyKind: 'start' | 'apply'
@@ -166,12 +170,8 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
       askingGapDisplayPct: input.askingGapDisplayPct,
       gapLeftPct: input.gapLeftPct,
     }),
-    guideText: guideIsStrong
-      ? formatGuideStrong({
-          targetsMet: input.targetsMet,
-          monthlyCashFlow: input.monthlyCashFlow,
-        })
-      : formatGuideCompare({
+    guideText: !guideIsStrong
+      ? formatGuideCompare({
           appliedTitle: OPTION_TITLE[input.optionKey],
           appliedMet: input.targetsMet,
           bestTitle: best ? OPTION_TITLE[best.key] : OPTION_TITLE.blend,
@@ -179,7 +179,17 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
           bestLever: best?.headline ?? '',
           bestMonthlyCashFlow: best?.metrics.monthlyCashFlow ?? 0,
           bestCashOnCash: best?.metrics.cashOnCash ?? 0,
-        }),
+        })
+      : (best?.targetsMet ?? input.targetsMet) < 1
+        ? formatGuideBreakeven({
+            bestLever: best?.headline ?? '',
+            monthlyCashFlow: best?.metrics.monthlyCashFlow ?? input.monthlyCashFlow,
+          })
+        : formatGuideStrong({
+            targetsMet: input.targetsMet,
+            monthlyCashFlow: input.monthlyCashFlow,
+          }),
+    guideWhy: formatGuideWhy(input.monthlyCashFlowTarget),
     guideIsStrong,
     guideApplyLabel: guideIsStrong
       ? 'Start working this deal'

@@ -14,9 +14,9 @@ export const SOURCE_STATUS_WHY =
   'These are the same sources the Math tab lists. A source counts when it returned a value for this house. Unavailable means that source had no data — nothing is guessed.'
 
 export const VERDICT_TIPS = [
-  "First time here? The red number is the seller's price.",
+  'First time here? The green number is the price that pays you. A bigger gap means more room to make a deal.',
   'The yellow number is where rent just covers the costs.',
-  'The green number is the price that pays you. A bigger gap means more room to make a deal.',
+  "The red number is the seller's price.",
 ] as const
 
 export const VERDICT_TIPS_FOOTER = 'These three tips show once.'

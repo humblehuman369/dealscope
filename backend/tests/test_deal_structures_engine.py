@@ -3,6 +3,7 @@
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures import compute_deal_structures
+from app.services.deal_structures.cashflow import TARGET_MONTHLY_CASH_FLOW
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.selector import _apply_regional_calibration, select_four_paths
 from app.services.deal_structures.templates import ALL_TEMPLATES
@@ -45,6 +46,13 @@ def test_engine_returns_empty_when_gap_not_positive():
     out = compute_deal_structures(ctx)
     assert out.has_paths is False
     assert out.paths == []
+
+
+def test_payload_monthly_cash_flow_target_is_the_solver_constant():
+    out = compute_deal_structures(_base_ctx())
+    assert out.monthly_cash_flow_target == TARGET_MONTHLY_CASH_FLOW
+    empty = compute_deal_structures(_base_ctx(target_buy_price=400_000, deal_gap_pct=0))
+    assert empty.monthly_cash_flow_target == TARGET_MONTHLY_CASH_FLOW
 
 
 def test_flags_disable_template():

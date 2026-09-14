@@ -191,4 +191,212 @@ describe('formatPlanSnapshot', () => {
     expect(model.targetRows[2]?.plan).toBe(formatMoneyExact(worksheet.monthlyCashFlow))
     expect(model.targetRows[3]?.plan).toBe(worksheet.dscr.toFixed(2))
   })
+
+  it('uses the break-even guide when every Willow option meets 0 of 4', () => {
+    const model = formatPlanSnapshot({
+      optionKey: '3',
+      offerPrice: 625_999,
+      cashNeeded: 143_980,
+      monthlyCashFlow: 213,
+      cashOnCash: 1.77,
+      capRate: 4.84,
+      dscr: 1.09,
+      bankLoan: 385_571,
+      sellerAmount: 115_228,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 4_345,
+      listPrice: 625_999,
+      iqEstimate: 477_699,
+      targetBuy: 453_814,
+      askingGapDisplayPct: -27.5,
+      gapLeftPct: 27.5,
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 0,
+      equity: null,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: 'seller-second-zero-balloon',
+      options: [
+        option({
+          key: '1',
+          structureId: 'rent-verification',
+          headline: 'Target Rent → $5,203',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 25 },
+          targetsMet: 0,
+          isBest: false,
+        }),
+        option({
+          key: '2',
+          structureId: 'price-negotiation',
+          headline: 'Negotiate to $454K',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 115 },
+          targetsMet: 0,
+          isBest: false,
+        }),
+        option({
+          key: '3',
+          structureId: 'seller-second-zero-balloon',
+          headline: 'Seller carries $115,228 at 0%',
+          metrics: OPTION_3_METRICS,
+          targetsMet: 0,
+          isBest: true,
+        }),
+        option({
+          key: '4',
+          structureId: 'larger-down',
+          headline: 'Down Payment 39%',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 0 },
+          targetsMet: 0,
+          isBest: false,
+        }),
+        option({
+          key: 'blend',
+          structureId: 'blended-plan',
+          headline: 'Blend: 6.7% price cut + $26K seller 2nd',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 25 },
+          targetsMet: 0,
+          isBest: false,
+        }),
+      ],
+    })
+
+    expect(model.guideText).toBe(
+      'No lever gets this house to your targets. The best the levers do is Seller carries $115,228 at 0%: $213 a month, 0 of 4 targets. That is what you offer, and where you walk away.',
+    )
+    expect(model.guideApplyKind).toBe('start')
+  })
+
+  it('keeps the strong guide when the best plan meets 1 of 4', () => {
+    const model = formatPlanSnapshot({
+      optionKey: '2',
+      offerPrice: 453_820,
+      cashNeeded: 104_379,
+      monthlyCashFlow: 115,
+      cashOnCash: 1.3,
+      capRate: 6.1,
+      dscr: 1.2,
+      bankLoan: 363_056,
+      sellerAmount: 0,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 4_345,
+      listPrice: 625_999,
+      iqEstimate: 477_699,
+      targetBuy: 453_814,
+      askingGapDisplayPct: -27.5,
+      gapLeftPct: 0,
+      targetsMet: 1,
+      capMet: true,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 172_179,
+      equity: null,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: 'price-negotiation',
+      options: [
+        option({
+          key: '2',
+          structureId: 'price-negotiation',
+          headline: 'Negotiate to $454K',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 115 },
+          targetsMet: 1,
+          isBest: true,
+        }),
+        option({
+          key: '3',
+          structureId: 'seller-second-zero-balloon',
+          headline: 'Seller carries $115,228 at 0%',
+          metrics: OPTION_3_METRICS,
+          targetsMet: 0,
+          isBest: false,
+        }),
+      ],
+    })
+
+    expect(model.guideText).toBe(
+      'This is the strongest plan the levers make. It meets 1 of 4 targets and pays $115 a month. Start working it.',
+    )
+  })
+
+  it('puts the payload cushion in the Guide why text', () => {
+    const model = formatPlanSnapshot({
+      optionKey: '3',
+      offerPrice: 625_999,
+      cashNeeded: 143_980,
+      monthlyCashFlow: 213,
+      cashOnCash: 1.77,
+      capRate: 4.84,
+      dscr: 1.09,
+      bankLoan: 385_571,
+      sellerAmount: 115_228,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 4_345,
+      listPrice: 625_999,
+      iqEstimate: null,
+      targetBuy: 453_814,
+      askingGapDisplayPct: 0,
+      gapLeftPct: 0,
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 0,
+      equity: null,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: null,
+      options: [],
+      monthlyCashFlowTarget: 25,
+    })
+
+    expect(model.guideWhy).toBe(
+      'Options 1, 3, 4, and the blend show the smallest move on that lever that keeps the house from costing you money, with a $25 a month cushion. Option 2 shows the price that gets you to Target Buy.',
+    )
+    expect(
+      formatPlanSnapshot({
+        optionKey: '3',
+        offerPrice: 625_999,
+        cashNeeded: 143_980,
+        monthlyCashFlow: 213,
+        cashOnCash: 1.77,
+        capRate: 4.84,
+        dscr: 1.09,
+        bankLoan: 385_571,
+        sellerAmount: 115_228,
+        sellerRate: 0,
+        balloonYear: 5,
+        downPaymentPercent: 0.2,
+        monthlyRent: 4_345,
+        listPrice: 625_999,
+        iqEstimate: null,
+        targetBuy: 453_814,
+        askingGapDisplayPct: 0,
+        gapLeftPct: 0,
+        targetsMet: 0,
+        capMet: false,
+        cocMet: false,
+        cfMet: false,
+        dscrMet: false,
+        vsList: 0,
+        equity: null,
+        sourceLow: null,
+        sourceHigh: null,
+        appliedStructureId: null,
+        options: [],
+        monthlyCashFlowTarget: 99,
+      }).guideWhy,
+    ).toContain('$99 a month cushion')
+  })
 })

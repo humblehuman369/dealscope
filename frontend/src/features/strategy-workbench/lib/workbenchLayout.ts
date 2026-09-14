@@ -1,13 +1,13 @@
 /**
  * One column, one card, one type scale for the Strategy workbench.
- * Discovery verdict cards use `mx-0 sm:mx-5` (+ mobile px-3). Embedded
- * workbench must match that gutter — extra page padding is what made the
- * plan card, Pro strip, and worksheet look like different widths.
+ * Workflow v1 Discovery / Plan / Work share the property-header gutter
+ * (`px-3 sm:px-6`). Extra page padding is what made the plan card, Pro
+ * strip, and worksheet look like different widths.
  */
 
 export const WORKBENCH_PAGE_GUTTER = 'w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto'
 
-export const WORKBENCH_EMBEDDED_GUTTER = 'mx-0 sm:mx-5 px-3 sm:px-0 mt-3'
+export const WORKBENCH_EMBEDDED_GUTTER = 'px-3 sm:px-6 mt-4'
 
 export const WORKBENCH_STACK = 'flex flex-col gap-3 pb-10'
 

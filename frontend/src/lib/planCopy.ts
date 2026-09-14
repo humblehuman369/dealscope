@@ -123,6 +123,24 @@ export function formatGuideStrong(input: { targetsMet: number; monthlyCashFlow: 
   return `This is the strongest plan the levers make. It meets ${input.targetsMet} of 4 targets and pays ${money(input.monthlyCashFlow)} a month. Start working it.`
 }
 
+export function formatGuideBreakeven(input: {
+  bestLever: string
+  monthlyCashFlow: number
+}): string {
+  return `No lever gets this house to your targets. The best the levers do is ${input.bestLever}: ${money(input.monthlyCashFlow)} a month, 0 of 4 targets. That is what you offer, and where you walk away.`
+}
+
+export function formatGuideWhy(monthlyCashFlowTarget?: number | null): string {
+  if (monthlyCashFlowTarget == null || !Number.isFinite(monthlyCashFlowTarget)) {
+    return PLAN_GUIDE_WHY
+  }
+  return (
+    `Options 1, 3, 4, and the blend show the smallest move on that lever ` +
+    `that keeps the house from costing you money, with a ${money(monthlyCashFlowTarget)} a month cushion. ` +
+    `Option 2 shows the price that gets you to Target Buy.`
+  )
+}
+
 export function formatGuideCompare(input: {
   appliedTitle: string
   appliedMet: number

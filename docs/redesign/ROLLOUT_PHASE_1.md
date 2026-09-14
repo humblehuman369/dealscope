@@ -52,6 +52,8 @@ Read:
 - `plan_built` per `verdict_viewed`
 - `deal_started` per `plan_built`
 
+Options 1, 3, 4, and the blend aim at break-even plus $25 a month by design, so most plans show $25 a month and 0 of 4 on cash flow; a low `deal_started` per `plan_built` may be investors reading that correctly, not a bug.
+
 **Directional, not like-for-like.** Old-layout `deal_started` is a plain DealVault save. V1 `deal_started` is a deliberate commit from the Plan page (Start working this deal). Treat the second ratio as a direction check, not a paired A/B of the same action.
 
 ## Weekly check

@@ -1901,7 +1901,10 @@ function VerdictContent() {
   })()
 
   const photoGallery = (
-    <section id="property-gallery" className="mx-0 sm:mx-5 mt-6">
+    <section
+      id="property-gallery"
+      className={workflowV1Layout ? 'px-3 sm:px-6 mt-6' : 'mx-0 sm:mx-5 mt-6'}
+    >
       {property.zpid ? (
         <PropertyPhotoGallery
           zpid={String(property.zpid)}
@@ -2039,7 +2042,9 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <main
-          className="min-h-screen bg-[var(--surface-base)] w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto"
+          className={`min-h-screen bg-[var(--surface-base)] w-full mx-auto ${
+            workflowV1Layout ? 'px-0' : 'px-0 sm:px-8 lg:px-12 xl:px-16'
+          }`}
           style={
             workflowV1Layout
               ? undefined
@@ -2099,7 +2104,13 @@ function VerdictContent() {
           {/* When Level 3 is open, collapse the verdict so Strategy does not
               stack a second full page (and a second Deal Gap overview) under it. */}
           {workbenchRequest ? (
-            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
+            <div
+              className={
+                workflowV1Layout
+                  ? 'px-3 sm:px-6 mt-4'
+                  : 'mx-0 sm:mx-5 mt-4 px-3 sm:px-0'
+              }
+            >
               <button
                 type="button"
                 onClick={collapseWorkbench}
@@ -2159,7 +2170,7 @@ function VerdictContent() {
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
             workDealId ? (
-              <DealPageContent propertyId={workDealId} />
+              <DealPageContent propertyId={workDealId} embedded />
             ) : hasChecked ? (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
             ) : null
@@ -2171,7 +2182,7 @@ function VerdictContent() {
             onCaught={() => setV1DiscoveryFailed(true)}
           >
           <>
-            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+            <div className="px-3 sm:px-6 mt-4">
               <VerdictCard
                 listPrice={property.price}
                 incomeValue={incomeValue}
@@ -2203,16 +2214,16 @@ function VerdictContent() {
               />
             </div>
             {analysis.dealStructures?.hasPaths ? (
-              <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+              <div className="px-3 sm:px-6 mt-4">
                 <HowThisCloses payload={analysis.dealStructures} />
               </div>
             ) : null}
-            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+            <div className="px-3 sm:px-6 mt-4">
               <WhyWeThinkSo signals={whySignals} />
             </div>
             {photoGallery}
             {!isAuthenticated ? (
-              <div className="mx-0 sm:mx-5 px-3 sm:px-5">
+              <div className="px-3 sm:px-6">
                 <VerdictEmailCapture
                   variant="slim"
                   address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}

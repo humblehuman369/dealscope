@@ -154,3 +154,7 @@ class DealStructuresPayload(BaseModel):
         default_factory=list,
         description="Levers with no structure, and whether that is reassurance or a warning",
     )
+    monthly_cash_flow_target: float | None = Field(
+        default=None,
+        description="Monthly cash-flow cushion the path solvers aim at, in dollars per month. Set from TARGET_MONTHLY_CASH_FLOW in the engine; do not import that constant here (circular).",
+    )

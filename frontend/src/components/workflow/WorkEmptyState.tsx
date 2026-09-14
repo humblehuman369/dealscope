@@ -3,7 +3,7 @@
 export function WorkEmptyState({ onGoToPlan }: { onGoToPlan: () => void }) {
   return (
     <section
-      className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5"
+      className="px-3 sm:px-6 mt-4"
       aria-labelledby="work-empty-title"
     >
       <div

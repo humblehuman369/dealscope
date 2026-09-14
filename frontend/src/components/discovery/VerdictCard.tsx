@@ -196,9 +196,9 @@ export function VerdictCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <NumberTile
-          value={formatMoneyExact(listPrice)}
-          label={listed ? NUMBER_LABELS.market : NUMBER_LABELS.marketOffMarket}
-          color="var(--status-negative)"
+          value={formatMoneyExact(targetBuy)}
+          label={NUMBER_LABELS.target}
+          color="var(--status-positive)"
         />
         <NumberTile
           value={formatMoneyExact(incomeValue)}
@@ -206,9 +206,9 @@ export function VerdictCard({
           color="var(--status-income-value)"
         />
         <NumberTile
-          value={formatMoneyExact(targetBuy)}
-          label={NUMBER_LABELS.target}
-          color="var(--status-positive)"
+          value={formatMoneyExact(listPrice)}
+          label={listed ? NUMBER_LABELS.market : NUMBER_LABELS.marketOffMarket}
+          color="var(--status-negative)"
         />
       </div>
 

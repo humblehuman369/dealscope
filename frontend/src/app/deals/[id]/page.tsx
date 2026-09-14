@@ -114,7 +114,14 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   )
 }
 
-export function DealPageContent({ propertyId }: { propertyId: string }) {
+export function DealPageContent({
+  propertyId,
+  embedded = false,
+}: {
+  propertyId: string
+  /** Work tab on Discovery — same page gutter as the property header. */
+  embedded?: boolean
+}) {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const tabParam = (searchParams.get('tab') ?? 'overview') as Tab
@@ -132,8 +139,14 @@ export function DealPageContent({ propertyId }: { propertyId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--surface-base)] py-6 px-4 sm:px-6 lg:px-8 grid-fade">
-      <div className="max-w-6xl mx-auto">
+    <div
+      className={
+        embedded
+          ? 'px-3 sm:px-6 mt-4 pb-10'
+          : 'min-h-screen bg-[var(--surface-base)] py-6 px-4 sm:px-6 lg:px-8 grid-fade'
+      }
+    >
+      <div className={embedded ? undefined : 'max-w-6xl mx-auto'}>
         <DataBoundary
           isLoading={deal.isLoading}
           error={deal.isError ? 'Could not load this property' : null}

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  PLAN_GUIDE_WHY,
+  formatGuideBreakeven,
   formatGuideCompare,
   formatGuideStrong,
+  formatGuideWhy,
   formatOptionsFooter,
   formatPlanBottomLine,
   formatPlanSentence,
@@ -95,6 +98,32 @@ describe('guide copy', () => {
     expect(formatGuideStrong({ targetsMet: 4, monthlyCashFlow: 817 })).toBe(
       'This is the strongest plan the levers make. It meets 4 of 4 targets and pays $817 a month. Start working it.',
     )
+  })
+
+  it('still uses the strong case at 1 of 4', () => {
+    expect(formatGuideStrong({ targetsMet: 1, monthlyCashFlow: 115 })).toBe(
+      'This is the strongest plan the levers make. It meets 1 of 4 targets and pays $115 a month. Start working it.',
+    )
+  })
+
+  it('uses the break-even branch when no option meets a target', () => {
+    expect(
+      formatGuideBreakeven({
+        bestLever: 'Seller carries $115,228 at 0%',
+        monthlyCashFlow: 213,
+      }),
+    ).toBe(
+      'No lever gets this house to your targets. The best the levers do is Seller carries $115,228 at 0%: $213 a month, 0 of 4 targets. That is what you offer, and where you walk away.',
+    )
+  })
+
+  it('reads the $25 cushion from the plan payload, not a frontend constant', () => {
+    expect(formatGuideWhy(25)).toBe(
+      'Options 1, 3, 4, and the blend show the smallest move on that lever that keeps the house from costing you money, with a $25 a month cushion. Option 2 shows the price that gets you to Target Buy.',
+    )
+    expect(formatGuideWhy(99)).toContain('$99 a month cushion')
+    expect(formatGuideWhy(99)).not.toContain('$25 a month cushion')
+    expect(formatGuideWhy(null)).toBe(PLAN_GUIDE_WHY)
   })
 })
 
