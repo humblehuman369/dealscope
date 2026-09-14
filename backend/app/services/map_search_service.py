@@ -18,10 +18,11 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
-from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
+from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
 from app.services import zip_market_service
 from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
+from app.services.axesso_limiter import BULK
 from app.services.cache_service import get_cache_service
 from app.services.zillow_client import ZillowClient, create_zillow_client
 
@@ -29,7 +30,10 @@ logger = logging.getLogger(__name__)
 
 MAP_CACHE_TTL = 600  # 10 minutes
 MOTIVATED_SELLER_KEYWORD_CACHE_TTL = 1800  # 30 minutes per keyword + viewport
-MOTIVATED_SELLER_CONCURRENCY = 8
+
+# Bumps the map cache when motivated mode changes implementation so we never
+# serve the old per-keyword dump (identical 41 unfiltered listings).
+MOTIVATED_SELLER_LOCAL_MATCH = "local"
 
 # Average days per year (accounts for leap years) — used to translate an
 # owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
@@ -392,6 +396,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "strst": (req.str_state or "").upper() or None,
             "strcy": (req.str_city or "").lower() or None,
             "mss": req.motivated_seller_search,
+            "mssl": MOTIVATED_SELLER_LOCAL_MATCH if req.motivated_seller_search else None,
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
             "occ": req.owner_occupancy,
@@ -568,6 +573,7 @@ class MapSearchService:
                 api_key=settings.AXESSO_API_KEY,
                 base_url=settings.AXESSO_URL,
                 fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
+                default_priority=BULK,
             )
 
         if settings.MASHVISOR_RAPIDAPI_KEY and settings.MASHVISOR_STR_ENABLED:
@@ -695,17 +701,7 @@ class MapSearchService:
         listings_by_addr: dict[str, MapListing] = {}
         raw_source_totals: int = 0
 
-        if motivated_seller_mode:
-            logger.info(
-                "Map search motivated-seller mode: replacing standard sources with %d Zillow keyword queries",
-                len(MOTIVATED_SELLER_KEYWORDS),
-            )
-            if req.listing_type in ("sale", "both"):
-                motivated_rows = await self._fetch_motivated_seller_listings(req, cache)
-                raw_source_totals = len(motivated_rows)
-                for item in motivated_rows:
-                    self._merge_listing_into(listings_by_addr, item)
-        elif owner_records_mode:
+        if owner_records_mode:
             logger.info(
                 "Map search owner-records mode: RentCast property records, tenure=%s-%s yrs, occupancy=%s",
                 req.owner_tenure_min_years,
@@ -850,6 +846,31 @@ class MapSearchService:
             raw_source_totals = len(tenure_rows)
             for item in tenure_rows:
                 self._merge_listing_into(listings_by_addr, item)
+        elif motivated_seller_mode:
+            # AXESSO search-by-url ignores filterState.kw. One normal bounds
+            # fetch, then match_motivated_seller_keywords on listing remarks.
+            logger.info("Map search motivated-seller mode: one bounds fetch + local keyword match")
+            tasks = []
+            if req.listing_type in ("sale", "both"):
+                tasks.append(
+                    asyncio.create_task(
+                        self._fetch_rentcast(req, "sale", center_lat, center_lng, sub_radius),
+                    )
+                )
+                if self.zillow:
+                    tasks.append(
+                        asyncio.create_task(
+                            self._fetch_zillow(center_lat, center_lng, sub_radius, "forSale", req, None),
+                        )
+                    )
+            results = await asyncio.gather(*tasks, return_exceptions=True) if tasks else []
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.warning("Map search source failed: %s", result)
+                    continue
+                raw_source_totals += len(result)
+                for item in result:
+                    self._merge_listing_into(listings_by_addr, item)
         else:
             # Fetch from all sources at all grid points in parallel
             tasks: list[asyncio.Task] = []
@@ -1033,7 +1054,17 @@ class MapSearchService:
         # also dropped here. Skipped in owner-tenure mode, whose off-market
         # property records are an intentionally distinct (non-listing)
         # inventory that doesn't map onto the for-sale status buckets.
-        if not owner_records_mode:
+        if motivated_seller_mode:
+            matched = [item for item in listings if item.motivated_keywords]
+            # Annotate only. Filtering to remark hits would shrink the tile
+            # below the unfiltered bounds set (41 on 2026-09-13) whenever
+            # even one card has a description.
+            logger.info(
+                "Motivated-seller local match: %d/%d listings have remark hits",
+                len(matched),
+                raw_source_totals,
+            )
+        elif not owner_records_mode:
             listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
 
         # Attach the ZIP rent-vs-price screen. Runs last, on the final result
@@ -2215,31 +2246,11 @@ class MapSearchService:
         req: MapSearchRequest,
         cache: Any,
     ) -> list[MapListing]:
-        """Run parallel Zillow keyword searches for every motivated-seller phrase."""
-        if not self.zillow:
-            return []
-
-        semaphore = asyncio.Semaphore(MOTIVATED_SELLER_CONCURRENCY)
-        listings_by_addr: dict[str, MapListing] = {}
-        hits_by_keyword: dict[str, int] = {}
-
-        async def _run_keyword(keyword: str) -> None:
-            async with semaphore:
-                rows = await self._fetch_zillow_keyword(req, keyword, cache)
-            hits_by_keyword[keyword] = len(rows)
-            for item in rows:
-                self._merge_listing_into(listings_by_addr, item)
-
-        await asyncio.gather(*(_run_keyword(kw) for kw in MOTIVATED_SELLER_KEYWORDS))
-
-        keywords_with_hits = sum(1 for count in hits_by_keyword.values() if count > 0)
+        """Keyword sweep is disabled — AXESSO does not honor filterState.kw."""
         logger.info(
-            "Motivated seller search: %d unique listings from %d/%d keywords with hits",
-            len(listings_by_addr),
-            keywords_with_hits,
-            len(MOTIVATED_SELLER_KEYWORDS),
+            "Motivated-seller keyword sweep skipped: AXESSO search-by-url ignores filterState.kw"
         )
-        return list(listings_by_addr.values())
+        return []
 
     # ─── Normalization helpers ─────────────────────
 
@@ -2589,6 +2600,7 @@ class MapSearchService:
             address = ", ".join(p for p in parts if p)
 
         raw_status = MapSearchService._derive_rentcast_listing_status(item)
+        matched = match_motivated_seller_keywords(MapSearchService._listing_narrative(item))
 
         return MapListing(
             id=item.get("id") or f"rc-{item.get('latitude')}-{item.get('longitude')}",
@@ -2609,6 +2621,7 @@ class MapSearchService:
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
             year_built=MapSearchService._extract_year_built(item),
+            motivated_keywords=matched or None,
         )
 
     @staticmethod
@@ -2658,6 +2671,7 @@ class MapSearchService:
         # and foreclosureTypes. Without this, distressed listings would
         # canonicalize to "active" and get dropped by the status filter.
         listing_status = MapSearchService._derive_zillow_status(item)
+        matched = match_motivated_seller_keywords(MapSearchService._listing_narrative(item))
 
         return MapListing(
             id=str(item.get("zpid") or item.get("id") or f"zl-{lat}-{lng}"),
@@ -2678,7 +2692,26 @@ class MapSearchService:
             source="zillow",
             days_on_market=item.get("daysOnZillow"),
             year_built=MapSearchService._extract_year_built(item),
+            motivated_keywords=matched or None,
         )
+
+    @staticmethod
+    def _listing_narrative(item: dict) -> str | None:
+        """Join any remark/description fields on a list-card payload."""
+        parts: list[str] = []
+        for key in (
+            "description",
+            "remarks",
+            "listingRemarks",
+            "listingDescription",
+            "marketingRemarks",
+            "publicRemarks",
+            "brokerRemarks",
+        ):
+            value = item.get(key)
+            if isinstance(value, str) and value.strip():
+                parts.append(value)
+        return " ".join(parts) if parts else None
 
     @staticmethod
     def _derive_zillow_status(item: dict) -> str | None:

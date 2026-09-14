@@ -15,15 +15,46 @@ specific authentication and response handling.
 
 import asyncio
 import logging
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from enum import StrEnum
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+def parse_retry_after(value: str | None) -> float | None:
+    """Parse an HTTP Retry-After header into seconds. None if missing/invalid."""
+    if not value:
+        return None
+    raw = value.strip()
+    if not raw:
+        return None
+    try:
+        seconds = float(raw)
+        if seconds >= 0:
+            return seconds
+        return None
+    except ValueError:
+        pass
+    try:
+        dt = parsedate_to_datetime(raw)
+        return max(0.0, dt.timestamp() - time.time())
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+class RateLimiter(Protocol):
+    """Optional shared limiter attached to a client (Axesso)."""
+
+    def backoff(self, seconds: float) -> None: ...
+
+    async def acquire(self, priority: str = "bulk") -> None: ...
 
 
 class CircuitState(StrEnum):
@@ -122,12 +153,16 @@ class BaseAPIClient(ABC, Generic[T]):
         connect_timeout: float = 5.0,
         max_retries: int = 3,
         enable_circuit_breaker: bool = True,
+        rate_limiter: RateLimiter | None = None,
+        default_priority: str = "bulk",
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.timeout = httpx.Timeout(timeout, connect=connect_timeout)
         self.max_retries = max_retries
         self.circuit_breaker = CircuitBreaker() if enable_circuit_breaker else None
+        self.rate_limiter = rate_limiter
+        self.default_priority = default_priority
         self._failure_count = 0
         self._last_success: datetime | None = None
 
@@ -182,6 +217,7 @@ class BaseAPIClient(ABC, Generic[T]):
         import time as _time
 
         provider = self._get_provider_name()
+        priority = response_kwargs.pop("priority", self.default_priority)
 
         # Check circuit breaker
         if self.circuit_breaker and not self.circuit_breaker.can_execute():
@@ -200,8 +236,11 @@ class BaseAPIClient(ABC, Generic[T]):
             params = {k: v for k, v in params.items() if v is not None}
 
         t0 = _time.monotonic()
+        last_status_code: int | None = None
 
         for attempt in range(self.max_retries):
+            if self.rate_limiter:
+                await self.rate_limiter.acquire(priority)
             try:
                 async with httpx.AsyncClient(timeout=self.timeout) as client:
                     if method.upper() == "GET":
@@ -238,16 +277,21 @@ class BaseAPIClient(ABC, Generic[T]):
                         )
 
                     elif response.status_code == 429:
-                        wait_time = 2**attempt
+                        last_status_code = 429
+                        header_wait = parse_retry_after(response.headers.get("Retry-After"))
+                        wait_time = header_wait if header_wait is not None else float(2**attempt)
                         logger.warning(
-                            "ext_api provider=%s endpoint=%s status=429 latency_ms=%.1f attempt=%d retry_after=%ds",
+                            "ext_api provider=%s endpoint=%s status=429 latency_ms=%.1f attempt=%d retry_after=%ss",
                             provider,
                             endpoint,
                             latency,
                             attempt + 1,
                             wait_time,
                         )
-                        await asyncio.sleep(wait_time)
+                        if self.rate_limiter:
+                            self.rate_limiter.backoff(wait_time)
+                        else:
+                            await asyncio.sleep(wait_time)
                         t0 = _time.monotonic()  # reset for next attempt
                         continue
 
@@ -352,7 +396,11 @@ class BaseAPIClient(ABC, Generic[T]):
         )
         self._record_failure()
         return self._create_response(
-            success=False, data=None, error="Max retries exceeded", status_code=None, **response_kwargs
+            success=False,
+            data=None,
+            error="Max retries exceeded",
+            status_code=last_status_code,
+            **response_kwargs,
         )
 
     def _record_success(self) -> None:

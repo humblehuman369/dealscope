@@ -53,6 +53,7 @@ from app.schemas.property import (
 )
 from app.services.api_clients import AirROIClient, create_api_clients
 from app.services.assumptions_service import get_default_assumptions
+from app.services.axesso_limiter import INTERACTIVE
 from app.services.cache_service import CacheService, get_cache_service
 from app.services.calculators import (
     calculate_brrrr,
@@ -161,11 +162,14 @@ class PropertyService:
                 "AirROI fetching disabled (AIRROI_STR_ENABLED=false); set to true to enable STR estimates",
             )
 
-        # Use the comprehensive ZillowClient for Zillow data
+        # Use the comprehensive ZillowClient for Zillow data.
+        # Own circuit breaker (per instance) + interactive priority so a map
+        # sweep cannot open this breaker or exhaust the shared Axesso budget.
         self.zillow = create_zillow_client(
             api_key=settings.AXESSO_API_KEY,
             base_url=settings.AXESSO_URL,
             fallback_api_key=settings.AXESSO_API_KEY_SECONDARY or None,
+            default_priority=INTERACTIVE,
         )
 
         # Redis cache with in-memory fallback (24h TTL)
@@ -176,6 +180,32 @@ class PropertyService:
         normalized = re.sub(r"\s+", " ", address.lower().strip())
         normalized = re.sub(r",\s*usa$", "", normalized)
         return hashlib.sha256(normalized.encode()).hexdigest()[:16]
+
+    def _log_provider_dropout(self, provider: str, reason: str, address: str) -> None:
+        """Structured event when a Discovery provider is missing from the merge."""
+        logger.info(
+            "event=provider_dropout provider=%s reason=%s property_id=%s",
+            provider,
+            reason,
+            self._generate_property_id(address),
+        )
+
+    @staticmethod
+    def _axesso_dropout_reason(response: Any) -> str:
+        if getattr(response, "status_code", None) == 429:
+            return "429"
+        error = (getattr(response, "error", None) or "").lower()
+        if "circuit breaker" in error:
+            return "circuit_open"
+        if "max retries" in error:
+            return "max_retries"
+        if getattr(response, "status_code", None) == 404:
+            return "not_found"
+        if getattr(response, "status_code", None):
+            return str(response.status_code)
+        if error:
+            return "error"
+        return "no_data"
 
     def _generate_assumptions_hash(self, assumptions: AllAssumptions) -> str:
         """Generate hash of assumptions for cache key."""
@@ -322,6 +352,8 @@ class PropertyService:
             logger.warning("Failed to fetch RentCast market statistics: %s", e)
 
         elapsed_ms = (time.perf_counter() - t0) * 1000
+        if not data:
+            self._log_provider_dropout("rentcast", "no_data", address)
         return data, elapsed_ms
 
     @resilient(name="zillow_axesso", max_attempts=3, circuit_breaker_threshold=5, circuit_breaker_timeout=30)
@@ -346,6 +378,7 @@ class PropertyService:
                 logger.warning("Zillow search returned no data for: %s", address)
         except Exception as e:
             logger.error("Error fetching Zillow data: %s", e)
+            self._log_provider_dropout("axesso", "error", address)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return axesso_data, zpid, elapsed_ms
 
@@ -362,8 +395,10 @@ class PropertyService:
                 logger.info("Redfin data retrieved - estimate: $%s", data.get("redfin_estimate"))
             else:
                 logger.warning("Redfin estimate unavailable for: %s", address)
+                self._log_provider_dropout("redfin", "no_data", address)
         except Exception as e:
             logger.error("Error fetching Redfin data: %s", e)
+            self._log_provider_dropout("redfin", "error", address)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return data, elapsed_ms
 
@@ -380,8 +415,10 @@ class PropertyService:
                 logger.info("Realtor data retrieved - estimate: $%s", data.get("realtor_estimate"))
             else:
                 logger.warning("Realtor estimate unavailable for: %s", address)
+                self._log_provider_dropout("realtor", "no_data", address)
         except Exception as e:
             logger.error("Error fetching Realtor data: %s", e)
+            self._log_provider_dropout("realtor", "error", address)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return data, elapsed_ms
 
@@ -687,7 +724,7 @@ class PropertyService:
                 (mashvisor_data, mashvisor_ms),
             ) = await asyncio.gather(
                 self._fetch_rentcast_provider(address),
-                self._fetch_zillow_by_zpid(zpid) if zpid else self._fetch_zillow_provider(address),
+                self._fetch_zillow_by_zpid(zpid, address) if zpid else self._fetch_zillow_provider(address),
                 self._fetch_redfin_provider(address),
                 self._fetch_realtor_provider(address),
                 self._fetch_mashvisor_provider(address),
@@ -1172,6 +1209,7 @@ class PropertyService:
             zillow_response = await self.zillow.search_by_address(address)
             if not zillow_response.success or not zillow_response.data:
                 logger.warning("Zillow search failed for: %s - %s", address, zillow_response.error)
+                self._log_provider_dropout("axesso", self._axesso_dropout_reason(zillow_response), address)
                 return None, None
 
             raw = zillow_response.data
@@ -1216,9 +1254,12 @@ class PropertyService:
                 await asyncio.sleep(wait)
 
         logger.warning("AXESSO returned empty responses for %s after %d attempts", address, max_attempts)
+        self._log_provider_dropout("axesso", "empty_response", address)
         return None, None
 
-    async def _fetch_zillow_by_zpid(self, zpid: str) -> tuple[dict[str, Any] | None, str | None, float]:
+    async def _fetch_zillow_by_zpid(
+        self, zpid: str, address: str | None = None
+    ) -> tuple[dict[str, Any] | None, str | None, float]:
         """Fetch Zillow property details directly by zpid (map search → Discovery handoff)."""
         t0 = time.perf_counter()
         axesso_data: dict[str, Any] | None = None
@@ -1232,6 +1273,8 @@ class PropertyService:
                 raw = details_response.data
                 if isinstance(raw, dict) and raw.get("error"):
                     logger.warning("Zillow property-v2 returned error: %s (zpid=%s)", raw.get("error"), zpid_str)
+                    if address:
+                        self._log_provider_dropout("axesso", "error", address)
                 else:
                     axesso_data = self._unwrap_axesso_property(raw)
                     logger.info(
@@ -1241,8 +1284,14 @@ class PropertyService:
                     )
             else:
                 logger.warning("Zillow zpid lookup failed for %s: %s", zpid_str, details_response.error)
+                if address:
+                    self._log_provider_dropout(
+                        "axesso", self._axesso_dropout_reason(details_response), address
+                    )
         except Exception as e:
             logger.error("Error fetching Zillow data by zpid %s: %s", zpid_str, e)
+            if address:
+                self._log_provider_dropout("axesso", "error", address)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return axesso_data, zpid_str, elapsed_ms
 

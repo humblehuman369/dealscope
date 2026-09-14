@@ -22,7 +22,12 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from app.services.base_client import BaseAPIClient
+from app.services.axesso_limiter import BULK, AxessoRateLimiter, get_shared_axesso_limiter
+from app.services.base_client import BaseAPIClient, RateLimiter
+
+# Default: attach the process-wide limiter. Tests pass ``rate_limiter=None``
+# to disable, or a fresh ``AxessoRateLimiter`` to isolate.
+_USE_SHARED_LIMITER = object()
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +93,24 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
         api_key: str,
         base_url: str = "https://api.axesso.de/zil",
         fallback_api_key: str | None = None,
+        *,
+        rate_limiter: RateLimiter | AxessoRateLimiter | None | object = _USE_SHARED_LIMITER,
+        default_priority: str = BULK,
+        enable_circuit_breaker: bool = True,
     ):
+        if rate_limiter is _USE_SHARED_LIMITER:
+            limiter: RateLimiter | None = get_shared_axesso_limiter()
+        else:
+            limiter = rate_limiter  # type: ignore[assignment]
         super().__init__(
             api_key=api_key,
             base_url=base_url,
             timeout=15.0,
             connect_timeout=5.0,
             max_retries=3,
-            enable_circuit_breaker=True,
+            enable_circuit_breaker=enable_circuit_breaker,
+            rate_limiter=limiter,
+            default_priority=default_priority,
         )
         self.fallback_api_key = (fallback_api_key or "").strip() or None
 
@@ -964,8 +979,17 @@ def create_zillow_client(
     api_key: str,
     base_url: str | None = None,
     fallback_api_key: str | None = None,
+    *,
+    default_priority: str = BULK,
+    rate_limiter: RateLimiter | AxessoRateLimiter | None | object = _USE_SHARED_LIMITER,
+    enable_circuit_breaker: bool = True,
 ) -> ZillowClient:
     """Create configured Zillow client. Optional fallback key is tried on 502/503/401/403."""
-    if base_url:
-        return ZillowClient(api_key, base_url, fallback_api_key=fallback_api_key)
-    return ZillowClient(api_key, fallback_api_key=fallback_api_key)
+    return ZillowClient(
+        api_key,
+        base_url or "https://api.axesso.de/zil",
+        fallback_api_key=fallback_api_key,
+        rate_limiter=rate_limiter,
+        default_priority=default_priority,
+        enable_circuit_breaker=enable_circuit_breaker,
+    )
