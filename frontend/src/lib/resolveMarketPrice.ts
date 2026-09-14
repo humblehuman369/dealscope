@@ -8,9 +8,11 @@
 
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 
+/** Listed for sale only. FOR_RENT, off-market, sold, and unknown are not listed. */
 export function isListedStatus(listingStatus?: string | null): boolean {
   if (!listingStatus) return false
-  return !['OFF_MARKET', 'SOLD', 'FOR_RENT', 'OTHER'].includes(String(listingStatus))
+  const status = String(listingStatus).toUpperCase().replace(/[\s-]+/g, '_')
+  return status === 'FOR_SALE' || status === 'PENDING'
 }
 
 export type PropertyMarketPriceInput = {

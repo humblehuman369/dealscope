@@ -6,6 +6,7 @@ import {
   formatVerdictSentence,
   sellerPathFromDealStructures,
 } from '@/lib/verdictCopy'
+import { isListedStatus } from '@/lib/resolveMarketPrice'
 
 const WILLOW = {
   listPrice: 625_999,
@@ -69,6 +70,22 @@ describe('formatVerdictSentence', () => {
         gapPct: 4.6,
         sellerRead: 'This seller has shown no sign of moving yet.',
         listed: false,
+        marketValue: 379_981,
+      }),
+    ).toBe(
+      'Not for sale. Valued at $380K. Worth about $362K to you as a rental. That is a 4.6% gap. This seller has shown no sign of moving yet.',
+    )
+  })
+
+  it('treats FOR_RENT as not for sale through isListedStatus', () => {
+    expect(isListedStatus('FOR_RENT')).toBe(false)
+    expect(
+      formatVerdictSentence({
+        listPrice: 379_981,
+        targetBuy: 362_465,
+        gapPct: 4.6,
+        sellerRead: 'This seller has shown no sign of moving yet.',
+        listed: isListedStatus('FOR_RENT'),
         marketValue: 379_981,
       }),
     ).toBe(

@@ -92,7 +92,7 @@ export function formatVerdictSentence(input: {
   targetBuy: number
   gapPct: number
   sellerRead: string
-  /** Same listing check Discovery uses for Key Insights. Default listed. */
+  /** From isListedStatus. Default listed. */
   listed?: boolean
   marketValue?: number
 }): string {
