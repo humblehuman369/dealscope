@@ -36,6 +36,20 @@ describe('blended plan handoff → worksheet metrics', () => {
     expect(patch.sellerBalloonYears).toBe(5)
   })
 
+  it('treats Option 3 seller_carry_term_years as the balloon when balloon years is omitted', () => {
+    const patch = preLoadedRecordToDealMakerPatch({
+      custom_purchase_price: 625_999,
+      pending_extras: {
+        seller_carry_amount: 115_228,
+        seller_carry_rate: 0,
+        seller_carry_term_years: 5,
+        seller_carry_interest_only: true,
+      },
+    })
+    expect(patch.sellerBalloonYears).toBe(5)
+    expect(patch.sellerTermYears).toBe(5)
+  })
+
   it('cash to close matches DP + closing at the offer price, not 20% down', () => {
     const metrics = metricsFromPreLoadedRecord(levers, {
       listPrice: 870_123,

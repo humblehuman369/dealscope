@@ -104,7 +104,12 @@ import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
 import { MathTab } from '@/components/workflow/MathTab'
 import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
 import { DealPageContent } from '@/app/deals/[id]/page'
-import { isPlanView, parseWorkflowV1View, resolveWorkDealId } from '@/lib/workflowRoutes'
+import {
+  isPlanView,
+  parseWorkflowV1View,
+  resolveWorkDealId,
+  workflowV1TabHref,
+} from '@/lib/workflowRoutes'
 import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
@@ -1794,9 +1799,17 @@ function VerdictContent() {
   }
 
   const navigateToPlan = () => {
-    const next = new URLSearchParams(searchParams.toString())
-    next.set('view', 'workbench')
-    router.push(`/discovery?${next.toString()}`)
+    const address = addressParam || ''
+    // Same pathname + copied searchParams is a Next.js no-op, so the URL
+    // never changed. Open Plan the way the working tab does: set the
+    // workbench request, then push a freshly built Plan URL.
+    setWorkbenchRequest((prev) => ({
+      address: prev?.address || address,
+      strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+      section: prev?.section ?? null,
+      scenario: prev?.scenario ?? null,
+    }))
+    router.push(workflowV1TabHref('plan', address))
   }
 
   const navigateToSources = () => {

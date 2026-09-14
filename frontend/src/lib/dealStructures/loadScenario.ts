@@ -125,6 +125,10 @@ export function preLoadedRecordToDealMakerPatch(
     patch.sellerInterestRate = levers.seller_carry_rate
   if (typeof levers.seller_carry_term_years === 'number')
     patch.sellerTermYears = levers.seller_carry_term_years
+  if (typeof levers.seller_carry_balloon_years === 'number')
+    patch.sellerBalloonYears = levers.seller_carry_balloon_years
+  else if (typeof levers.seller_carry_term_years === 'number')
+    patch.sellerBalloonYears = levers.seller_carry_term_years
   if (typeof levers.seller_carry_interest_only === 'boolean')
     patch.sellerInterestOnly = levers.seller_carry_interest_only
 
@@ -147,6 +151,8 @@ export function preLoadedRecordToDealMakerPatch(
       patch.sellerTermYears = ex.seller_carry_term_years
     if (typeof ex.seller_carry_balloon_years === 'number')
       patch.sellerBalloonYears = ex.seller_carry_balloon_years
+    else if (typeof ex.seller_carry_term_years === 'number' && patch.sellerBalloonYears == null)
+      patch.sellerBalloonYears = ex.seller_carry_term_years
     if (typeof ex.seller_carry_interest_only === 'boolean')
       patch.sellerInterestOnly = ex.seller_carry_interest_only
 

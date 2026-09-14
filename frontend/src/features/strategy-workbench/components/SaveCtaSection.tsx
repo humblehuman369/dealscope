@@ -28,6 +28,8 @@ export interface SaveCtaSectionProps {
   /** This tab just saved a Make It Work plan — do not re-sell the worksheet. */
   fromPlan?: boolean
   planEmail?: string | null
+  /** V1 Plan already has Next moves — do not remount the legacy save block. */
+  hidden?: boolean
 }
 
 export function SaveCtaSection({
@@ -43,7 +45,9 @@ export function SaveCtaSection({
   onRegister,
   fromPlan = false,
   planEmail = null,
+  hidden = false,
 }: SaveCtaSectionProps) {
+  if (hidden) return null
   if (!isAuthenticated && fromPlan) {
     return (
       <section className={`${WORKBENCH_CARD} text-center`} style={WORKBENCH_CARD_STYLE}>

@@ -8,6 +8,7 @@ import {
   resolveWorkDealId,
   resolveWorkflowRedirect,
   workflowV1RedirectTarget,
+  workflowV1TabHref,
 } from '@/lib/workflowRoutes'
 
 describe('parseWorkflowV1View', () => {
@@ -215,6 +216,22 @@ describe('buildWorkflowDiscoveryUrl', () => {
     expect(buildWorkflowDiscoveryUrl('1 Main', 'workbench')).toBe(
       '/discovery?address=1+Main&view=workbench',
     )
+  })
+})
+
+describe('workflowV1TabHref', () => {
+  it('targets Discovery, Plan, Math, and Work', () => {
+    expect(workflowV1TabHref('discovery', '1 Main')).toBe('/discovery?address=1+Main')
+    expect(workflowV1TabHref('plan', '1 Main')).toBe(
+      '/discovery?address=1+Main&view=workbench',
+    )
+    expect(workflowV1TabHref('math', '1 Main')).toBe('/discovery?address=1+Main&view=math')
+    expect(workflowV1TabHref('work', '1 Main')).toBe('/discovery?address=1+Main&view=work')
+  })
+
+  it('sends a tab with no address to search', () => {
+    expect(workflowV1TabHref('math', '')).toBe('/search')
+    expect(workflowV1TabHref('discovery', '   ')).toBe('/search')
   })
 })
 

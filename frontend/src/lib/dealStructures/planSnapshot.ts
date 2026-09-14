@@ -115,6 +115,7 @@ function pct1(value: number): string {
 export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
   const targets = input.targets ?? PLAN_TARGET_DEFAULTS
   const best = input.options.find((option) => option.isBest) ?? null
+  const bestMet = best?.targetsMet ?? input.targetsMet
   const guideIsStrong = best == null || best.key === input.optionKey
   const targetRows: PlanTargetRowModel[] = [
     {
@@ -170,20 +171,20 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
       askingGapDisplayPct: input.askingGapDisplayPct,
       gapLeftPct: input.gapLeftPct,
     }),
-    guideText: !guideIsStrong
-      ? formatGuideCompare({
-          appliedTitle: OPTION_TITLE[input.optionKey],
-          appliedMet: input.targetsMet,
-          bestTitle: best ? OPTION_TITLE[best.key] : OPTION_TITLE.blend,
-          bestMet: best?.targetsMet ?? 0,
+    guideText: bestMet < 1
+      ? formatGuideBreakeven({
           bestLever: best?.headline ?? '',
-          bestMonthlyCashFlow: best?.metrics.monthlyCashFlow ?? 0,
-          bestCashOnCash: best?.metrics.cashOnCash ?? 0,
+          monthlyCashFlow: best?.metrics.monthlyCashFlow ?? input.monthlyCashFlow,
         })
-      : (best?.targetsMet ?? input.targetsMet) < 1
-        ? formatGuideBreakeven({
+      : !guideIsStrong
+        ? formatGuideCompare({
+            appliedTitle: OPTION_TITLE[input.optionKey],
+            appliedMet: input.targetsMet,
+            bestTitle: best ? OPTION_TITLE[best.key] : OPTION_TITLE.blend,
+            bestMet: best?.targetsMet ?? 0,
             bestLever: best?.headline ?? '',
-            monthlyCashFlow: best?.metrics.monthlyCashFlow ?? input.monthlyCashFlow,
+            bestMonthlyCashFlow: best?.metrics.monthlyCashFlow ?? 0,
+            bestCashOnCash: best?.metrics.cashOnCash ?? 0,
           })
         : formatGuideStrong({
             targetsMet: input.targetsMet,

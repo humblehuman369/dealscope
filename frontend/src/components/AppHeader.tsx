@@ -51,7 +51,12 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor } from '@/lib/env'
 import { PathStepper } from '@/components/workflow/PathStepper'
 import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
-import { parseWorkflowV1View, pipelineDealId, resolveWorkflowRedirect } from '@/lib/workflowRoutes'
+import {
+  parseWorkflowV1View,
+  pipelineDealId,
+  resolveWorkflowRedirect,
+  workflowV1TabHref,
+} from '@/lib/workflowRoutes'
 import { STATUS_CONFIG } from '@/lib/savedPropertyStatus'
 import { useSavedProperty } from '@/hooks/useSavedProperties'
 import { useWorkflowV1 } from '@/lib/workflowV1'
@@ -681,18 +686,10 @@ export function AppHeader({
 
     switch (tab) {
       case 'analyze':
-        if (navigationAddress) {
-          router.push(`/discovery?address=${encodedAddress}`)
-        } else {
-          router.push('/search')
-        }
+        router.push(workflowV1TabHref('discovery', navigationAddress))
         break
       case 'strategy':
-        if (navigationAddress) {
-          router.push(`/discovery?address=${encodedAddress}&view=workbench`)
-        } else {
-          router.push('/search')
-        }
+        router.push(workflowV1TabHref('plan', navigationAddress))
         break
       case 'price-checker':
         if (navigationAddress) {
@@ -737,18 +734,10 @@ export function AppHeader({
         }
         break
       case 'math':
-        if (navigationAddress) {
-          router.push(`/discovery?address=${encodedAddress}&view=math`)
-        } else {
-          router.push('/search')
-        }
+        router.push(workflowV1TabHref('math', navigationAddress))
         break
       case 'work':
-        if (navigationAddress) {
-          router.push(`/discovery?address=${encodedAddress}&view=work`)
-        } else {
-          router.push('/search')
-        }
+        router.push(workflowV1TabHref('work', navigationAddress))
         break
       default: {
         const _exhaustive: never = tab
@@ -1242,6 +1231,58 @@ export function AppHeader({
                         : tab.id === 'estimator'
                           ? 'tab-estimator'
                           : undefined
+                const v1Href =
+                  workflowV1Layout &&
+                  (tab.id === 'analyze' ||
+                    tab.id === 'strategy' ||
+                    tab.id === 'math' ||
+                    tab.id === 'work')
+                    ? workflowV1TabHref(
+                        tab.id === 'analyze'
+                          ? 'discovery'
+                          : tab.id === 'strategy'
+                            ? 'plan'
+                            : tab.id,
+                        navigationAddress,
+                      )
+                    : null
+                const tabClassName = `flex-1 min-w-0 min-h-11 px-2 sm:px-4 font-medium transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                  workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
+                }`
+                const tabStyle = {
+                  fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
+                  color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',
+                  borderBottom: isActive
+                    ? `2px solid ${colors.brand.teal}`
+                    : '2px solid transparent',
+                  outlineColor: 'var(--accent-sky)',
+                }
+                const tabInner = (
+                  <>
+                    <span className="sm:hidden">
+                      {tab.id === 'price-checker' ? 'Comps' : tab.label}
+                    </span>
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </>
+                )
+                if (v1Href) {
+                  return (
+                    <Link
+                      key={tab.id}
+                      href={v1Href}
+                      role="tab"
+                      id={`workflow-tab-${tab.id}`}
+                      aria-selected={isActive}
+                      aria-current={isActive ? 'page' : undefined}
+                      aria-controls="workflow-tabpanel"
+                      data-tour={tourAttr}
+                      className={tabClassName}
+                      style={tabStyle}
+                    >
+                      {tabInner}
+                    </Link>
+                  )
+                }
                 return (
                   <button
                     key={tab.id}
@@ -1250,25 +1291,12 @@ export function AppHeader({
                     id={`workflow-tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
-                    aria-controls={workflowV1Layout ? 'workflow-tabpanel' : undefined}
                     data-tour={tourAttr}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`flex-1 min-w-0 min-h-11 px-2 sm:px-4 font-medium transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                      workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
-                    }`}
-                    style={{
-                      fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-                      color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',
-                      borderBottom: isActive
-                        ? `2px solid ${colors.brand.teal}`
-                        : '2px solid transparent',
-                      outlineColor: 'var(--accent-sky)',
-                    }}
+                    className={tabClassName}
+                    style={tabStyle}
                   >
-                    <span className="sm:hidden">
-                      {tab.id === 'price-checker' ? 'Comps' : tab.label}
-                    </span>
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    {tabInner}
                   </button>
                 )
               })}

@@ -1760,7 +1760,8 @@ export function StrategyWorkbench({
           bankLoan: ltrLiveMetrics.loanAmount,
           sellerAmount: ltrState.sellerFinancingAmount,
           sellerRate: ltrState.sellerInterestRate,
-          balloonYear: ltrState.sellerBalloonYears ?? 5,
+          balloonYear:
+            appliedPlanOption?.metrics.balloonYear ?? ltrState.sellerBalloonYears ?? 5,
           downPaymentPercent: ltrState.downPaymentPercent,
           monthlyRent: ltrState.monthlyRent,
           listPrice,
@@ -2515,6 +2516,7 @@ export function StrategyWorkbench({
 
         {/* Save CTA — property bookmark + worksheet persistence for dashboard */}
         <SaveCtaSection
+          hidden={workflowV1}
           isAuthenticated={isAuthenticated}
           isSaved={isSaved}
           isSaving={isSaving}

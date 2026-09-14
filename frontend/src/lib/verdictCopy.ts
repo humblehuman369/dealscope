@@ -36,23 +36,30 @@ const PATH_CLAUSE: Record<SellerPath, string> = {
 
 const NO_SIGNALS = 'This seller has shown no sign of moving yet.'
 
+function signedMoney(digits: string, amount: number): string {
+  return amount < 0 ? `-$${digits}` : `$${digits}`
+}
+
 /** $625,999 → $626K. Worksheet dollars, rounded to the nearest thousand. */
 export function formatPriceShort(amount: number): string {
   if (!Number.isFinite(amount)) return '—'
   if (Math.abs(amount) >= 1_000_000) {
     const millions = amount / 1_000_000
     const rounded = Math.round(millions * 10) / 10
-    return `$${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)}M`
+    const digits = rounded % 1 === 0 ? Math.abs(rounded).toFixed(0) : Math.abs(rounded).toFixed(1)
+    return signedMoney(`${digits}M`, amount)
   }
   if (Math.abs(amount) >= 1_000) {
-    return `$${Math.round(amount / 1_000)}K`
+    return signedMoney(`${Math.abs(Math.round(amount / 1_000))}K`, amount)
   }
-  return `$${Math.round(amount).toLocaleString('en-US')}`
+  return formatMoneyExact(amount)
 }
 
 export function formatMoneyExact(amount: number): string {
   if (!Number.isFinite(amount)) return '—'
-  return `$${Math.round(amount).toLocaleString('en-US')}`
+  const rounded = Math.round(amount)
+  const digits = Math.abs(rounded).toLocaleString('en-US')
+  return rounded < 0 ? `-$${digits}` : `$${digits}`
 }
 
 /** Absolute gap for the sentence: "That is a 27.5% gap." */
