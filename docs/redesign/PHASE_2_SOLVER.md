@@ -14,5 +14,5 @@ Options 1, 3, 4, and the blend aim at break-even plus $25 a month by design, so 
 
 ## Items
 
-1. **One price anchor.** Options 1, 3, 4, and the blend aim at Income Value plus $25; Option 2, the verdict, and the book's definition of a closed gap aim at Target Buy. One anchor for every option is the fix, gated on the ten-property validation. At Target Buy most properties still meet 0 or 1 of the four targets (Willow: $115 a month). That is Brad's product decision, not a solver fix.
+1. **One price anchor.** Options 1, 3, 4, and the blend aim at Income Value plus $25; Option 2, the verdict, and the book's definition of a closed gap aim at Target Buy. One anchor for every option is the fix, gated on the ten-property validation. At Target Buy most properties still meet 0 or 1 of the four targets (Willow: $115 a month). That is Brad's product decision, not a solver fix. Reference: `spike/solver-cushion-300` (`cd7955e4`) is the $25 → $300 solver-cushion spike for that work; do not merge it in Phase 1.
 2. **Carry the solve inputs.** On Sept 13 the solver and the worksheet disagreed ($25 vs $213) because their expense inputs differed. The plan payload should carry the inputs it was solved with so the worksheet renders the same ones, or the page should show the difference.
