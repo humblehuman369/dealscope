@@ -27,6 +27,7 @@ from app.schemas.analytics import (
     ScoreDisplayResponse,
     StrategyResult,
 )
+from app.schemas.deal_structures import DealStructuresPayload
 from app.schemas.property import AllAssumptions
 from app.schemas.valuation import ValuationSnapshot
 from app.services.calculators import calculate_monthly_mortgage, listing_dom_usable
@@ -971,6 +972,144 @@ def _get_verdict_description(
 # ===========================================
 # Public API — called by the analytics router
 # ===========================================
+
+
+def compute_deal_structures_only(
+    input_data: IQVerdictInput,
+    assumptions: AllAssumptions | None = None,
+) -> DealStructuresPayload:
+    """Re-size Plan options from worksheet numbers. Pure math — no providers, no usage."""
+    a = assumptions or AllAssumptions()
+
+    list_price = input_data.list_price
+    monthly_rent = input_data.monthly_rent or 0
+    property_taxes = input_data.property_taxes or 0
+    insurance = input_data.insurance or 0
+    down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
+    rate = normalize_annual_rate(input_data.interest_rate, fallback=a.financing.interest_rate)
+    term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
+    closing_pct = (
+        input_data.closing_costs_pct if input_data.closing_costs_pct is not None else a.financing.closing_costs_pct
+    )
+    vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else a.operating.vacancy_rate
+    maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else a.operating.maintenance_pct
+    mgmt_pct = (
+        input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
+    )
+    capex_pct = input_data.capex_pct if input_data.capex_pct is not None else a.operating.capex_pct
+    buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
+    if input_data.utilities_monthly is not None:
+        a.operating.utilities_monthly = input_data.utilities_monthly
+    if input_data.pest_control_annual is not None:
+        a.operating.pest_control_annual = input_data.pest_control_annual
+    utilities_annual = a.operating.utilities_monthly * 12
+    hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
+    sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+    sc_rate = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+    sc_term = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
+    provisional_buy = input_data.purchase_price or calculate_buy_price(
+        market_price=list_price,
+        monthly_rent=monthly_rent,
+        property_taxes=property_taxes,
+        insurance=insurance,
+        buy_discount_pct=buy_discount,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
+        seller_carry_amount=sc_amt,
+        seller_carry_rate=sc_rate,
+        seller_carry_term_years=sc_term,
+    )
+    snap_dict = build_valuation_snapshot(
+        ValuationInputs(
+            monthly_rent=monthly_rent,
+            property_taxes=property_taxes,
+            insurance=insurance,
+            list_price=list_price,
+            purchase_price=provisional_buy,
+            down_payment_pct=down_pct,
+            interest_rate=rate,
+            loan_term_years=term,
+            vacancy_rate=vacancy,
+            maintenance_pct=maint_pct,
+            management_pct=mgmt_pct,
+            capex_pct=capex_pct,
+            utilities_annual=utilities_annual,
+            other_annual_expenses=other_annual,
+            buy_discount_pct=buy_discount,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
+        )
+    )
+    income_value = snap_dict.get("income_value") or 0
+    if input_data.purchase_price:
+        buy_price = input_data.purchase_price
+    else:
+        target_candidate = snap_dict.get("target_buy_price") or provisional_buy
+        if income_value > 0 and target_candidate > income_value:
+            target_candidate = int(income_value)
+        buy_price = target_candidate
+    deal_gap_amount = list_price - buy_price if list_price > 0 else 0
+    deal_gap_pct = (deal_gap_amount / list_price) * 100 if list_price > 0 else 0
+    deal_score = _calculate_verdict_score(deal_gap_pct)
+    structure_template_flags = {**STRUCTURE_TEMPLATE_FLAGS, **a.structure_template_flags}
+    structure_ctx = StructureContext(
+        list_price=list_price,
+        target_buy_price=buy_price,
+        income_value=income_value,
+        deal_gap_pct=deal_gap_pct,
+        monthly_rent=monthly_rent,
+        property_taxes_annual=property_taxes,
+        insurance_annual=insurance,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        closing_costs_pct=closing_pct,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
+        is_listed=bool(input_data.is_listed) if input_data.is_listed is not None else True,
+        days_on_market=(
+            input_data.days_on_market
+            if (input_data.is_listed is not False)
+            and listing_dom_usable(input_data.listing_status, is_listed=input_data.is_listed)
+            else None
+        ),
+        is_fsbo=bool(input_data.is_fsbo),
+        is_foreclosure=bool(input_data.is_foreclosure),
+        is_bank_owned=bool(input_data.is_bank_owned),
+        market_temperature=input_data.market_temperature,
+        template_flags=structure_template_flags,
+        estimated_purchase_year=input_data.estimated_purchase_year,
+        estimated_purchase_price=input_data.estimated_purchase_price,
+        year_built=input_data.year_built,
+        existing_loan_type=input_data.existing_loan_type,
+        estimated_existing_loan_balance=input_data.estimated_existing_loan_balance,
+        estimated_existing_loan_rate=input_data.estimated_existing_loan_rate,
+        unit_count=input_data.unit_count,
+        is_owner_occupied=input_data.is_owner_occupied,
+        seller_motivation_score=input_data.seller_motivation_score,
+        is_absentee_owner=input_data.is_absentee_owner,
+        bedrooms=input_data.bedrooms,
+        state=input_data.state,
+        dismissed_families=tuple(input_data.dismissed_families or ()),
+        is_auction=bool(input_data.is_auction),
+        price_reductions=int(input_data.price_reductions or 0),
+        deal_opportunity_score=int(deal_score),
+    )
+    return compute_deal_structures(structure_ctx)
 
 
 def compute_iq_verdict(

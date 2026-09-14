@@ -27,6 +27,7 @@ def test_target_rent_positive_cash_flow_at_list_even_when_bump_exceeds_20_pct():
     result = rent_uplift.solve(ctx)
     assert result is not None
     new_rent = result.pre_loaded_record["custom_rent_estimate"]
+    assert result.pre_loaded_record["solve_monthly_rent"] == ctx.monthly_rent
     assert new_rent > ctx.monthly_rent * 1.20  # gap too large for old 20% cap
     cf = _monthly_cf_at_list(ctx, new_rent)
     assert cf >= 25.0 - 0.01

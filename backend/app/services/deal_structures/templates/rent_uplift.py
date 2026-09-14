@@ -148,6 +148,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         pre_loaded_record={
             "custom_purchase_price": ctx.list_price,
             "custom_rent_estimate": new_rent,
+            "solve_monthly_rent": ctx.monthly_rent,
         },
         breakeven=BreakevenFact(
             change_pct=round(bump_pct, 1),

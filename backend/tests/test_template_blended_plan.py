@@ -70,6 +70,7 @@ def test_pre_loaded_record_carries_all_three_levers():
     record = result.pre_loaded_record
     assert "custom_purchase_price" in record
     assert "custom_rent_estimate" in record
+    assert record["solve_monthly_rent"] == ctx.monthly_rent
     extras = record.get("pending_extras", {})
     assert "seller_carry_amount" in extras
     assert extras.get("seller_carry_rate") == 0.0

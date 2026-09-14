@@ -149,9 +149,33 @@ function asFinite(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null
 }
 
+export function isRentChangingPlanOption(family: string): boolean {
+  const key = optionKeyFromFamily(family)
+  return key === '1' || key === 'blend'
+}
+
+/**
+ * Worksheet rent for a Plan option. Levers 2/3/4 never take a frozen
+ * `custom_rent_estimate`. Option 1 and the blend apply their solve-time lift
+ * on top of the current worksheet rent.
+ */
+export function rentForPlanOption(
+  family: string,
+  levers: Record<string, unknown> | null | undefined,
+  worksheetRent: number,
+): number {
+  if (!isRentChangingPlanOption(family)) return worksheetRent
+  const solved = asFinite(levers?.custom_rent_estimate ?? levers?.customRentEstimate)
+  if (solved == null) return worksheetRent
+  const solveCtx = asFinite(levers?.solve_monthly_rent ?? levers?.solveMonthlyRent)
+  if (solveCtx != null && solveCtx > 0) return worksheetRent + (solved - solveCtx)
+  return solved
+}
+
 export function ltrStateFromPreLoadedRecord(
   levers: Record<string, unknown>,
   baseline: PlanBaseline,
+  family = 'custom',
 ): LTRDealMakerState {
   const patch = preLoadedRecordToDealMakerPatch(levers)
   const offer =
@@ -182,7 +206,7 @@ export function ltrStateFromPreLoadedRecord(
     sellerInterestOnly: io,
     rehabBudget: 0,
     arv: offer,
-    monthlyRent: asFinite(patch.monthlyRent) ?? baseline.monthlyRent,
+    monthlyRent: rentForPlanOption(family, levers, baseline.monthlyRent),
     otherIncome: 0,
     vacancyRate: baseline.vacancyRate ?? 0.05,
     maintenanceRate: baseline.maintenanceRate ?? 0.05,
@@ -199,8 +223,9 @@ export function ltrStateFromPreLoadedRecord(
 export function metricsFromPreLoadedRecord(
   levers: Record<string, unknown>,
   baseline: PlanBaseline,
+  family = 'custom',
 ): PlanWorksheetMetrics {
-  const state = ltrStateFromPreLoadedRecord(levers, baseline)
+  const state = ltrStateFromPreLoadedRecord(levers, baseline, family)
   const metrics = computeLtrMetricsFromState(state)
   return {
     offerPrice: state.buyPrice,
@@ -239,7 +264,7 @@ export function scorePlanOptions(
   for (const family of PLAN_SLOT_ORDER) {
     const structure = paths.find((p) => p.family === family)
     if (!structure?.preLoadedRecord) continue
-    const metrics = metricsFromPreLoadedRecord(structure.preLoadedRecord, baseline)
+    const metrics = metricsFromPreLoadedRecord(structure.preLoadedRecord, baseline, structure.family)
     const { targetsMet } = scoreAgainstTargets(
       {
         capRate: metrics.capRate,

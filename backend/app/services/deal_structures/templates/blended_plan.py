@@ -458,6 +458,7 @@ def solve(
         pre_loaded_record={
             "custom_purchase_price": new_price,
             "custom_rent_estimate": new_rent,
+            "solve_monthly_rent": ctx.monthly_rent,
             "pending_extras": {
                 "three_paths_structure_id": ID,
                 "seller_carry_amount": chosen_second,

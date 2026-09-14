@@ -183,7 +183,7 @@ function SourceRow({
   )
 }
 
-function resolveDefaults(
+export function resolveDefaults(
   sources: IQEstimateSources,
   stored: { value: DataSourceId; rent: DataSourceId },
 ): { value: DataSourceId; rent: DataSourceId } {
@@ -360,6 +360,16 @@ export function IQEstimateSelector({
   )
 }
 
+/** Selected live rent for this tab session. Does not write on read. */
+export function resolveSelectedLiveRent(
+  sources: IQEstimateSources,
+  sessionKey = 'iq_source_selection',
+): number | null {
+  const { rent } = resolveDefaults(sources, getStoredSelections(sessionKey))
+  const value = sources.rent[rent]
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
+}
+
 /**
  * Hook to read the current IQ source selection from sessionStorage.
  * Returns the selected source IDs and the resolved values.
@@ -374,10 +384,11 @@ export function useIQSourceSelection(
   selectedRent: number | null
 } {
   const stored = getStoredSelections(sessionKey)
+  const resolved = resolveDefaults(sources, stored)
   return {
-    valueSource: stored.value,
-    rentSource: stored.rent,
-    selectedValue: sources.value[stored.value] ?? null,
-    selectedRent: sources.rent[stored.rent] ?? null,
+    valueSource: resolved.value,
+    rentSource: resolved.rent,
+    selectedValue: sources.value[resolved.value] ?? null,
+    selectedRent: sources.rent[resolved.rent] ?? null,
   }
 }
