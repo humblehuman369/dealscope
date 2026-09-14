@@ -361,8 +361,9 @@ describe('formatPlanSnapshot', () => {
       monthlyCashFlowTarget: 25,
     })
 
-    expect(model.guideWhy).toContain('$25 a month cushion')
-    expect(model.guideWhy).toContain('Option 2 shows the price that gets you to Target Buy.')
+    expect(model.guideWhy).toBe(
+      'Options 1, 3, 4, and the blend show the smallest move on that lever that keeps the house from costing you money, with a $25 a month cushion. Option 2 shows the price that gets you to Target Buy.',
+    )
     expect(
       formatPlanSnapshot({
         optionKey: '3',

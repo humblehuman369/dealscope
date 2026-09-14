@@ -119,7 +119,7 @@ describe('guide copy', () => {
 
   it('reads the $25 cushion from the plan payload, not a frontend constant', () => {
     expect(formatGuideWhy(25)).toBe(
-      `${PLAN_GUIDE_WHY} Options 1, 3, 4, and the blend show the smallest move on that lever that keeps the house from costing you money, with a $25 a month cushion. Option 2 shows the price that gets you to Target Buy.`,
+      'Options 1, 3, 4, and the blend show the smallest move on that lever that keeps the house from costing you money, with a $25 a month cushion. Option 2 shows the price that gets you to Target Buy.',
     )
     expect(formatGuideWhy(99)).toContain('$99 a month cushion')
     expect(formatGuideWhy(99)).not.toContain('$25 a month cushion')

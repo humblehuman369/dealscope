@@ -135,7 +135,7 @@ export function formatGuideWhy(monthlyCashFlowTarget?: number | null): string {
     return PLAN_GUIDE_WHY
   }
   return (
-    `${PLAN_GUIDE_WHY} Options 1, 3, 4, and the blend show the smallest move on that lever ` +
+    `Options 1, 3, 4, and the blend show the smallest move on that lever ` +
     `that keeps the house from costing you money, with a ${money(monthlyCashFlowTarget)} a month cushion. ` +
     `Option 2 shows the price that gets you to Target Buy.`
   )
