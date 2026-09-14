@@ -2104,7 +2104,13 @@ function VerdictContent() {
           {/* When Level 3 is open, collapse the verdict so Strategy does not
               stack a second full page (and a second Deal Gap overview) under it. */}
           {workbenchRequest ? (
-            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
+            <div
+              className={
+                workflowV1Layout
+                  ? 'px-3 sm:px-6 mt-4'
+                  : 'mx-0 sm:mx-5 mt-4 px-3 sm:px-0'
+              }
+            >
               <button
                 type="button"
                 onClick={collapseWorkbench}
@@ -2164,7 +2170,7 @@ function VerdictContent() {
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
             workDealId ? (
-              <DealPageContent propertyId={workDealId} />
+              <DealPageContent propertyId={workDealId} embedded />
             ) : hasChecked ? (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
             ) : null
