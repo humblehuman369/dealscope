@@ -4,6 +4,7 @@ import {
   buildWorkflowDiscoveryUrl,
   isPlanView,
   parseWorkflowV1View,
+  pipelineDealId,
   workflowV1RedirectTarget,
 } from '@/lib/workflowRoutes'
 
@@ -76,5 +77,18 @@ describe('buildWorkflowDiscoveryUrl', () => {
     expect(buildWorkflowDiscoveryUrl('1 Main', 'workbench')).toBe(
       '/discovery?address=1+Main&view=workbench',
     )
+  })
+})
+
+describe('pipelineDealId', () => {
+  it('returns dealId and ignores saved or watched property ids', () => {
+    expect(
+      pipelineDealId(
+        new URLSearchParams('propertyId=saved-1&dealId=deal-9'),
+      ),
+    ).toBe('deal-9')
+    expect(pipelineDealId(new URLSearchParams('propertyId=saved-1'))).toBe(null)
+    expect(pipelineDealId(new URLSearchParams('address=1+Main'))).toBe(null)
+    expect(pipelineDealId(new URLSearchParams('dealId=%20'))).toBe(null)
   })
 })

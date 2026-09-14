@@ -100,7 +100,8 @@ import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
 import { MathTab } from '@/components/workflow/MathTab'
 import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
 import { DealPageContent } from '@/app/deals/[id]/page'
-import { isPlanView, parseWorkflowV1View } from '@/lib/workflowRoutes'
+import { isPlanView, parseWorkflowV1View, pipelineDealId } from '@/lib/workflowRoutes'
+import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { useWorkflowV1 } from '@/lib/workflowV1'
@@ -665,21 +666,31 @@ function VerdictContent() {
           const fullAddress = [propertyData.address, propertyData.city, stateZip]
             .filter(Boolean)
             .join(', ')
-          writeDealMakerOverrides(
-            fullAddress || addressParam,
-            {
-              zpid: propertyData.zpid,
-              beds: propertyData.beds,
-              baths: propertyData.baths,
-              sqft: propertyData.sqft,
-              yearBuilt: propertyData.yearBuilt,
-              price: propertyData.price,
-              listingStatus: propertyData.listingStatus || null,
-              latitude: propertyData.latitude,
-              longitude: propertyData.longitude,
-            },
-            { origin: 'verdict_sync' },
-          )
+          const headerPatch = {
+            city: propertyData.city,
+            state: propertyData.state,
+            zip: propertyData.zip,
+            zpid: propertyData.zpid,
+            beds: propertyData.beds,
+            baths: propertyData.baths,
+            sqft: propertyData.sqft,
+            yearBuilt: propertyData.yearBuilt,
+            price: propertyData.price,
+            listingStatus: propertyData.listingStatus || null,
+            daysOnMarket: data.listing?.days_on_market ?? null,
+            description: data.listing?.description ?? null,
+            latitude: propertyData.latitude,
+            longitude: propertyData.longitude,
+          }
+          const resolvedAddress = fullAddress || addressParam
+          writeDealMakerOverrides(resolvedAddress, headerPatch, { origin: 'verdict_sync' })
+          if (
+            addressParam &&
+            canonicalizeAddressForIdentity(addressParam) !==
+              canonicalizeAddressForIdentity(resolvedAddress)
+          ) {
+            writeDealMakerOverrides(addressParam, headerPatch, { origin: 'verdict_sync' })
+          }
         } catch {
           // Ignore storage errors
         }
@@ -916,6 +927,29 @@ function VerdictContent() {
                 if (result.status === 'success' && result.photos.length > 0) {
                   setPropertyPhotos(result.photos)
                   setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
+                  try {
+                    const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+                    const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                      .filter(Boolean)
+                      .join(', ')
+                    const photoPatch = {
+                      photoUrl: result.photos[0],
+                      photoCount: result.photos.length,
+                    }
+                    const resolvedPhotoAddress = fullAddress || addressParam
+                    writeDealMakerOverrides(resolvedPhotoAddress, photoPatch, {
+                      origin: 'verdict_sync',
+                    })
+                    if (
+                      addressParam &&
+                      canonicalizeAddressForIdentity(addressParam) !==
+                        canonicalizeAddressForIdentity(resolvedPhotoAddress)
+                    ) {
+                      writeDealMakerOverrides(addressParam, photoPatch, { origin: 'verdict_sync' })
+                    }
+                  } catch {
+                    /* ignore */
+                  }
                 }
               },
             )
@@ -1369,6 +1403,7 @@ function VerdictContent() {
   // Only auto-expands when collapsed, so it never clobbers in-page state.
   const viewParam = searchParams.get('view')
   const v1Tab = workflowV1Layout ? parseWorkflowV1View(viewParam) : null
+  const workDealId = v1Tab === 'work' ? pipelineDealId(searchParams) : null
   const strategyUrlParam = searchParams.get('strategy')
   const scenarioUrlParam = searchParams.get('scenario')
   const sectionUrlParam = searchParams.get('section')
@@ -1817,7 +1852,7 @@ function VerdictContent() {
   })()
 
   const photoGallery = (
-    <section className="mx-0 sm:mx-5 mt-6">
+    <section id="property-gallery" className="mx-0 sm:mx-5 mt-6">
       {property.zpid ? (
         <PropertyPhotoGallery
           zpid={String(property.zpid)}
@@ -2052,8 +2087,8 @@ function VerdictContent() {
           ) : null}
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
-            savedPropertyId || propertyIdParam ? (
-              <DealPageContent propertyId={propertyIdParam || savedPropertyId || ''} />
+            workDealId ? (
+              <DealPageContent propertyId={workDealId} />
             ) : (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
             )
@@ -2080,6 +2115,7 @@ function VerdictContent() {
                 isAuthenticated={isAuthenticated}
                 onShowMath={navigateToSources}
                 onBuildPlan={navigateToPlan}
+                sourceStatus={summarizeSourceStatus(iqSources)}
               />
             </div>
             {analysis.dealStructures?.hasPaths ? (

@@ -7,6 +7,17 @@
 export type WorkflowV1Tab = 'discovery' | 'plan' | 'math' | 'work'
 export type MathSection = 'sources' | 'comps' | 'estimator'
 
+/**
+ * Work shows the deal page only when this property has a pipeline deal.
+ * Saved / watched ids (`propertyId`, `savedPropertyId`) are not a deal id.
+ */
+export function pipelineDealId(
+  search: Pick<URLSearchParams, 'get'>,
+): string | null {
+  const id = search.get('dealId')?.trim()
+  return id || null
+}
+
 export function parseWorkflowV1View(view: string | null | undefined): WorkflowV1Tab {
   if (view === 'workbench' || view === 'plan') return 'plan'
   if (view === 'math' || view === 'sources') return 'math'

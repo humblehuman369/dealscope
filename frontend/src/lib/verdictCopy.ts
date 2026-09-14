@@ -8,6 +8,9 @@ export type SellerPath = 'price' | 'terms' | 'blend'
 export const VERDICT_WHY =
   'Target Buy is the price where this house pays you at the standard terms: 20% down, 6.0%, 30 years, 4% vacancy. The seller read comes from the signals below. Every number here is the worksheet\'s number.'
 
+export const SOURCE_STATUS_WHY =
+  'These are the same sources the Math tab lists. A source counts when it returned a value for this house. Unavailable means that source had no data — nothing is guessed.'
+
 export const VERDICT_TIPS = [
   "First time here? The red number is the seller's price.",
   'The yellow number is where rent just covers the costs.',

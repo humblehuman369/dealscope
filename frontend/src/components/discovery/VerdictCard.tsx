@@ -6,6 +6,7 @@ import { trackEvent } from '@/lib/eventTracking'
 import { newMetaEventId } from '@/lib/metaPixel'
 import {
   NUMBER_LABELS,
+  SOURCE_STATUS_WHY,
   VERDICT_TIPS,
   VERDICT_TIPS_FOOTER,
   VERDICT_WHY,
@@ -13,6 +14,10 @@ import {
   formatMoneyExact,
   formatVerdictSentence,
 } from '@/lib/verdictCopy'
+import {
+  formatSourceStatusLine,
+  type SourceStatusSummary,
+} from '@/lib/sourceStatus'
 import {
   VERDICT_CALL_LABELS,
   type VerdictCall,
@@ -37,6 +42,7 @@ export interface VerdictCardProps {
   onShowMath: () => void
   onBuildPlan: () => void
   gapSlider?: ReactNode
+  sourceStatus?: SourceStatusSummary
 }
 
 const CALL_ICON = {
@@ -84,11 +90,14 @@ export function VerdictCard({
   onShowMath,
   onBuildPlan,
   gapSlider,
+  sourceStatus,
 }: VerdictCardProps) {
   const whyVerdictId = useId()
   const whyCallId = useId()
+  const whySourcesId = useId()
   const [whyVerdict, setWhyVerdict] = useState(false)
   const [whyCall, setWhyCall] = useState(false)
+  const [whySources, setWhySources] = useState(false)
   const { showTips, dismissTips } = useDiscoveryTipsSeen(isAuthenticated)
   const firedRef = useRef(false)
 
@@ -196,6 +205,42 @@ export function VerdictCard({
           color="var(--status-positive)"
         />
       </div>
+
+      {sourceStatus ? (
+        <div className="mt-3">
+          <p className="m-0 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {formatSourceStatusLine(sourceStatus)}
+            {sourceStatus.missingLabels.length > 0 ? (
+              <>
+                {' '}
+                <button
+                  type="button"
+                  className="text-[13px] bg-transparent border-0 p-0 underline decoration-dotted underline-offset-4"
+                  style={{ color: 'var(--accent-sky)' }}
+                  aria-expanded={whySources}
+                  aria-controls={whySourcesId}
+                  onClick={() => setWhySources((v) => !v)}
+                >
+                  Why?
+                </button>
+              </>
+            ) : null}
+          </p>
+          {whySources && sourceStatus.missingLabels.length > 0 ? (
+            <p
+              id={whySourcesId}
+              className="text-[13px] leading-relaxed mt-2 mb-0 px-3 py-2 rounded-md"
+              style={{
+                color: 'var(--text-body)',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              {SOURCE_STATUS_WHY}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <p
         className="text-center font-mono tabular-nums text-[15px] font-semibold mt-5 mb-2"

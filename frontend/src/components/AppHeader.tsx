@@ -50,7 +50,10 @@ import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor, WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
 import { PathStepper } from '@/components/workflow/PathStepper'
-import { parseWorkflowV1View, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
+import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
+import { parseWorkflowV1View, pipelineDealId, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
+import { STATUS_CONFIG } from '@/lib/savedPropertyStatus'
+import { useSavedProperty } from '@/hooks/useSavedProperties'
 import { useWorkflowV1 } from '@/lib/workflowV1'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -116,6 +119,9 @@ interface PropertyInfo {
   listingStatus?: string
   latitude?: number
   longitude?: number
+  daysOnMarket?: number
+  description?: string
+  photoUrl?: string
 }
 
 interface AppHeaderProps {
@@ -429,9 +435,9 @@ export function AppHeader({
 
         setResolvedProperty({
           address: addrParts.streetAddress,
-          city: addrParts.city,
-          state: addrParts.state,
-          zip: addrParts.zipCode,
+          city: typeof parsed.city === 'string' && parsed.city ? parsed.city : addrParts.city,
+          state: typeof parsed.state === 'string' && parsed.state ? parsed.state : addrParts.state,
+          zip: typeof parsed.zip === 'string' && parsed.zip ? parsed.zip : addrParts.zipCode,
           beds: toNumber(parsed.beds),
           baths: toNumber(parsed.baths),
           sqft: toNumber(parsed.sqft),
@@ -442,6 +448,9 @@ export function AppHeader({
             typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
           latitude: toNumber(parsed.latitude),
           longitude: toNumber(parsed.longitude),
+          daysOnMarket: toNumber(parsed.daysOnMarket ?? parsed.days_on_market),
+          description: typeof parsed.description === 'string' ? parsed.description : undefined,
+          photoUrl: typeof parsed.photoUrl === 'string' ? parsed.photoUrl : undefined,
         })
         return
       }
@@ -489,6 +498,11 @@ export function AppHeader({
     displayAddress: displayAddress || '',
     propertySnapshot: savePropertySnapshot,
   })
+  const dealId = pipelineDealId(searchParams ?? new URLSearchParams())
+  const pipelineDeal = useSavedProperty(dealId)
+  const pipelineStage = pipelineDeal.data
+    ? (STATUS_CONFIG[pipelineDeal.data.status]?.label ?? null)
+    : null
 
   // Close menus on navigation
   useEffect(() => {
@@ -1245,29 +1259,47 @@ export function AppHeader({
               className="sticky z-40"
               style={{ top: 'env(safe-area-inset-top, 0px)' }}
             >
-              <PropertyAddressBar
-                address={p?.address ?? addrParts.streetAddress}
-                city={barCity}
-                state={barState}
-                zip={barZip}
-                beds={p?.beds ?? 0}
-                baths={p?.baths ?? 0}
-                sqft={p?.sqft ?? 0}
-                price={p?.price ?? 0}
-                listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
-                zpid={p?.zpid}
-                latitude={p?.latitude}
-                longitude={p?.longitude}
-                bookmarked={isSaved}
-                onBookmarkClick={
-                  isAuthenticated
-                    ? () =>
-                        handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
-                    : () => router.push(signInUrl)
-                }
-                detailsCollapsed={scrolledPast}
-                loading={!p}
-              />
+              {workflowV1Layout ? (
+                <WorkflowPropertyHeader
+                  address={p?.address ?? addrParts.streetAddress}
+                  city={barCity}
+                  zip={barZip}
+                  beds={p?.beds}
+                  baths={p?.baths}
+                  sqft={p?.sqft}
+                  yearBuilt={p?.yearBuilt}
+                  listingStatus={p?.listingStatus}
+                  daysOnMarket={p?.daysOnMarket}
+                  pipelineStage={pipelineStage}
+                  zpid={p?.zpid}
+                  description={p?.description}
+                  photoUrl={p?.photoUrl}
+                />
+              ) : (
+                <PropertyAddressBar
+                  address={p?.address ?? addrParts.streetAddress}
+                  city={barCity}
+                  state={barState}
+                  zip={barZip}
+                  beds={p?.beds ?? 0}
+                  baths={p?.baths ?? 0}
+                  sqft={p?.sqft ?? 0}
+                  price={p?.price ?? 0}
+                  listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
+                  zpid={p?.zpid}
+                  latitude={p?.latitude}
+                  longitude={p?.longitude}
+                  bookmarked={isSaved}
+                  onBookmarkClick={
+                    isAuthenticated
+                      ? () =>
+                          handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
+                      : () => router.push(signInUrl)
+                  }
+                  detailsCollapsed={scrolledPast}
+                  loading={!p}
+                />
+              )}
               {workflowV1Layout && showAnalysisTabs ? (
                 <div
                   style={{

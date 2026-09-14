@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const trackEvent = vi.fn()
@@ -119,6 +119,58 @@ describe('VerdictCard', () => {
       />,
     )
     expect(trackEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the source line from the Math-tab roster without a source Why? when all answered', () => {
+    render(
+      <VerdictCard
+        listPrice={625_999}
+        incomeValue={477_699}
+        targetBuy={453_814}
+        dealGapDisplayPct={-27.5}
+        sentence={WILLOW_SENTENCE}
+        call="worth_pursuing"
+        callFired={[]}
+        gap={27.5}
+        signals={0}
+        closes={false}
+        isAuthenticated={false}
+        onShowMath={vi.fn()}
+        onBuildPlan={vi.fn()}
+        sourceStatus={{ answered: 5, total: 5, missingLabels: [] }}
+      />,
+    )
+    expect(screen.getByText('Based on 5 of 5 sources.')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Why?' })).toHaveLength(2)
+  })
+
+  it('names the missing source and toggles the Why? copy', () => {
+    render(
+      <VerdictCard
+        listPrice={625_999}
+        incomeValue={477_699}
+        targetBuy={453_814}
+        dealGapDisplayPct={-27.5}
+        sentence={WILLOW_SENTENCE}
+        call="worth_pursuing"
+        callFired={[]}
+        gap={27.5}
+        signals={0}
+        closes={false}
+        isAuthenticated={false}
+        onShowMath={vi.fn()}
+        onBuildPlan={vi.fn()}
+        sourceStatus={{ answered: 4, total: 5, missingLabels: ['Zillow'] }}
+      />,
+    )
+    const sourceLine = screen.getByText(/Based on 4 of 5 sources\. Zillow unavailable\./)
+    expect(sourceLine).toBeInTheDocument()
+    fireEvent.click(within(sourceLine).getByRole('button', { name: 'Why?' }))
+    expect(
+      screen.getByText(
+        'These are the same sources the Math tab lists. A source counts when it returned a value for this house. Unavailable means that source had no data — nothing is guessed.',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('routes Show the math and Build the plan through the supplied handlers', () => {
