@@ -60,5 +60,27 @@ describe('WhyWeThinkSo', () => {
     expect(
       screen.getByText('Edit financing terms in DealMaker to match your actual loan scenario.'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Repeated price cuts signal a seller adjusting to the market — a strong opening for a below-ask offer.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('renders the one-cut seller sentence from the fixture', () => {
+    render(
+      <WhyWeThinkSo
+        signals={[
+          signal(
+            'one-cut',
+            '1 price reduction',
+            'One price cut so far. The seller has moved once; watch for a second.',
+          ),
+        ]}
+      />,
+    )
+    expect(
+      screen.getByText('One price cut so far. The seller has moved once; watch for a second.'),
+    ).toBeInTheDocument()
   })
 })

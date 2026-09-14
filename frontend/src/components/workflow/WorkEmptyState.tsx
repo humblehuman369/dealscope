@@ -28,11 +28,12 @@ export function WorkEmptyState({ onGoToPlan }: { onGoToPlan: () => void }) {
         <button
           type="button"
           onClick={onGoToPlan}
-          className="mt-5 px-5 py-2.5 text-[15px] font-semibold"
+          className="mt-5 inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'var(--accent-sky)',
-            color: '#FFFFFF',
+            color: 'var(--text-inverse)',
             borderRadius: 9999,
+            outlineColor: 'var(--accent-sky)',
           }}
         >
           Go to the plan

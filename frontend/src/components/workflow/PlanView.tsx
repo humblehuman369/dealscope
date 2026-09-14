@@ -41,8 +41,8 @@ function WhyToggle({ id, label, text }: { id: string; label: string; text: strin
     <div>
       <button
         type="button"
-        className="text-[13px] underline-offset-2 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-        style={{ color: 'var(--accent-sky)' }}
+        className="min-h-11 text-[13px] underline-offset-2 hover:underline bg-transparent border-0 px-1 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((prev) => !prev)}
@@ -75,6 +75,7 @@ export function PlanView({
   const shareMenuId = useId()
   const [shareOpen, setShareOpen] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
+  const shareBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!shareOpen) return
@@ -82,7 +83,10 @@ export function PlanView({
       if (!shareRef.current?.contains(event.target as Node)) setShareOpen(false)
     }
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setShareOpen(false)
+      if (event.key === 'Escape') {
+        setShareOpen(false)
+        shareBtnRef.current?.focus()
+      }
     }
     document.addEventListener('mousedown', onPointer)
     document.addEventListener('keydown', onKey)
@@ -106,8 +110,8 @@ export function PlanView({
           <button
             type="button"
             onClick={onTune}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer"
-            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)' }}
+            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
           >
             Tune the numbers
           </button>
@@ -159,7 +163,7 @@ export function PlanView({
       </article>
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
-        <p
+        <h2
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold m-0 mb-3"
           style={{ color: 'var(--accent-sky)' }}
         >
@@ -167,15 +171,15 @@ export function PlanView({
             <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" />
           </svg>
           Guide
-        </p>
+        </h2>
         <p className="m-0 mb-4 text-[15px] leading-relaxed" style={{ color: 'var(--text-heading)' }}>
           {model.guideText}
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
             onClick={() => {
               if (model.guideApplyKind === 'start') onStartDeal()
               else if (model.guideApplyStructureId) onApply(model.guideApplyStructureId)
@@ -204,12 +208,13 @@ export function PlanView({
               type="button"
               aria-pressed={option.isApplied}
               onClick={() => onApply(option.structureId)}
-              className="text-left rounded-xl px-3 py-3 min-h-11 cursor-pointer"
+              className="text-left rounded-xl px-3 py-3 min-h-11 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
                 background: 'var(--surface-elevated)',
                 border: option.isApplied
                   ? '2px solid var(--accent-sky)'
                   : '1px solid var(--border-default)',
+                outlineColor: 'var(--accent-sky)',
               }}
             >
               <div className="text-[14px] font-semibold" style={{ color: 'var(--text-heading)' }}>
@@ -325,20 +330,21 @@ export function PlanView({
             type="button"
             onClick={onStartDeal}
             disabled={startingDeal}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >
             {startingDeal ? 'Starting…' : 'Start working this deal'}
           </button>
           <div className="relative" ref={shareRef}>
             <button
+              ref={shareBtnRef}
               type="button"
               aria-haspopup="menu"
               aria-expanded={shareOpen}
               aria-controls={shareMenuId}
               onClick={() => setShareOpen((prev) => !prev)}
-              className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border bg-transparent cursor-pointer"
-              style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)' }}
+              className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
             >
               Share
             </button>
@@ -346,7 +352,7 @@ export function PlanView({
               <div
                 id={shareMenuId}
                 role="menu"
-                className="absolute left-0 bottom-full mb-2 min-w-[11rem] rounded-xl py-1 z-20"
+                className="absolute left-0 bottom-full mb-2 min-w-[11rem] rounded-xl py-1 z-20 motion-reduce:transition-none transition-opacity duration-150"
                 style={{
                   background: 'var(--surface-elevated)',
                   border: '1px solid var(--border-default)',
@@ -366,10 +372,11 @@ export function PlanView({
                     role="menuitem"
                     onClick={() => {
                       setShareOpen(false)
+                      shareBtnRef.current?.focus()
                       action?.()
                     }}
-                    className="block w-full text-left min-h-11 px-4 text-[14px] bg-transparent border-0 cursor-pointer"
-                    style={{ color: 'var(--text-heading)' }}
+                    className="block w-full text-left min-h-11 px-4 text-[14px] bg-transparent border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ color: 'var(--text-heading)', outlineColor: 'var(--accent-sky)' }}
                   >
                     {label}
                   </button>

@@ -42,7 +42,7 @@ export function PlanNextMove({
         border: '1px solid var(--accent-sky)',
       }}
     >
-      <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)' }}>
+      <p className="text-[13px] font-bold m-0" style={{ color: 'var(--accent-sky)' }}>
         Plan saved — emailed to you
       </p>
       <h3 className={`${WORKBENCH_TITLE} mt-1`} style={{ color: 'var(--text-heading)' }}>

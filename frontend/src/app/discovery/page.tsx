@@ -1996,18 +1996,30 @@ function VerdictContent() {
 
   return (
     <>
-      <div
-        className="min-h-screen bg-[var(--surface-base)]"
-        style={
-          workflowV1Layout
-            ? undefined
-            : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
-        }
-      >
         {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Centered single-column container */}
-        <div className="w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto">
+        <main
+          className="min-h-screen bg-[var(--surface-base)] w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto"
+          style={
+            workflowV1Layout
+              ? undefined
+              : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+          }
+        >
+          <div
+            id="workflow-tabpanel"
+            role={workflowV1Layout ? 'tabpanel' : undefined}
+            aria-labelledby={
+              workflowV1Layout
+                ? v1Tab === 'plan'
+                  ? 'workflow-tab-strategy'
+                  : v1Tab === 'discovery'
+                    ? 'workflow-tab-analyze'
+                    : `workflow-tab-${v1Tab}`
+                : undefined
+            }
+          >
           {/* "Back to map" breadcrumb — only renders when the user arrived from
               a meaningful map-search session (snapshot present). Low-emphasis
               by design so it's a contextual nudge, not a primary CTA. */}
@@ -3150,8 +3162,8 @@ function VerdictContent() {
               </p>
             </div>
           )}
-        </div>
-      </div>
+          </div>
+        </main>
 
       {/* Deal Gap Methodology Sheet */}
       <ScoreMethodologySheet

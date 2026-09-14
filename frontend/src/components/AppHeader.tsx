@@ -763,7 +763,7 @@ export function AppHeader({
           aria-hidden="true"
         />
 
-        <header className="relative z-50">
+        <header className="relative z-50" aria-label="Site">
           {/* Brand Bar — logo | centered search | tools + theme + account */}
           <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 pt-safe-header">
             <button
@@ -988,7 +988,8 @@ export function AppHeader({
 
               <button
                 onClick={toggleTheme}
-                className="flex min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
+                className="flex min-w-11 min-h-11 p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ outlineColor: 'var(--accent-sky)' }}
                 aria-label={
                   mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
                 }
@@ -1230,11 +1231,13 @@ export function AppHeader({
                     key={tab.id}
                     role="tab"
                     type="button"
+                    id={`workflow-tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
+                    aria-controls={workflowV1Layout ? 'workflow-tabpanel' : undefined}
                     data-tour={tourAttr}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`flex-1 min-w-0 px-2 sm:px-4 py-2.5 font-medium transition-colors whitespace-nowrap ${
+                    className={`flex-1 min-w-0 min-h-11 px-2 sm:px-4 font-medium transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                       workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
                     }`}
                     style={{
@@ -1243,6 +1246,7 @@ export function AppHeader({
                       borderBottom: isActive
                         ? `2px solid ${colors.brand.teal}`
                         : '2px solid transparent',
+                      outlineColor: 'var(--accent-sky)',
                     }}
                   >
                     <span className="sm:hidden">
@@ -1362,7 +1366,7 @@ export function AppHeader({
             right: 'max(12px, env(safe-area-inset-right, 0px))',
             bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
             background: 'var(--accent-sky)',
-            color: '#fff',
+            color: 'var(--text-inverse)',
             border: '2px solid var(--surface-card)',
           }}
           aria-label="Map Search"

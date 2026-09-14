@@ -89,11 +89,15 @@ export function ImageGallery({
         onClick={() => onImageClick?.(currentIndex)}
         role="button"
         tabIndex={0}
-        aria-label={
-          isMapSlide
-            ? 'View property location on map search'
-            : `View photo ${currentIndex + 1}`
-        }
+        aria-label={[
+          views != null ? `${formatNumber(views)} views` : null,
+          hasImages && totalPhotos > 1 ? `${currentIndex + 1}/${totalPhotos}` : null,
+          isMapSlide ? 'View on map' : null,
+          !currentVisible ? 'Photo unavailable' : null,
+          isMapSlide ? 'View property location on map search' : `View photo ${currentIndex + 1}`,
+        ]
+          .filter(Boolean)
+          .join('. ')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
@@ -216,8 +220,10 @@ export function ImageGallery({
           ))}
           {totalPhotos > rawImages.length && (
             <button
-              className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-[var(--surface-card-hover)]"
+              type="button"
+              className="flex-shrink-0 min-h-11 min-w-11 w-16 h-16 rounded-lg flex items-center justify-center text-sm font-semibold border-2 border-transparent transition-colors hover:bg-[var(--surface-card-hover)]"
               style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
+              aria-label={`+${totalPhotos - rawImages.length} more photos`}
             >
               +{totalPhotos - rawImages.length}
             </button>
@@ -246,9 +252,18 @@ interface DesktopMosaicProps {
  * Reusable hero badges (views + total photo count). Hidden when there's only
  * one photo because "1 photo" is noise — the count is self-evident.
  */
+function heroBadgeName(views: number | undefined, totalPhotos: number): string {
+  return [
+    views != null ? `${formatNumber(views)} views` : null,
+    totalPhotos > 1 ? `${totalPhotos} photos` : null,
+  ]
+    .filter(Boolean)
+    .join('. ')
+}
+
 function HeroBadges({ views, totalPhotos }: { views?: number; totalPhotos: number }) {
   return (
-    <>
+    <div aria-hidden="true">
       {views !== undefined && (
         <div className="absolute top-4 left-4 z-10">
           <div
@@ -281,7 +296,7 @@ function HeroBadges({ views, totalPhotos }: { views?: number; totalPhotos: numbe
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -308,6 +323,7 @@ function DesktopMosaic({
     backgroundColor: 'var(--surface-elevated)',
   } as const
   const containerClass = 'grid gap-1.5 rounded-[14px] overflow-hidden'
+  const badgesName = heroBadgeName(views, totalPhotos)
 
   // When a map tile is appended and there are many listing photos, pin the
   // map in the last mosaic slot so it stays visible instead of hiding
@@ -334,6 +350,7 @@ function DesktopMosaic({
           onClick={onImageClick}
           className="row-span-2"
           mapTileIndex={mapTileIndex}
+          namePrefix={badgesName}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -355,6 +372,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           mapTileIndex={mapTileIndex}
+          overlayLabel={hiddenPhotoCount > 0 ? `+${hiddenPhotoCount} more` : undefined}
         >
           {hiddenPhotoCount > 0 && (
             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 z-10">
@@ -387,6 +405,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           mapTileIndex={mapTileIndex}
+          namePrefix={badgesName}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -404,6 +423,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           mapTileIndex={mapTileIndex}
+          namePrefix={badgesName}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -433,6 +453,7 @@ function DesktopMosaic({
           onClick={onImageClick}
           className="row-span-2"
           mapTileIndex={mapTileIndex}
+          namePrefix={badgesName}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -470,6 +491,7 @@ function DesktopMosaic({
           onClick={onImageClick}
           className="row-span-2"
           mapTileIndex={mapTileIndex}
+          namePrefix={badgesName}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -518,6 +540,7 @@ function DesktopMosaic({
         onClick={onImageClick}
         className="row-span-2"
         mapTileIndex={mapTileIndex}
+        namePrefix={badgesName}
       >
         <HeroBadges views={views} totalPhotos={totalPhotos} />
       </MosaicCell>
@@ -532,6 +555,7 @@ function DesktopMosaic({
             onError={onImageError}
             onClick={onImageClick}
             mapTileIndex={mapTileIndex}
+            overlayLabel={isLastVisible ? `+${remaining} more` : undefined}
           >
             {isLastVisible && (
               <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 z-10">
@@ -554,13 +578,13 @@ function DesktopMosaic({
 
 function MapTileBadge() {
   return (
-    <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-3 pointer-events-none z-10">
+    <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-3 pointer-events-none z-10">
       <div
         className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-1.5"
         style={{ backgroundColor: 'var(--surface-overlay)' }}
       >
         <MapPin size={14} style={{ color: 'var(--accent-sky)' }} aria-hidden />
-        <span className="text-xs font-semibold" style={{ color: 'var(--accent-sky)' }}>
+        <span className="text-[13px] font-semibold" style={{ color: 'var(--accent-sky)' }}>
           View on map
         </span>
       </div>
@@ -581,6 +605,8 @@ interface MosaicCellProps {
   className?: string
   children?: React.ReactNode
   mapTileIndex?: number
+  namePrefix?: string
+  overlayLabel?: string
 }
 
 function MosaicCell({
@@ -592,6 +618,8 @@ function MosaicCell({
   className = '',
   children,
   mapTileIndex,
+  namePrefix,
+  overlayLabel,
 }: MosaicCellProps) {
   const isMapTile = mapTileIndex != null && index === mapTileIndex
 
@@ -600,9 +628,15 @@ function MosaicCell({
       type="button"
       className={`relative overflow-hidden group cursor-pointer ${className}`}
       onClick={() => onClick?.(index)}
-      aria-label={
-        isMapTile ? 'View property location on map search' : `View photo ${index + 1}`
-      }
+      aria-label={[
+        namePrefix,
+        overlayLabel,
+        !image || failed ? 'Photo unavailable' : null,
+        isMapTile ? 'View on map' : null,
+        isMapTile ? 'View property location on map search' : `View photo ${index + 1}`,
+      ]
+        .filter(Boolean)
+        .join('. ')}
     >
       {image && !failed ? (
         <img

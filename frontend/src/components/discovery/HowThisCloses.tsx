@@ -95,12 +95,13 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
                 aria-expanded={expanded}
                 aria-controls={panelId}
                 onClick={() => setOpenId((prev) => (prev === row.id ? null : row.id))}
-                className="flex w-full flex-wrap items-center gap-2.5 text-left min-h-11 py-2.5"
+                className="flex w-full flex-wrap items-center gap-2.5 text-left min-h-11 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{
                   background: 'transparent',
                   border: 'none',
                   paddingLeft: 0,
                   paddingRight: 0,
+                  outlineColor: 'var(--accent-sky)',
                 }}
               >
                 <span

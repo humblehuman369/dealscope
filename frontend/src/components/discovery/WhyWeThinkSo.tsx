@@ -70,8 +70,8 @@ export function WhyWeThinkSo({ signals }: WhyWeThinkSoProps) {
             type="button"
             aria-expanded={moreOpen}
             onClick={() => setMoreOpen((open) => !open)}
-            className="mt-1 min-h-11 bg-transparent border-0 p-0 text-[14px] font-semibold"
-            style={{ color: 'var(--accent-sky)' }}
+            className="mt-1 min-h-11 bg-transparent border-0 px-1 text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           >
             {moreOpen ? 'Show less' : seeMoreSignalsLabel(rest.length)}
           </button>

@@ -307,7 +307,7 @@ export function PropertyPhotoGallery({
     <>
       <ImageGallery
         images={displayPhotos}
-        totalPhotos={displayPhotos.length}
+        totalPhotos={photos.length}
         views={views}
         hideThumbnails={hideThumbnails}
         mapTileIndex={mapTileIndex}

@@ -68,12 +68,20 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
       ref={bannerRef}
       role="dialog"
       aria-label="Cookie consent"
-      className="fixed bottom-0 left-0 right-0 z-[100] border-t border-slate-700/50 bg-[var(--color-card)] px-4 py-4 shadow-lg sm:px-6"
+      className="fixed bottom-0 left-0 right-0 z-[100] border-t px-4 py-4 shadow-lg sm:px-6"
+      style={{
+        background: 'var(--surface-card)',
+        borderColor: 'var(--border-default)',
+      }}
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-300">
+        <p className="text-sm" style={{ color: 'var(--text-body)' }}>
           We use essential cookies for authentication and optional analytics to improve the product.{' '}
-          <Link href="/privacy" className="font-medium text-teal-400 underline hover:text-teal-300">
+          <Link
+            href="/privacy"
+            className="font-medium underline"
+            style={{ color: 'var(--text-link)' }}
+          >
             Learn more
           </Link>
         </p>
@@ -81,14 +89,22 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
           <button
             type="button"
             onClick={essentialOnly}
-            className="rounded-lg border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
+            className="min-h-11 rounded-lg border bg-transparent px-4 py-2 text-sm font-medium"
+            style={{
+              color: 'var(--text-heading)',
+              borderColor: 'var(--border-strong)',
+            }}
           >
             Essential only
           </button>
           <button
             type="button"
             onClick={acceptAll}
-            className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-black hover:bg-teal-400"
+            className="min-h-11 rounded-lg px-4 py-2 text-sm font-medium"
+            style={{
+              background: 'var(--accent-sky)',
+              color: 'var(--text-inverse)',
+            }}
           >
             Accept all
           </button>

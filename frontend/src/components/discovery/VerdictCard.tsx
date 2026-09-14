@@ -146,7 +146,7 @@ export function VerdictCard({
       }}
     >
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <p
+        <h2
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold m-0"
           style={{ color: 'var(--accent-sky)' }}
         >
@@ -154,13 +154,14 @@ export function VerdictCard({
             <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" />
           </svg>
           The verdict
-        </p>
+        </h2>
         <button
           type="button"
-          className="text-sm bg-transparent border-0 p-0 underline decoration-dotted underline-offset-4"
-          style={{ color: 'var(--accent-sky)' }}
+          className="min-h-11 text-sm bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           aria-expanded={whyVerdict}
           aria-controls={whyVerdictId}
+          aria-label="Why this verdict"
           onClick={() => setWhyVerdict((v) => !v)}
         >
           Why?
@@ -215,10 +216,11 @@ export function VerdictCard({
                 {' '}
                 <button
                   type="button"
-                  className="text-[13px] bg-transparent border-0 p-0 underline decoration-dotted underline-offset-4"
-                  style={{ color: 'var(--accent-sky)' }}
+                  className="min-h-11 text-[13px] bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
                   aria-expanded={whySources}
                   aria-controls={whySourcesId}
+                  aria-label="Why a source is unavailable"
                   onClick={() => setWhySources((v) => !v)}
                 >
                   Why?
@@ -292,7 +294,7 @@ export function VerdictCard({
 
       <div className="flex items-center gap-3 flex-wrap mt-5">
         <span
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold"
+          className="inline-flex items-center gap-2 min-h-11 px-3.5 py-2 text-sm font-semibold"
           style={{
             color: tone.color,
             border: '1px solid var(--border-default)',
@@ -305,10 +307,11 @@ export function VerdictCard({
         </span>
         <button
           type="button"
-          className="text-sm bg-transparent border-0 p-0 underline decoration-dotted underline-offset-4"
-          style={{ color: 'var(--accent-sky)' }}
+          className="min-h-11 text-sm bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           aria-expanded={whyCall}
           aria-controls={whyCallId}
+          aria-label="Why this call"
           onClick={() => setWhyCall((v) => !v)}
         >
           Why?
@@ -317,11 +320,12 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onShowMath}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold"
+          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'transparent',
             border: '1px solid var(--border-strong)',
             color: 'var(--text-heading)',
+            outlineColor: 'var(--accent-sky)',
           }}
         >
           Show the math
@@ -329,10 +333,11 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onBuildPlan}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold"
+          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'var(--accent-sky)',
             color: 'var(--text-inverse)',
+            outlineColor: 'var(--accent-sky)',
           }}
         >
           Build the plan

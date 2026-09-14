@@ -17,6 +17,8 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
 
   useEffect(() => {
     if (!open) return
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    panelRef.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation()
@@ -24,7 +26,10 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
       }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      previous?.focus()
+    }
   }, [open, onClose])
 
   useEffect(() => {
@@ -71,8 +76,8 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-full border-0 bg-transparent cursor-pointer text-[15px]"
-            style={{ color: 'var(--text-secondary)' }}
+            className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-full border-0 bg-transparent cursor-pointer text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--text-secondary)', outlineColor: 'var(--accent-sky)' }}
             aria-label="Close"
           >
             Close
@@ -92,16 +97,16 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer"
-            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)' }}
+            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
           >
             {resetLabel}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >
             Done
           </button>

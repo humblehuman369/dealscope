@@ -157,7 +157,9 @@ export function WorkflowPropertyHeader({
   )
 
   return (
-    <header
+    <div
+      role="region"
+      aria-label="Property"
       className="w-full px-3 sm:px-6 py-3"
       style={{
         background: 'var(--surface-chrome)',
@@ -196,8 +198,8 @@ export function WorkflowPropertyHeader({
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
-              className="text-[13px] bg-transparent border-0 p-0 underline decoration-dotted underline-offset-4"
-              style={{ color: 'var(--accent-sky)' }}
+              className="min-h-11 text-[13px] bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
             >
               {photos.length} {photos.length === 1 ? 'photo' : 'photos'}
             </button>
@@ -239,6 +241,6 @@ export function WorkflowPropertyHeader({
       {lightboxOpen && photos.length > 0 ? (
         <PhotoLightbox images={photos} initialIndex={0} onClose={() => setLightboxOpen(false)} />
       ) : null}
-    </header>
+    </div>
   )
 }

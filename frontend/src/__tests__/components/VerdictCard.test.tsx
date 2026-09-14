@@ -186,7 +186,7 @@ describe('VerdictCard', () => {
       />,
     )
     expect(screen.getByText('Based on 5 of 5 sources.')).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: 'Why?' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /Why/ })).toHaveLength(2)
   })
 
   it('names the missing source and toggles the Why? copy', () => {
@@ -210,7 +210,7 @@ describe('VerdictCard', () => {
     )
     const sourceLine = screen.getByText(/Based on 4 of 5 sources\. Zillow unavailable\./)
     expect(sourceLine).toBeInTheDocument()
-    fireEvent.click(within(sourceLine).getByRole('button', { name: 'Why?' }))
+    fireEvent.click(within(sourceLine).getByRole('button', { name: 'Why a source is unavailable' }))
     expect(
       screen.getByText(
         'These are the same sources the Math tab lists. A source counts when it returned a value for this house. Unavailable means that source had no data — nothing is guessed.',

@@ -37,7 +37,9 @@ export function buildMotivatedSellerInsights(
       label: `${cuts} price reduction${cuts > 1 ? 's' : ''}`,
       highlight: pct && pct > 0 ? `totaling ${Math.round(pct * 100)}%` : undefined,
       detail:
-        'Repeated price cuts signal a seller adjusting to the market — a strong opening for a below-ask offer.',
+        cuts === 1
+          ? 'One price cut so far. The seller has moved once; watch for a second.'
+          : 'Repeated price cuts signal a seller adjusting to the market — a strong opening for a below-ask offer.',
     })
   }
 

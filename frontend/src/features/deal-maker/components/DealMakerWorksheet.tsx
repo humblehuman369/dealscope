@@ -8,6 +8,7 @@ import React, {
   createContext,
   useContext,
   useMemo,
+  useId,
 } from 'react'
 import { exportDealMakerExcel } from './exportExcel'
 import type {
@@ -160,8 +161,8 @@ function TuneGroup({
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary
-        className="min-h-11 cursor-pointer px-2 py-2 text-[15px] font-semibold"
-        style={{ color: 'var(--text-heading)' }}
+        className="min-h-11 cursor-pointer px-2 py-2 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ color: 'var(--text-heading)', outlineColor: 'var(--accent-sky)' }}
       >
         {title}
       </summary>
@@ -413,6 +414,8 @@ function SliderRow({
 }: SliderRowProps) {
   const highlights = useContext(WorksheetHighlightContext)
   const highlight = !!field && highlights.has(field)
+  const fieldId = useId()
+  const labelId = `${fieldId}-label`
   const [rangeMin, setRangeMin] = useState(() => adaptRange(value, min, max)[0])
   const [rangeMax, setRangeMax] = useState(() => adaptRange(value, min, max)[1])
   const [editing, setEditing] = useState(false)
@@ -498,12 +501,14 @@ function SliderRow({
       data-path-highlight={highlight || undefined}
     >
       {/* Label — flex-1 on mobile pushes value column to the right edge */}
-      <span
+      <label
+        id={labelId}
+        htmlFor={`${fieldId}-value`}
         className="text-sm min-w-0 flex-1 sm:flex-none sm:w-[160px] sm:shrink-0"
         style={{ color: C.body }}
       >
         {label}
-      </span>
+      </label>
 
       {/* Desktop: slider + secondary between label and value column */}
       <div className="hidden sm:flex flex-1 min-w-0 items-center gap-3">
@@ -513,7 +518,7 @@ function SliderRow({
             style={{ background: 'var(--slider-track-bg)' }}
           >
             <div
-              className="absolute left-0 top-0 h-full rounded-full pointer-events-none"
+              className="absolute left-0 top-0 h-full rounded-full pointer-events-none motion-reduce:transition-none"
               style={{ width: `${fill}%`, background: C.blue }}
             />
             <input
@@ -526,8 +531,10 @@ function SliderRow({
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onLostPointerCapture={handlePointerUp}
+              aria-labelledby={labelId}
+              aria-valuetext={displayValue}
               className="absolute inset-0 w-full cursor-pointer z-10"
-              style={{ opacity: 0, height: '20px', top: '50%', transform: 'translateY(-50%)' }}
+              style={{ opacity: 0, height: '44px', top: '50%', transform: 'translateY(-50%)' }}
             />
             <div
               className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2 pointer-events-none"
@@ -551,6 +558,7 @@ function SliderRow({
       {/* Value column — same width/edge as display-only Row values */}
       <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
         <input
+          id={`${fieldId}-value`}
           type="text"
           inputMode="decimal"
           value={editing ? draft : displayValue}
@@ -558,7 +566,8 @@ function SliderRow({
           onBlur={commit}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
-          className={`box-border w-full text-sm font-semibold tabular-nums text-right outline-none rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
+          aria-labelledby={labelId}
+          className={`box-border w-full min-h-11 text-sm font-semibold tabular-nums text-right outline-none rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
           style={
             highlight
               ? {

@@ -64,7 +64,7 @@ export function PathStepper({
               <Link
                 href={stepHref(step.id, address)}
                 aria-current={lit ? 'step' : undefined}
-                className="text-[13px] font-medium px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex items-center min-h-11 px-2 text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{
                   borderRadius: 8,
                   color: lit ? 'var(--text-heading)' : 'var(--text-secondary)',
