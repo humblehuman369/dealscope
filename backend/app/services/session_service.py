@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 import secrets
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,6 +46,23 @@ def normalize_client_type(client_type: str | None) -> str:
     if client_type in VALID_CLIENT_TYPES:
         return client_type
     return CLIENT_TYPE_DESKTOP
+
+
+@dataclass(frozen=True, slots=True)
+class RefreshedSession:
+    """Plain values from a token rotation.
+
+    Callers must never read the ``UserSession`` ORM row after
+    ``update_refresh_token`` — that Core UPDATE expires loaded attributes
+    and a later lazy load inside an async route raises MissingGreenlet.
+    """
+
+    session_id: uuid.UUID
+    user_id: uuid.UUID
+    session_token: str
+    expires_at: datetime
+    access_token: str
+    refresh_token: str
 
 
 class SessionService:
@@ -99,7 +117,7 @@ class SessionService:
         self,
         db: AsyncSession,
         refresh_token: str,
-    ) -> tuple[UserSession, str, str] | None:
+    ) -> RefreshedSession | None:
         """Validate a refresh token and rotate it (with replay protection).
 
         Uses SELECT ... FOR UPDATE to ensure only one concurrent refresh
@@ -107,7 +125,7 @@ class SessionService:
         attacks where a stolen refresh token is used multiple times before
         the first rotation is committed.
 
-        Returns ``(session, new_jwt, new_refresh_token)`` or ``None``.
+        Returns a :class:`RefreshedSession` of plain values, or ``None``.
         """
         from sqlalchemy import select
         # Lock the row for the duration of the transaction
@@ -124,19 +142,31 @@ class SessionService:
 
         if session_obj is None:
             return None
-        # Rotate the refresh token and extend legacy short-lived sessions.
+
+        # Capture before the Core UPDATE. synchronize_session expires the
+        # loaded attributes on this identity-map row; reading them later
+        # is a lazy load and raises MissingGreenlet in an async route.
+        session_id = session_obj.id
+        user_id = session_obj.user_id
+        session_token = session_obj.session_token
         new_refresh = _generate_opaque_token()
         new_expires_at = self._persistent_expires_at()
-        session_obj.expires_at = new_expires_at
         await session_repo.update_refresh_token(
             db,
-            session_obj.id,
+            session_id,
             new_refresh,
             expires_at=new_expires_at,
         )
 
-        new_jwt = token_service.create_jwt(session_obj.user_id, session_obj.id)
-        return session_obj, new_jwt, new_refresh
+        new_jwt = token_service.create_jwt(user_id, session_id)
+        return RefreshedSession(
+            session_id=session_id,
+            user_id=user_id,
+            session_token=session_token,
+            expires_at=new_expires_at,
+            access_token=new_jwt,
+            refresh_token=new_refresh,
+        )
 
     async def validate_session_from_jwt(
         self,

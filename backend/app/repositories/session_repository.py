@@ -133,6 +133,7 @@ class SessionRepository:
             update(UserSession)
             .where(UserSession.id == session_id)
             .values(**values)
+            .execution_options(synchronize_session=False)
         )
 
     async def has_matching_session(

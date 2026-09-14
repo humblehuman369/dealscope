@@ -3,6 +3,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Provide required env var before module import
 process.env.NEXT_PUBLIC_API_URL = 'https://test.example.com'
 
+const { resetPostHog } = vi.hoisted(() => ({
+  resetPostHog: vi.fn(),
+}))
+
+vi.mock('@/lib/posthog', () => ({
+  resetPostHog,
+}))
+
 describe('API Client', () => {
   let fetchMock: ReturnType<typeof vi.fn>
 
@@ -20,6 +28,7 @@ describe('API Client', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
@@ -291,6 +300,97 @@ describe('API Client', () => {
 
       // Only 1 call — no refresh attempt
       expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not sign the user out when refresh returns 500 once then 200', async () => {
+      vi.useFakeTimers()
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          text: async () => JSON.stringify({ detail: 'Unauthorized' }),
+          json: async () => ({ detail: 'Unauthorized' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'greenlet',
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ access_token: 'rotated-after-500' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: 'still-signed-in' }),
+        })
+
+      const { apiRequest } = await import('@/lib/api-client')
+      const resultPromise = apiRequest('/api/v1/test')
+      await vi.advanceTimersByTimeAsync(750)
+      const result = await resultPromise
+
+      expect(result).toEqual({ data: 'still-signed-in' })
+      expect(resetPostHog).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledTimes(4)
+    })
+
+    it('throws 503 when refresh returns 500 twice and does not reset PostHog', async () => {
+      vi.useFakeTimers()
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          text: async () => JSON.stringify({ detail: 'Unauthorized' }),
+          json: async () => ({ detail: 'Unauthorized' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'outage',
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'outage',
+        })
+
+      const { apiRequest, ApiError } = await import('@/lib/api-client')
+      const resultPromise = apiRequest('/api/v1/test')
+      const assertion = expect(resultPromise).rejects.toSatisfy((err: unknown) => {
+        expect(err).toBeInstanceOf(ApiError)
+        const e = err as InstanceType<typeof ApiError>
+        expect(e.status).toBe(503)
+        expect(e.message).toBe('Could not refresh the session. Try again.')
+        return true
+      })
+      await vi.advanceTimersByTimeAsync(750)
+      await assertion
+      expect(resetPostHog).not.toHaveBeenCalled()
+    })
+
+    it('calls resetPostHog when refresh returns 401', async () => {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          text: async () => JSON.stringify({ detail: 'Unauthorized' }),
+          json: async () => ({ detail: 'Unauthorized' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          text: async () => JSON.stringify({ detail: 'Invalid or expired refresh token' }),
+        })
+
+      const { apiRequest } = await import('@/lib/api-client')
+
+      await expect(apiRequest('/api/v1/test')).rejects.toThrow('Unauthorized')
+      expect(resetPostHog).toHaveBeenCalledTimes(1)
     })
   })
 
