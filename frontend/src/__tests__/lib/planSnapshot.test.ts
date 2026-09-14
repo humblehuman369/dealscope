@@ -272,6 +272,171 @@ describe('formatPlanSnapshot', () => {
     expect(model.guideApplyKind).toBe('start')
   })
 
+  it('uses the break-even guide when the best plan meets 0 of 4 even if another option is applied', () => {
+    const model = formatPlanSnapshot({
+      optionKey: '3',
+      offerPrice: 625_999,
+      cashNeeded: 143_980,
+      monthlyCashFlow: 213,
+      cashOnCash: 1.77,
+      capRate: 4.84,
+      dscr: 1.09,
+      bankLoan: 385_571,
+      sellerAmount: 115_228,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 4_345,
+      listPrice: 625_999,
+      iqEstimate: 477_699,
+      targetBuy: 453_814,
+      askingGapDisplayPct: -27.5,
+      gapLeftPct: 27.5,
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 0,
+      equity: null,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: 'seller-second-zero-balloon',
+      options: [
+        option({
+          key: '2',
+          structureId: 'price-negotiation',
+          headline: 'Negotiate to $454K',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: 79 },
+          targetsMet: 0,
+          isBest: true,
+        }),
+        option({
+          key: '3',
+          structureId: 'seller-second-zero-balloon',
+          headline: 'Seller carries $115,228 at 0%',
+          metrics: OPTION_3_METRICS,
+          targetsMet: 0,
+          isBest: false,
+        }),
+      ],
+    })
+
+    expect(model.guideText).toBe(
+      'No lever gets this house to your targets. The best the levers do is Negotiate to $454K: $79 a month, 0 of 4 targets. That is what you offer, and where you walk away.',
+    )
+    expect(model.guideText).not.toContain('meets 0 of 4 targets. Option 2')
+  })
+
+  it('prints a minus before the dollar sign on option cards and hero tiles', () => {
+    const model = formatPlanSnapshot({
+      optionKey: '3',
+      offerPrice: 625_999,
+      cashNeeded: 143_980,
+      monthlyCashFlow: -11,
+      cashOnCash: -0.4,
+      capRate: 4.84,
+      dscr: 1.09,
+      bankLoan: 385_571,
+      sellerAmount: 115_228,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 4_345,
+      listPrice: 625_999,
+      iqEstimate: 477_699,
+      targetBuy: 453_814,
+      askingGapDisplayPct: -27.5,
+      gapLeftPct: 27.5,
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 0,
+      equity: -36,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: 'seller-second-zero-balloon',
+      options: [
+        option({
+          key: '3',
+          structureId: 'seller-second-zero-balloon',
+          headline: 'Seller carries $115,228 at 0%',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: -11 },
+          targetsMet: 0,
+          isBest: true,
+        }),
+        option({
+          key: '4',
+          structureId: 'larger-down',
+          headline: 'Down Payment 39%',
+          metrics: { ...OPTION_3_METRICS, monthlyCashFlow: -36 },
+          targetsMet: 0,
+          isBest: false,
+        }),
+      ],
+    })
+
+    expect(model.monthlyCashFlow).toBe('-$11')
+    expect(model.options.find((item) => item.key === '3')?.cashFlowLabel).toBe('-$11 a month')
+    expect(model.options.find((item) => item.key === '4')?.cashFlowLabel).toBe('-$36 a month')
+    expect(model.closeCells[1]?.value).toBe('-$36')
+    expect(model.monthlyCashFlow).not.toMatch(/\$\-/)
+  })
+
+  it('reads the balloon year from the Option 3 record', () => {
+    const record = {
+      custom_purchase_price: 625_999,
+      pending_extras: {
+        seller_carry_amount: 115_228,
+        seller_carry_rate: 0,
+        seller_carry_term_years: 5,
+        seller_carry_interest_only: true,
+      },
+    }
+    const worksheet = metricsFromPreLoadedRecord(record, {
+      listPrice: 625_999,
+      monthlyRent: 4_345,
+    })
+    expect(worksheet.balloonYear).toBe(5)
+    const model = formatPlanSnapshot({
+      optionKey: '3',
+      offerPrice: worksheet.offerPrice,
+      cashNeeded: worksheet.cashToClose,
+      monthlyCashFlow: worksheet.monthlyCashFlow,
+      cashOnCash: worksheet.cashOnCash,
+      capRate: worksheet.capRate,
+      dscr: worksheet.dscr,
+      bankLoan: worksheet.bankLoan,
+      sellerAmount: worksheet.sellerSecond,
+      sellerRate: worksheet.sellerRate,
+      balloonYear: worksheet.balloonYear,
+      downPaymentPercent: worksheet.downPaymentPercent,
+      monthlyRent: worksheet.monthlyRent,
+      listPrice: 625_999,
+      iqEstimate: null,
+      targetBuy: 453_814,
+      askingGapDisplayPct: 0,
+      gapLeftPct: 0,
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+      vsList: 0,
+      equity: null,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: 'seller-second-zero-balloon',
+      options: [],
+    })
+    expect(model.closeCells[5]?.caption).toBe(
+      'Owed to the seller in year 5. Plan the refinance or the payoff now.',
+    )
+    expect(model.closeCells[5]?.caption).not.toContain('year 10')
+  })
+
   it('keeps the strong guide when the best plan meets 1 of 4', () => {
     const model = formatPlanSnapshot({
       optionKey: '2',

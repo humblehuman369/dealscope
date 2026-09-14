@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   NUMBER_LABELS,
+  formatMoneyExact,
   formatPriceShort,
   formatSellerRead,
   formatVerdictSentence,
@@ -19,6 +20,14 @@ describe('formatPriceShort', () => {
   it('rounds Wandering Willow dollars the way Section 5 does', () => {
     expect(formatPriceShort(WILLOW.listPrice)).toBe('$626K')
     expect(formatPriceShort(WILLOW.targetBuy)).toBe('$454K')
+  })
+})
+
+describe('formatMoneyExact', () => {
+  it('puts the minus sign before the dollar sign', () => {
+    expect(formatMoneyExact(-11)).toBe('-$11')
+    expect(formatMoneyExact(-115.4)).toBe('-$115')
+    expect(formatMoneyExact(115)).toBe('$115')
   })
 })
 
