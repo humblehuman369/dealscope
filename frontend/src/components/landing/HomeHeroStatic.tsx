@@ -2,8 +2,19 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  AddressAutocomplete,
+  type AddressComponents,
+  type PlaceMetadata,
+} from '@/components/AddressAutocomplete'
 import { trackEvent } from '@/lib/eventTracking'
 import { detectHeroLocation, type HeroLocation } from '@/components/map-search/mapUserLocation'
+import {
+  canonicalizeAddressForIdentity,
+  classifyPlaceTypes,
+  classifySearchInput,
+  isLikelyFullAddress,
+} from '@/utils/addressIdentity'
 import './HomeHeroStatic.css'
 
 const PILLS = [
@@ -23,9 +34,23 @@ const PINS = [
   { price: '$276K', left: '14%', top: '68%' },
 ] as const
 
+const FORWARDED_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid']
+
+function withAttribution(params: URLSearchParams): URLSearchParams {
+  params.set('source', 'home_hero')
+  if (typeof window === 'undefined') return params
+  const current = new URLSearchParams(window.location.search)
+  for (const key of FORWARDED_PARAMS) {
+    const v = current.get(key)
+    if (v) params.set(key, v)
+  }
+  return params
+}
+
 export function HomeHeroStatic() {
   const router = useRouter()
   const [value, setValue] = useState('')
+  const [components, setComponents] = useState<AddressComponents | null>(null)
   const [detected, setDetected] = useState<HeroLocation | null>(null)
 
   useEffect(() => {
@@ -44,33 +69,71 @@ export function HomeHeroStatic() {
     }
   }, [])
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    const text = value.trim()
-    trackEvent('search_started', { search_type: 'city', source: 'home_hero' })
+  const goToDiscovery = (address: string, c: AddressComponents | null) => {
+    trackEvent('property_searched', { source: 'home_hero', type: 'address' })
+    const params = new URLSearchParams({ address: canonicalizeAddressForIdentity(address) })
+    if (c?.city) params.set('city', c.city)
+    if (c?.state) params.set('state', c.state)
+    if (c?.zipCode) params.set('zip_code', c.zipCode)
+    router.push(`/discovery?${withAttribution(params).toString()}`)
+  }
+
+  const goToMap = (
+    label: string,
+    type: string,
+    location?: { lat: number; lng: number; zoom: number },
+  ) => {
+    trackEvent('property_searched', { source: 'home_hero', type })
     const params = new URLSearchParams()
-    if (text) params.set('q', text)
-    // Only attach GPS/IP coords when the field still matches the autofill.
-    // Typing a different city/ZIP must geocode that query, not the old pin.
-    if (
-      detected &&
-      text === detected.label &&
-      detected.lat != null &&
-      detected.lng != null
-    ) {
-      params.set('lat', String(detected.lat))
-      params.set('lng', String(detected.lng))
-      params.set('zoom', '12')
+    if (label) params.set('q', label)
+    if (location) {
+      params.set('lat', String(location.lat))
+      params.set('lng', String(location.lng))
+      params.set('zoom', String(location.zoom))
     }
-    const qs = params.toString()
+    const qs = withAttribution(params).toString()
     router.push(qs ? `/map-search?${qs}` : '/map-search')
   }
 
-  const detectedStillActive = !!detected && value.trim() === detected.label
-  const cityName =
-    detectedStillActive && detected.label !== 'Your location'
-      ? detected.label.replace(/,.*$/, '')
-      : null
+  const submitText = (raw: string) => {
+    const text = raw.trim()
+    if (!text) {
+      trackEvent('search_started', { search_type: 'city', source: 'home_hero' })
+      router.push('/map-search')
+      return
+    }
+    if (detected && text === detected.label) {
+      const location =
+        detected.lat != null && detected.lng != null
+          ? { lat: detected.lat, lng: detected.lng, zoom: 12 }
+          : undefined
+      goToMap(text, 'city', location)
+      return
+    }
+    const kind = classifySearchInput(text)
+    if (kind === 'address' || isLikelyFullAddress(text)) {
+      goToDiscovery(text, components)
+      return
+    }
+    goToMap(text, kind === 'zip' ? 'zip' : 'location')
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    submitText(value)
+  }
+
+  const handlePlaceSelect = (address: string, c?: AddressComponents, meta?: PlaceMetadata) => {
+    const place = meta?.placeTypes ? classifyPlaceTypes(meta.placeTypes) : null
+    if (place && place.category !== 'address' && place.category !== 'unknown' && meta?.location) {
+      goToMap(address, place.category, { ...meta.location, zoom: place.zoom })
+      return
+    }
+    const canonical = canonicalizeAddressForIdentity(address)
+    setValue(canonical)
+    setComponents(c ?? null)
+    goToDiscovery(canonical, c ?? null)
+  }
 
   return (
     <section id="home-hero" className="home-hero-static" aria-labelledby="home-hero-heading">
@@ -88,22 +151,25 @@ export function HomeHeroStatic() {
             the gap before you make an offer.
           </p>
           <form className="home-hero-static__cta" onSubmit={submit}>
-            <label className="sr-only" htmlFor="home-hero-city">
-              City or ZIP
+            <label className="sr-only" htmlFor="home-hero-address">
+              Property address, city or ZIP
             </label>
-            <input
-              id="home-hero-city"
-              type="text"
+            <AddressAutocomplete
+              id="home-hero-address"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="City or ZIP"
-              autoComplete="off"
+              onChange={(next) => {
+                setValue(next)
+                setComponents(null)
+              }}
+              searchMode="location"
+              onPlaceSelect={handlePlaceSelect}
+              onManualSubmit={submitText}
+              placeholder="Address, city, or ZIP"
+              name="address"
+              aria-label="Property address, city or ZIP"
             />
             <button type="submit">See Now</button>
           </form>
-          <p className="home-hero-static__fine">
-            {cityName ? `Opens the live map for ${cityName}.` : 'Opens the live map for your area.'}
-          </p>
           <ul className="home-hero-static__pills" aria-label="What you can find">
             {PILLS.map((label) => (
               <li key={label}>{label}</li>

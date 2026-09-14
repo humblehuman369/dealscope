@@ -56,6 +56,8 @@
 }
 
 .home-hero-static__cta {
+  position: relative;
+  z-index: 2;
   margin-top: 24px;
   display: flex;
   align-items: stretch;
@@ -96,12 +98,6 @@
 }
 [data-theme='dark'] .home-hero-static__cta button {
   color: var(--text-heading);
-}
-
-.home-hero-static__fine {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: var(--text-muted);
 }
 
 .home-hero-static__pills {
