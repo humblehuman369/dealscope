@@ -6,12 +6,21 @@ import { useFocusTrap } from '@/components/ui/useFocusTrap'
 export interface TuneDrawerProps {
   open: boolean
   onClose: () => void
+  /** Done commits the tuned plan. Backdrop / Escape / Close do not. */
+  onDone?: () => void
   onReset: () => void
   resetLabel: string
   children: ReactNode
 }
 
-export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: TuneDrawerProps) {
+export function TuneDrawer({
+  open,
+  onClose,
+  onDone,
+  onReset,
+  resetLabel,
+  children,
+}: TuneDrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   useFocusTrap(panelRef, open)
 
@@ -104,7 +113,10 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              if (onDone) onDone()
+              else onClose()
+            }}
             className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >

@@ -62,6 +62,7 @@ import { capturePostHog } from '@/lib/posthog'
 import { captureMetaPixel, META_STANDARD_EVENTS } from '@/lib/metaPixel'
 import { firstTouchEventProps, getMetaClickIds } from '@/lib/attribution'
 import { API_BASE_URL } from '@/lib/env'
+import type { WorkflowLayout } from '@/lib/workflowV1'
 
 /** Workflow funnel events. `plan` is the billing tier. Never send a street address. */
 export const WORKFLOW_EVENTS = {
@@ -82,12 +83,59 @@ export function trackCardOpened(props: {
   property_state?: string | null
   days_on_market?: number | null
   price_cuts?: number | null
+  layout: WorkflowLayout
 }): void {
   trackEvent(WORKFLOW_EVENTS.card_opened, {
     property_id: props.property_id,
     property_state: props.property_state ?? '',
     days_on_market: props.days_on_market ?? 0,
     price_cuts: props.price_cuts ?? 0,
+    layout: props.layout,
+  })
+}
+
+export type PlanBuiltOption = '1' | '2' | '3' | '4' | 'blend' | 'custom'
+
+export function trackPlanBuilt(props: {
+  property_id?: string
+  option: PlanBuiltOption
+  targets_met: number
+  plan: 'starter' | 'pro'
+  layout: WorkflowLayout
+}): void {
+  trackEvent(WORKFLOW_EVENTS.plan_built, {
+    ...(props.property_id ? { property_id: props.property_id } : {}),
+    option: props.option,
+    targets_met: props.targets_met,
+    plan: props.plan,
+    layout: props.layout,
+  })
+}
+
+const DEAL_STARTED_KEY = (dealId: string) => `dgiq_deal_started_v1:${dealId}`
+
+export function trackDealStarted(props: {
+  property_id?: string
+  deal_id: string
+  option?: PlanBuiltOption
+  targets_met?: number
+  plan: 'starter' | 'pro'
+  layout: WorkflowLayout
+}): void {
+  if (typeof window === 'undefined') return
+  try {
+    if (sessionStorage.getItem(DEAL_STARTED_KEY(props.deal_id))) return
+    sessionStorage.setItem(DEAL_STARTED_KEY(props.deal_id), '1')
+  } catch {
+    /* private mode — still fire */
+  }
+  trackEvent(WORKFLOW_EVENTS.deal_started, {
+    ...(props.property_id ? { property_id: props.property_id } : {}),
+    deal_id: props.deal_id,
+    ...(props.option ? { option: props.option } : {}),
+    ...(props.targets_met != null ? { targets_met: props.targets_met } : {}),
+    plan: props.plan,
+    layout: props.layout,
   })
 }
 

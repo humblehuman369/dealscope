@@ -141,6 +141,7 @@ describe('VerdictCard', () => {
         closes: true,
         property_id: 'prop-willow',
         property_state: 'FL',
+        layout: 'v1',
       }),
       'evt-verdict',
     )

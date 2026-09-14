@@ -23,6 +23,21 @@ describe('TuneDrawer', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('calls onDone from Done and leaves onClose for the backdrop', () => {
+    const onClose = vi.fn()
+    const onDone = vi.fn()
+    render(
+      <TuneDrawer open onClose={onClose} onDone={onDone} onReset={vi.fn()} resetLabel="Reset">
+        <p>tuned</p>
+      </TuneDrawer>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(onDone).toHaveBeenCalledOnce()
+    expect(onClose).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Close tune drawer' }))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
   it('renders nothing when closed', () => {
     const { container } = render(
       <TuneDrawer open={false} onClose={vi.fn()} onReset={vi.fn()} resetLabel="Reset to blend">

@@ -128,3 +128,59 @@ export function workflowV1RedirectTarget(
 
   return null
 }
+
+/**
+ * Reverse of the P1-1 table. Flag-off users who open a V1 tab URL land on
+ * the old equivalent. /price-intel is the old Comps tab.
+ */
+export function workflowLegacyRedirectTarget(
+  pathname: string,
+  search: URLSearchParams,
+  propertyPipelineId?: string | null,
+  hasCheckedPipeline = true,
+): string | null {
+  if (pathname !== '/discovery' && !pathname.startsWith('/discovery/')) return null
+  const view = search.get('view')
+  if (view === 'math') {
+    const next = new URLSearchParams()
+    const address = search.get('address')
+    if (address) next.set('address', address)
+    const zpid = search.get('zpid')
+    if (zpid) next.set('zpid', zpid)
+    const lat = search.get('lat')
+    if (lat) next.set('lat', lat)
+    const lng = search.get('lng')
+    if (lng) next.set('lng', lng)
+    const compsView = search.get('compsView')
+    if (compsView === 'rent' || compsView === 'sale') next.set('view', compsView)
+    const qs = next.toString()
+    return qs ? `/price-intel?${qs}` : '/price-intel'
+  }
+  if (view === 'work') {
+    const urlDeal = pipelineDealId(search)
+    if (urlDeal) return `/deals/${urlDeal}`
+    if (!hasCheckedPipeline) return null
+    const dealId = propertyPipelineId?.trim()
+    return dealId ? `/deals/${dealId}` : '/dashboard'
+  }
+  return null
+}
+
+/** Nobody moves while the flag is loading. */
+export function resolveWorkflowRedirect(input: {
+  ready: boolean
+  enabled: boolean
+  pathname: string
+  search: URLSearchParams
+  propertyPipelineId?: string | null
+  hasCheckedPipeline?: boolean
+}): string | null {
+  if (!input.ready || !input.pathname) return null
+  if (input.enabled) return workflowV1RedirectTarget(input.pathname, input.search)
+  return workflowLegacyRedirectTarget(
+    input.pathname,
+    input.search,
+    input.propertyPipelineId,
+    input.hasCheckedPipeline ?? true,
+  )
+}

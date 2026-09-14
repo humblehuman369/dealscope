@@ -45,6 +45,8 @@ export interface VerdictCardProps {
   sourceStatus?: SourceStatusSummary
   /** Same listing check as Key Insights. Default listed. */
   listed?: boolean
+  /** Test-only: throw inside this card so the V1 Discovery boundary can catch it. */
+  debugThrow?: boolean
 }
 
 const CALL_ICON = {
@@ -91,7 +93,9 @@ export function VerdictCard({
   gapSlider,
   sourceStatus,
   listed = true,
+  debugThrow = false,
 }: VerdictCardProps) {
+  if (debugThrow) throw new Error('workflow-v1 verdict card')
   const whyVerdictId = useId()
   const whyCallId = useId()
   const whySourcesId = useId()
@@ -122,6 +126,7 @@ export function VerdictCard({
         gap,
         signals,
         closes,
+        layout: 'v1',
         ...(propertyId ? { property_id: propertyId } : {}),
         ...(propertyState ? { property_state: propertyState } : {}),
       },

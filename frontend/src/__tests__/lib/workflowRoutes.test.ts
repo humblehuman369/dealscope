@@ -6,6 +6,7 @@ import {
   parseWorkflowV1View,
   pipelineDealId,
   resolveWorkDealId,
+  resolveWorkflowRedirect,
   workflowV1RedirectTarget,
 } from '@/lib/workflowRoutes'
 
@@ -70,6 +71,142 @@ describe('workflowV1RedirectTarget', () => {
 
   it('does not move /compare', () => {
     expect(workflowV1RedirectTarget('/compare', new URLSearchParams('a=1&b=2'))).toBe(null)
+  })
+})
+
+describe('resolveWorkflowRedirect', () => {
+  const math = new URLSearchParams('address=1 Main&view=math&zpid=9')
+  const work = new URLSearchParams('address=1 Main&view=work&dealId=deal-9')
+  const workEmpty = new URLSearchParams('address=1 Main&view=work')
+  const plan = new URLSearchParams('address=1 Main&view=plan')
+  const workbench = new URLSearchParams('address=1 Main&view=workbench')
+  const comps = new URLSearchParams('address=1 Main&zpid=9')
+
+  it('moves nobody while the flag is loading', () => {
+    expect(
+      resolveWorkflowRedirect({
+        ready: false,
+        enabled: true,
+        pathname: '/price-intel',
+        search: comps,
+      }),
+    ).toBe(null)
+    expect(
+      resolveWorkflowRedirect({
+        ready: false,
+        enabled: false,
+        pathname: '/discovery',
+        search: math,
+      }),
+    ).toBe(null)
+    expect(
+      resolveWorkflowRedirect({
+        ready: false,
+        enabled: false,
+        pathname: '/discovery',
+        search: work,
+      }),
+    ).toBe(null)
+  })
+
+  it('moves flag-on users off old Comps, Estimator, and DealMaker routes', () => {
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: true,
+        pathname: '/price-intel',
+        search: comps,
+      }),
+    ).toBe('/discovery?address=1+Main&view=math&section=comps&zpid=9')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: true,
+        pathname: '/rehab',
+        search: new URLSearchParams('address=1 Main&sqft=1400'),
+      }),
+    ).toBe('/discovery?address=1+Main&view=math&section=estimator&sqft=1400')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: true,
+        pathname: '/deal-maker',
+        search: new URLSearchParams('address=1 Main'),
+      }),
+    ).toBe('/discovery?address=1+Main&view=workbench')
+  })
+
+  it('moves flag-off view=math to /price-intel with the same params', () => {
+    const mathWithParams = new URLSearchParams(
+      'address=1 Main&view=math&zpid=9&lat=1&lng=2&compsView=rent',
+    )
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: mathWithParams,
+      }),
+    ).toBe('/price-intel?address=1+Main&zpid=9&lat=1&lng=2&view=rent')
+  })
+
+  it('moves flag-off view=work to the pipeline deal or /dashboard', () => {
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: work,
+      }),
+    ).toBe('/deals/deal-9')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: workEmpty,
+        propertyPipelineId: 'pipeline-1',
+        hasCheckedPipeline: true,
+      }),
+    ).toBe('/deals/pipeline-1')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: workEmpty,
+        propertyPipelineId: null,
+        hasCheckedPipeline: true,
+      }),
+    ).toBe('/dashboard')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: workEmpty,
+        hasCheckedPipeline: false,
+      }),
+    ).toBe(null)
+  })
+
+  it('leaves flag-off users on view=plan and view=workbench', () => {
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: plan,
+      }),
+    ).toBe(null)
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: workbench,
+      }),
+    ).toBe(null)
   })
 })
 

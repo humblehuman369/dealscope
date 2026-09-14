@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { identifyPostHog, initPostHog } from '@/lib/posthog'
 import { initMetaPixel } from '@/lib/metaPixel'
@@ -17,21 +17,28 @@ import { useSession } from '@/hooks/useSession'
  */
 export function AnalyticsProvider() {
   const { user } = useSession()
+  const identifiedUserIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     void initPostHog()
     initMetaPixel()
   }, [])
 
-  // Identify as soon as a session exists so anonymous pre-signup events are
-  // stitched to the account. Tier is a person property for funnel cohorts.
+  // Once per app mount (and again only if the signed-in user changes).
+  // Client-side route changes do not remount this provider. Never identify
+  // when signed out. Email must land in $set so "email is set" cohorts match.
   useEffect(() => {
-    if (user?.id) {
-      identifyPostHog(user.id, {
-        email: user.email,
-        tier: user.subscription_tier,
-      })
+    if (!user?.id) {
+      identifiedUserIdRef.current = null
+      return
     }
+    if (!user.email) return
+    if (identifiedUserIdRef.current === user.id) return
+    identifiedUserIdRef.current = user.id
+    identifyPostHog(user.id, {
+      email: user.email,
+      tier: user.subscription_tier,
+    })
   }, [user?.id, user?.email, user?.subscription_tier])
 
   return <Analytics />
