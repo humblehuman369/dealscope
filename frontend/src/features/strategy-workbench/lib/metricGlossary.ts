@@ -13,6 +13,8 @@ export const METRIC_GLOSSARY: Record<string, string> = {
     'Total cash to close: down payment plus closing costs and any upfront rehab budget.',
   'Deal Gap':
     'The distance between the asking price and the price where this strategy pencils. A negative gap means you need that much of a discount; a positive gap means it already works at asking.',
+  'Gap left':
+    'How far your plan price still sits above Target Buy. Seller terms can leave a gap and still hit your four targets.',
   'Annual Profit':
     'Projected cash flow per year after operating expenses and the mortgage payment.',
   'CAP Rate':

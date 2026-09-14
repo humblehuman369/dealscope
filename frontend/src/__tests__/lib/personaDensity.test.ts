@@ -58,6 +58,7 @@ describe('METRIC_GLOSSARY', () => {
       'Buy Price',
       'Cash Needed',
       'Deal Gap',
+      'Gap left',
       'Annual Profit',
       'CAP Rate',
       'COC Return',

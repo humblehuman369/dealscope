@@ -4,8 +4,10 @@ import {
   formatGuideCompare,
   formatGuideStrong,
   formatOptionsFooter,
+  formatPlanBottomLine,
   formatPlanSentence,
   formatPlanTitle,
+  formatResetToOption,
 } from '@/lib/planCopy'
 
 const WILLOW_OPTION_3 = {
@@ -86,5 +88,22 @@ describe('formatOptionsFooter', () => {
     ).toBe(
       "Scores use DealGapIQ's standard targets: 6.0% cap rate, 8.0% cash-on-cash, $300 a month, 1.25 DSCR.",
     )
+  })
+})
+
+describe('formatPlanBottomLine', () => {
+  it('says the plan misses when zero targets are met', () => {
+    expect(formatPlanBottomLine(0)).toBe('This plan misses your targets.')
+  })
+
+  it('names how many of the four targets are met', () => {
+    expect(formatPlanBottomLine(2)).toBe('This plan meets 2 of your four targets.')
+    expect(formatPlanBottomLine(4)).toBe('This plan meets 4 of your four targets.')
+  })
+})
+
+describe('formatResetToOption', () => {
+  it('names the applied option', () => {
+    expect(formatResetToOption('3')).toBe('Reset to creative finance')
   })
 })

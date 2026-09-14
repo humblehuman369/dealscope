@@ -71,6 +71,25 @@ export function optionKeyFromFamily(family: string): PlanOptionKey {
   }
 }
 
+export type TuneWorksheetGroup = 'pay' | 'loan' | 'cost' | 'earn'
+
+export function tuneGroupForOption(optionKey: PlanOptionKey): TuneWorksheetGroup {
+  switch (optionKey) {
+    case '1':
+      return 'earn'
+    case '2':
+    case '3':
+    case '4':
+    case 'blend':
+    case 'custom':
+      return 'pay'
+    default: {
+      const exhaustive: never = optionKey
+      return exhaustive
+    }
+  }
+}
+
 export function scoreAgainstTargets(
   input: {
     capRate: number

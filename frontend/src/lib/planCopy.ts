@@ -192,3 +192,12 @@ export function formatSourceSpreadLine(input: {
   }
   return `Five sources value this house between ${money(input.low)} and ${money(input.high)}. The IQ Estimate is ${money(input.iqEstimate)}. Tap any number for its source.`
 }
+
+export function formatPlanBottomLine(targetsMet: number): string {
+  if (targetsMet <= 0) return 'This plan misses your targets.'
+  return `This plan meets ${targetsMet} of your four targets.`
+}
+
+export function formatResetToOption(optionKey: PlanOptionKey): string {
+  return `Reset to ${OPTION_SHORT_NAME[optionKey]}`
+}

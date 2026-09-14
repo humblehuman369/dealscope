@@ -114,4 +114,36 @@ describe('PlanView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start working this deal' }))
     expect(onStartDeal).toHaveBeenCalledOnce()
   })
+
+  it('opens the Share menu next to Start working this deal', () => {
+    const onShareFullReport = vi.fn()
+    const onShareExcel = vi.fn()
+    const onSharePdf = vi.fn()
+    render(
+      <PlanView
+        model={willowModel()}
+        onTune={vi.fn()}
+        onApply={vi.fn()}
+        onStartDeal={vi.fn()}
+        onShareFullReport={onShareFullReport}
+        onShareExcel={onShareExcel}
+        onSharePdf={onSharePdf}
+        trialPitch={<p>Unlock the full worksheet</p>}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Full Report' }))
+    expect(onShareFullReport).toHaveBeenCalledOnce()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Download Excel' }))
+    expect(onShareExcel).toHaveBeenCalledOnce()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'PDF' }))
+    expect(onSharePdf).toHaveBeenCalledOnce()
+
+    expect(screen.getByText('Unlock the full worksheet')).toBeInTheDocument()
+  })
 })

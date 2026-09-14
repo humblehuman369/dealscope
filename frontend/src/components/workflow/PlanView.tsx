@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
 import { PLAN_GUIDE_WHY, PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
 
@@ -10,6 +10,10 @@ export interface PlanViewProps {
   onApply: (structureId: string) => void
   onStartDeal: () => void
   startingDeal?: boolean
+  onShareFullReport?: () => void
+  onShareExcel?: () => void
+  onSharePdf?: () => void
+  trialPitch?: ReactNode
 }
 
 const CARD: CSSProperties = {
@@ -54,10 +58,39 @@ function WhyToggle({ id, label, text }: { id: string; label: string; text: strin
   )
 }
 
-export function PlanView({ model, onTune, onApply, onStartDeal, startingDeal = false }: PlanViewProps) {
+export function PlanView({
+  model,
+  onTune,
+  onApply,
+  onStartDeal,
+  startingDeal = false,
+  onShareFullReport,
+  onShareExcel,
+  onSharePdf,
+  trialPitch,
+}: PlanViewProps) {
   const titleId = useId()
   const whyGapsId = useId()
   const whyGuideId = useId()
+  const shareMenuId = useId()
+  const [shareOpen, setShareOpen] = useState(false)
+  const shareRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!shareOpen) return
+    const onPointer = (event: MouseEvent) => {
+      if (!shareRef.current?.contains(event.target as Node)) setShareOpen(false)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShareOpen(false)
+    }
+    document.addEventListener('mousedown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [shareOpen])
 
   return (
     <div className="flex flex-col gap-4">
@@ -285,16 +318,66 @@ export function PlanView({ model, onTune, onApply, onStartDeal, startingDeal = f
             </li>
           ))}
         </ol>
-        <button
-          type="button"
-          onClick={onStartDeal}
-          disabled={startingDeal}
-          className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60"
-          style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
-        >
-          {startingDeal ? 'Starting…' : 'Start working this deal'}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onStartDeal}
+            disabled={startingDeal}
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60"
+            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+          >
+            {startingDeal ? 'Starting…' : 'Start working this deal'}
+          </button>
+          <div className="relative" ref={shareRef}>
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={shareOpen}
+              aria-controls={shareMenuId}
+              onClick={() => setShareOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border bg-transparent cursor-pointer"
+              style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)' }}
+            >
+              Share
+            </button>
+            {shareOpen ? (
+              <div
+                id={shareMenuId}
+                role="menu"
+                className="absolute left-0 bottom-full mb-2 min-w-[11rem] rounded-xl py-1 z-20"
+                style={{
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--border-default)',
+                  boxShadow: 'var(--shadow-card)',
+                }}
+              >
+                {(
+                  [
+                    ['Full Report', onShareFullReport],
+                    ['Download Excel', onShareExcel],
+                    ['PDF', onSharePdf],
+                  ] as const
+                ).map(([label, action]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShareOpen(false)
+                      action?.()
+                    }}
+                    className="block w-full text-left min-h-11 px-4 text-[14px] bg-transparent border-0 cursor-pointer"
+                    style={{ color: 'var(--text-heading)' }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </article>
+      {trialPitch}
     </div>
   )
 }

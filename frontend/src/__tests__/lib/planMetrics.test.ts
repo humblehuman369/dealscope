@@ -7,6 +7,7 @@ import {
   optionKeyFromFamily,
   scoreAgainstTargets,
   scorePlanOptions,
+  tuneGroupForOption,
 } from '@/lib/dealStructures/planMetrics'
 
 describe('blended plan handoff → worksheet metrics', () => {
@@ -158,5 +159,15 @@ describe('scorePlanOptions', () => {
     expect(optionKeyFromFamily('blended')).toBe('blend')
     const best = scored.find((option) => option.isBest)
     expect(best?.structureId).toBe('blended-plan')
+  })
+})
+
+describe('tuneGroupForOption', () => {
+  it('opens rent for option 1 and pay for price, finance, and equity', () => {
+    expect(tuneGroupForOption('1')).toBe('earn')
+    expect(tuneGroupForOption('2')).toBe('pay')
+    expect(tuneGroupForOption('3')).toBe('pay')
+    expect(tuneGroupForOption('4')).toBe('pay')
+    expect(tuneGroupForOption('blend')).toBe('pay')
   })
 })
