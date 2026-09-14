@@ -189,6 +189,7 @@ export function useSession() {
           _lastKnownUser = null
           clearPersistedSession()
           _lastTokenRefreshAt = 0
+          resetPostHog()
           return null
         }
         // Transient errors (network, 5xx) — preserve fallback so the

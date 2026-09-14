@@ -123,6 +123,37 @@ class TestLoginFlow:
         logout_resp = await client.post(LOGOUT_URL, headers=auth_header)
         assert logout_resp.status_code in (200, 204)
 
+    async def test_refresh_token_twice_back_to_back_does_not_500(
+        self, client, db_session, created_user
+    ):
+        """A 500 on the first refresh used to consume the token; the retry
+        then 401'd and logged the user out (MissingGreenlet after the UPDATE)."""
+        login_resp = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+        )
+        assert login_resp.status_code == 200
+        first_refresh = login_resp.json().get("refresh_token")
+        assert first_refresh
+
+        first = await client.post(REFRESH_URL, json={"refresh_token": first_refresh})
+        assert first.status_code == 200
+        first_body = first.json()
+        assert first_body.get("access_token")
+        second_refresh = first_body.get("refresh_token")
+        assert second_refresh
+        assert second_refresh != first_refresh
+
+        second = await client.post(REFRESH_URL, json={"refresh_token": second_refresh})
+        assert second.status_code == 200
+        second_body = second.json()
+        assert second_body.get("access_token")
+        assert second_body.get("refresh_token")
+        assert second_body["refresh_token"] != second_refresh
+
     async def test_login_wrong_password(self, client, db_session, created_user):
         resp = await client.post(
             LOGIN_URL,

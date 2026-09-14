@@ -7,14 +7,15 @@ import pytest
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from app.services.auth_service import AuthService, AuthError, MFARequired, auth_service
-from app.services.session_service import session_service
-from app.services.token_service import token_service
-from app.repositories.user_repository import user_repo
+from app.models.audit_log import AuditAction
+from app.models.session import UserSession
+from app.models.verification_token import TokenType
 from app.repositories.audit_repository import audit_repo
 from app.repositories.role_repository import role_repo
-from app.models.audit_log import AuditAction
-from app.models.verification_token import TokenType
+from app.repositories.user_repository import user_repo
+from app.services.auth_service import AuthService, AuthError, MFARequired, auth_service
+from app.services.session_service import RefreshedSession, session_service
+from app.services.token_service import token_service
 
 
 pytestmark = pytest.mark.asyncio
@@ -218,14 +219,35 @@ class TestSessionService:
         session, _ = await session_service.create_session(
             db_session, created_user.id
         )
-        # Capture before refreshing — refresh_session rotates the token on
-        # this same ORM instance, so reading it afterwards yields the NEW value.
         old_refresh = session.refresh_token
         result = await session_service.refresh_session(db_session, old_refresh)
         assert result is not None
-        _, new_jwt, new_refresh = result
-        assert new_jwt is not None
-        assert new_refresh != old_refresh  # rotated
+        assert result.access_token is not None
+        assert result.refresh_token != old_refresh  # rotated
+
+    async def test_refresh_session_does_not_return_orm_object_after_update(
+        self, db_session, created_user
+    ):
+        """The rotation UPDATE expires the ORM row. Returned values must
+        stay readable without a lazy load (MissingGreenlet in async routes)."""
+        session, _ = await session_service.create_session(
+            db_session, created_user.id
+        )
+        session_id = session.id
+        user_id = created_user.id
+        old_refresh = session.refresh_token
+        result = await session_service.refresh_session(db_session, old_refresh)
+        assert result is not None
+        db_session.expire(session)
+
+        assert isinstance(result, RefreshedSession)
+        assert not isinstance(result, UserSession)
+        assert result.session_token
+        assert result.expires_at is not None
+        assert result.refresh_token != old_refresh
+        assert result.access_token
+        assert result.session_id == session_id
+        assert result.user_id == user_id
 
     async def test_refresh_revoked_session_fails(self, db_session, created_user):
         session, _ = await session_service.create_session(

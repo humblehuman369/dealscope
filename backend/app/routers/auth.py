@@ -111,6 +111,15 @@ def _session_cookie_max_age(session_expires_at: datetime) -> int:
     return max(0, int((session_expires_at - now).total_seconds()))
 
 
+def _snapshot_session_cookies(session_obj: Any) -> tuple[str, str, datetime]:
+    """Copy cookie fields off the ORM row before commit or a Core UPDATE.
+
+    Reading these after ``synchronize_session`` expires them is a lazy load
+    and raises MissingGreenlet inside an async route.
+    """
+    return session_obj.session_token, session_obj.refresh_token, session_obj.expires_at
+
+
 def _set_auth_cookies(
     response: Response,
     session_token: str,
@@ -328,21 +337,16 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         user_agent=request.headers.get("User-Agent"),
         client_type=_client_type_from_request(request),
     )
+    session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
     await db.commit()
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
     user_resp = await _build_user_response(db, user)
     return RegisterResponse(
         message="Registration successful. You are now signed in.",
         requires_verification=False,
         user=user_resp,
         access_token=jwt_token,
-        refresh_token=session_obj.refresh_token,
+        refresh_token=refresh_token,
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -624,6 +628,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         client_type=CLIENT_TYPE_MOBILE if mobile_redirect else CLIENT_TYPE_DESKTOP,
         remember_me=False,
     )
+    session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
     await db.commit()
 
     # Notify admins on first-time Google signup only (skip returning users)
@@ -643,20 +648,14 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 
     if mobile_redirect:
         try:
-            mobile_code = await _create_mobile_auth_code(jwt_token, session_obj.refresh_token)
+            mobile_code = await _create_mobile_auth_code(jwt_token, refresh_token)
         except Exception:
             logger.exception("Failed to create Google mobile OAuth exchange code")
             return _google_error_redirect("mobile_exchange_failed", mobile_redirect)
         return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
-    _set_auth_cookies(
-        redirect_to,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(redirect_to, session_token, refresh_token, jwt_token, expires_at)
     return redirect_to
 
 
@@ -836,6 +835,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         client_type=CLIENT_TYPE_MOBILE if mobile_redirect else CLIENT_TYPE_DESKTOP,
         remember_me=False,
     )
+    session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
     await db.commit()
 
     # Notify admins on first-time Apple signup only (skip returning users)
@@ -855,20 +855,14 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
 
     if mobile_redirect:
         try:
-            mobile_code = await _create_mobile_auth_code(jwt_token, session_obj.refresh_token)
+            mobile_code = await _create_mobile_auth_code(jwt_token, refresh_token)
         except Exception:
             logger.exception("Failed to create Apple mobile OAuth exchange code")
             return _apple_error_redirect("mobile_exchange_failed", mobile_redirect)
         return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
-    _set_auth_cookies(
-        redirect_to,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(redirect_to, session_token, refresh_token, jwt_token, expires_at)
     return redirect_to
 
 
@@ -894,6 +888,7 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
             client_type=_client_type_from_request(request),
             remember_me=body.remember_me,
         )
+        session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
         await db.commit()
     except MFARequired as mfa:
         await db.commit()
@@ -901,13 +896,7 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
 
     await _check_new_device_and_notify(
         db,
@@ -922,7 +911,7 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
     return LoginResponse(
         user=user_resp,
         access_token=jwt_token,
-        refresh_token=session_obj.refresh_token,
+        refresh_token=refresh_token,
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -940,17 +929,12 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
             client_type=_client_type_from_request(request),
             remember_me=body.remember_me,
         )
+        session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
 
     await _check_new_device_and_notify(
         db,
@@ -963,7 +947,7 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
     return LoginResponse(
         user=user_resp,
         access_token=jwt_token,
-        refresh_token=session_obj.refresh_token,
+        refresh_token=refresh_token,
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -982,25 +966,26 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
     if not rt:
         raise HTTPException(status_code=401, detail="Refresh token required")
 
-    result = await session_service.refresh_session(db, rt)
-    if result is None:
+    refreshed = await session_service.refresh_session(db, rt)
+    if refreshed is None:
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
-    session_obj, new_jwt, new_refresh = result
-    await db.commit()
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        new_refresh,
-        new_jwt,
-        session_obj.expires_at,
-    )
-
-    return TokenResponse(
-        access_token=new_jwt,
-        refresh_token=new_refresh,
+    # Build the response from plain locals first. Commit last so a crash
+    # cannot consume the old refresh token without returning the new one.
+    token_response = TokenResponse(
+        access_token=refreshed.access_token,
+        refresh_token=refreshed.refresh_token,
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
+    _set_auth_cookies(
+        response,
+        refreshed.session_token,
+        refreshed.refresh_token,
+        refreshed.access_token,
+        refreshed.expires_at,
+    )
+    await db.commit()
+    return token_response
 
 
 # ------------------------------------------------------------------
@@ -1099,27 +1084,23 @@ async def consume_magic_link(
             user_agent=request.headers.get("User-Agent"),
             client_type=_client_type_from_request(request),
         )
+        cookie_fields = _snapshot_session_cookies(session_obj) if session_obj is not None else None
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    if session_obj is None or jwt_token is None:
+    if session_obj is None or jwt_token is None or cookie_fields is None:
         return MagicLinkConsumeResponse(redirect=f"/login?{urlencode({'redirect': redirect, 'reason': 'mfa'})}")
 
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    session_token, refresh_token, expires_at = cookie_fields
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
     _ph_identify_and_capture(user, "user_logged_in", {"login_method": "magic_link"})
     _ph_identify_and_capture(user, "magic_link_consumed", {})
 
     return MagicLinkConsumeResponse(
         redirect=redirect,
         access_token=jwt_token,
-        refresh_token=session_obj.refresh_token,
+        refresh_token=refresh_token,
     )
 
 
@@ -1346,15 +1327,10 @@ async def login_form(request: Request, response: Response, db: DbSession):
             user_agent=request.headers.get("User-Agent"),
             client_type=_client_type_from_request(request),
         )
+        session_token, refresh_token, expires_at = _snapshot_session_cookies(session_obj)
         await db.commit()
     except (AuthError, MFARequired) as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    _set_auth_cookies(
-        response,
-        session_obj.session_token,
-        session_obj.refresh_token,
-        jwt_token,
-        session_obj.expires_at,
-    )
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
     return {"access_token": jwt_token, "token_type": "bearer"}

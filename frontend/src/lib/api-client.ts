@@ -12,6 +12,7 @@
  */
 
 import { API_BASE_URL, isCapacitor } from '@/lib/env'
+import { resetPostHog } from '@/lib/posthog'
 
 // ------------------------------------------------------------------
 // Types
@@ -195,38 +196,67 @@ function getCsrfToken(): string | null {
 
 let refreshPromise: Promise<boolean> | null = null
 
+const REFRESH_RETRY_DELAY_MS = 750
+
+type RefreshAttempt = 'ok' | 'dead' | 'transient'
+
+function markRefreshSessionDead(): void {
+  if (isCapacitor()) clearMemoryToken()
+  resetPostHog()
+}
+
+async function attemptRefresh(): Promise<RefreshAttempt> {
+  try {
+    const storedRefresh = getStoredRefreshToken()
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      method: 'POST',
+      credentials: isCapacitor() ? 'omit' : 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        [CLIENT_TYPE_HEADER]: getClientType(),
+        ...(isCapacitor() && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
+      },
+      ...(isCapacitor() && storedRefresh
+        ? { body: JSON.stringify({ refresh_token: storedRefresh }) }
+        : {}),
+    })
+    if (res.ok) {
+      try {
+        const body = await res.json()
+        if (body.access_token) {
+          setMemoryToken(body.access_token, body.refresh_token)
+        }
+      } catch {
+        // Token still set via cookie; memory replenishment is best-effort
+      }
+      return 'ok'
+    }
+    if (res.status === 401 || res.status === 403) return 'dead'
+    if (res.status >= 500) return 'transient'
+    return 'dead'
+  } catch {
+    return 'transient'
+  }
+}
+
 async function refreshTokens(): Promise<boolean> {
   if (refreshPromise) return refreshPromise
 
   refreshPromise = (async () => {
     try {
-      const storedRefresh = getStoredRefreshToken()
-      const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-        method: 'POST',
-        credentials: isCapacitor() ? 'omit' : 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          [CLIENT_TYPE_HEADER]: getClientType(),
-          ...(isCapacitor() && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
-        },
-        ...(isCapacitor() && storedRefresh
-          ? { body: JSON.stringify({ refresh_token: storedRefresh }) }
-          : {}),
-      })
-      if (res.ok) {
-        try {
-          const body = await res.json()
-          if (body.access_token) {
-            setMemoryToken(body.access_token, body.refresh_token)
-          }
-        } catch {
-          // Token still set via cookie; memory replenishment is best-effort
-        }
-        return true
+      const first = await attemptRefresh()
+      if (first === 'ok') return true
+      if (first === 'dead') {
+        markRefreshSessionDead()
+        return false
       }
-      if (isCapacitor()) clearMemoryToken()
-      return false
-    } catch {
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RETRY_DELAY_MS))
+      const retry = await attemptRefresh()
+      if (retry === 'ok') return true
+      if (retry === 'dead') {
+        markRefreshSessionDead()
+        return false
+      }
       return false
     } finally {
       refreshPromise = null
