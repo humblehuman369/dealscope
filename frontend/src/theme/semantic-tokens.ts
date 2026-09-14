@@ -35,7 +35,7 @@ export const semanticTokens = {
   },
   status: {
     positive: { dark: '#34d399', light: '#0465f2' },
-    warning: { dark: '#fbbf24', light: '#b7791f' },
+    warning: { dark: '#fbbf24', light: '#854d0e' },
     negative: { dark: '#f87171', light: '#b42318' },
     info: { dark: '#38bdf8', light: '#0465f2' },
     incomeValue: { dark: '#FACC15', light: '#b7791f' },

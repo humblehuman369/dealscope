@@ -21,9 +21,10 @@ import {
   useState,
   useMemo,
   useRef,
+  type ReactNode,
 } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -106,7 +107,26 @@ import type {
   DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
-import { trackEvent } from '@/lib/eventTracking'
+import { trackEvent, WORKFLOW_EVENTS } from '@/lib/eventTracking'
+import { useWorkflowV1 } from '@/lib/workflowV1'
+import { PlanView } from '@/components/workflow/PlanView'
+import { TuneDrawer } from '@/components/workflow/TuneDrawer'
+import { formatPlanSnapshot } from '@/lib/dealStructures/planSnapshot'
+import { formatPlanBottomLine, formatResetToOption } from '@/lib/planCopy'
+import {
+  askingGapDisplayPct,
+  closeDeltas,
+  gapLeftPct,
+  optionKeyFromFamily,
+  PLAN_SLOT_ORDER,
+  PLAN_TARGET_DEFAULTS,
+  scoreAgainstTargets,
+  scorePlanOptions,
+  tuneGroupForOption,
+  type PlanBaseline,
+  type PlanOptionKey,
+} from '@/lib/dealStructures/planMetrics'
+import { sourceValueRange } from '@/lib/sourceStatus'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
 import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
@@ -184,9 +204,16 @@ export function StrategyWorkbench({
 }: StrategyWorkbenchProps) {
   const queryClient = useQueryClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { enabled: workflowV1 } = useWorkflowV1()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const [tuneOpen, setTuneOpen] = useState(false)
+  const [planCustomized, setPlanCustomized] = useState(false)
+  const [startingDeal, setStartingDeal] = useState(false)
+  const option3SeededRef = useRef(false)
+  const lastPlanBuiltRef = useRef<string | null>(null)
   const planContinuity = useMemo(() => readPlanContinuity(address), [address])
   const fromPlan = Boolean(planContinuity)
   const worksheetUnlocked = isAuthenticated || fromPlan
@@ -1071,6 +1098,7 @@ export function StrategyWorkbench({
       })
       setAppliedPathId(structure.id)
       setAppliedStructure(structure)
+      setPlanCustomized(false)
       setHighlightedFields(
         computeHighlightedStateFields(
           patch,
@@ -1090,6 +1118,116 @@ export function StrategyWorkbench({
     },
     [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
   )
+
+  useEffect(() => {
+    if (!workflowV1 || option3SeededRef.current) return
+    if (scenarioParam || appliedPathId) {
+      option3SeededRef.current = true
+      return
+    }
+    const financing = displayDealStructurePaths.find((path) => path.family === 'financing')
+    if (!financing?.preLoadedRecord) return
+    option3SeededRef.current = true
+    applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'))
+  }, [workflowV1, scenarioParam, appliedPathId, displayDealStructurePaths, applyPathPatch])
+
+  useEffect(() => {
+    if (!workflowV1 || !appliedPathId) return
+    if (lastPlanBuiltRef.current === appliedPathId) return
+    const state = worksheetStateRef.current as LTRDealMakerState | undefined
+    if (!state?.buyPrice) return
+    lastPlanBuiltRef.current = appliedPathId
+    const metrics = computeLtrMetricsFromState(state)
+    const score = scoreAgainstTargets({
+      capRate: metrics.capRate,
+      cashOnCash: metrics.cocReturn,
+      monthlyCashFlow: metrics.annualProfit / 12,
+      dscr: metrics.dscr,
+    })
+    const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+    trackEvent(WORKFLOW_EVENTS.plan_built, {
+      ...(propertyId ? { property_id: String(propertyId) } : {}),
+      option: structure ? optionKeyFromFamily(structure.family) : 'custom',
+      targets_met: score.targetsMet,
+      plan: isPro ? 'pro' : 'starter',
+    })
+  }, [workflowV1, appliedPathId, displayDealStructurePaths, propertyInfo, isPro])
+
+  const handlePlanApply = useCallback(
+    (structureId: string) => {
+      const structure = displayDealStructurePaths.find((path) => path.id === structureId)
+      if (!structure) return
+      const slot = PLAN_SLOT_ORDER.indexOf(
+        structure.family as (typeof PLAN_SLOT_ORDER)[number],
+      )
+      applyPathPatch(structure, slot >= 0 ? slot : 0)
+    },
+    [displayDealStructurePaths, applyPathPatch],
+  )
+
+  const handlePlanReset = useCallback(() => {
+    if (!appliedPathId) return
+    const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+    if (!structure) return
+    const slot = PLAN_SLOT_ORDER.indexOf(
+      structure.family as (typeof PLAN_SLOT_ORDER)[number],
+    )
+    applyPathPatch(structure, slot >= 0 ? slot : 0)
+  }, [appliedPathId, displayDealStructurePaths, applyPathPatch])
+
+  const handleStartDeal = useCallback(async () => {
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
+    setStartingDeal(true)
+    try {
+      const dealId = (await save()) ?? savedPropertyId
+      if (!dealId) return
+      const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+      const state = worksheetStateRef.current as LTRDealMakerState | undefined
+      const metrics = state ? computeLtrMetricsFromState(state) : null
+      const score = metrics
+        ? scoreAgainstTargets({
+            capRate: metrics.capRate,
+            cashOnCash: metrics.cocReturn,
+            monthlyCashFlow: metrics.annualProfit / 12,
+            dscr: metrics.dscr,
+          })
+        : { targetsMet: 0 }
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+      trackEvent(WORKFLOW_EVENTS.deal_started, {
+        ...(propertyId ? { property_id: String(propertyId) } : {}),
+        deal_id: dealId,
+        option: structure ? optionKeyFromFamily(structure.family) : 'custom',
+        targets_met: score.targetsMet,
+        plan: isPro ? 'pro' : 'starter',
+      })
+      const next = new URLSearchParams(
+        searchParams?.toString() ||
+          (typeof window !== 'undefined' ? window.location.search : ''),
+      )
+      next.set('view', 'work')
+      next.set('dealId', dealId)
+      router.push(`/discovery?${next.toString()}`)
+    } catch (err) {
+      console.error('Start working this deal failed:', err)
+    } finally {
+      setStartingDeal(false)
+    }
+  }, [
+    isAuthenticated,
+    openAuthModal,
+    save,
+    savedPropertyId,
+    displayDealStructurePaths,
+    appliedPathId,
+    propertyInfo,
+    isPro,
+    searchParams,
+    router,
+  ])
 
   /**
    * Strip every key the path mapper might have written from `inlineOverrides`,
@@ -1310,8 +1448,6 @@ export function StrategyWorkbench({
     listPrice && modelTargetBuyRef.current
       ? ((listPrice - modelTargetBuyRef.current) / listPrice) * 100
       : dealGapPct
-  const strategyDscr =
-    activeStrategyId === 'brrrr' && annualDebt > 0 ? noi / annualDebt : (topStrategy?.dscr ?? null)
 
   // Rental strategies: derive all metrics from breakdown values so the metrics
   // bar, summary cards, and breakdown section stay internally consistent.
@@ -1381,6 +1517,91 @@ export function StrategyWorkbench({
     totalCashNeeded = ltrLiveMetrics.cashNeeded
   }
 
+  const strategyDscr = ltrLiveMetrics?.dscr ?? null
+
+  const ltrState = worksheetState as LTRDealMakerState
+  const planBaseline: PlanBaseline | null = ltrLiveMetrics
+    ? {
+        listPrice,
+        monthlyRent,
+        downPaymentPercent: downPaymentPct,
+        closingCostsPercent: closingCostsPct,
+        interestRate: rate,
+        loanTermYears,
+        vacancyRate: vacancyPct,
+        maintenanceRate: maintPct,
+        managementRate: mgmtPct,
+        capexRate: reservesPct,
+        annualPropertyTax: propertyTaxes,
+        annualInsurance: insurance,
+        monthlyHoa: ltrState.monthlyHoa,
+      }
+    : null
+  const scoredPlanOptions = planBaseline
+    ? scorePlanOptions(displayDealStructurePaths, planBaseline, PLAN_TARGET_DEFAULTS)
+    : []
+  const appliedPlanOption = scoredPlanOptions.find((option) => option.structureId === appliedPathId)
+  const livePlanScore = ltrLiveMetrics
+    ? scoreAgainstTargets({
+        capRate: ltrLiveMetrics.capRate,
+        cashOnCash: ltrLiveMetrics.cocReturn,
+        monthlyCashFlow: ltrLiveMetrics.annualProfit / 12,
+        dscr: ltrLiveMetrics.dscr,
+      })
+    : null
+  const planTargetBuy =
+    modelTargetBuyRef.current ?? initialDealStructures?.breakevenSummary?.targetBuyPrice ?? 0
+  const planIq = iqSources.value.iq ?? null
+  const planRange = sourceValueRange(iqSources)
+  const planDeltas = ltrLiveMetrics
+    ? closeDeltas(ltrState.buyPrice, listPrice, planIq)
+    : null
+  const planModel =
+    workflowV1 && ltrLiveMetrics && livePlanScore && planDeltas
+      ? formatPlanSnapshot({
+          optionKey: planCustomized
+            ? 'custom'
+            : appliedPlanOption
+              ? appliedPlanOption.key
+              : appliedPathId
+                ? 'custom'
+                : '3',
+          offerPrice: ltrState.buyPrice,
+          cashNeeded: ltrLiveMetrics.cashNeeded,
+          monthlyCashFlow: ltrLiveMetrics.annualProfit / 12,
+          cashOnCash: ltrLiveMetrics.cocReturn,
+          capRate: ltrLiveMetrics.capRate,
+          dscr: ltrLiveMetrics.dscr,
+          bankLoan: ltrLiveMetrics.loanAmount,
+          sellerAmount: ltrState.sellerFinancingAmount,
+          sellerRate: ltrState.sellerInterestRate,
+          balloonYear: ltrState.sellerBalloonYears ?? 5,
+          downPaymentPercent: ltrState.downPaymentPercent,
+          monthlyRent: ltrState.monthlyRent,
+          listPrice,
+          iqEstimate: planIq,
+          targetBuy: planTargetBuy,
+          askingGapDisplayPct: askingGapDisplayPct(listPrice, planTargetBuy),
+          gapLeftPct: gapLeftPct(ltrState.buyPrice, planTargetBuy),
+          targetsMet: livePlanScore.targetsMet,
+          capMet: livePlanScore.capMet,
+          cocMet: livePlanScore.cocMet,
+          cfMet: livePlanScore.cfMet,
+          dscrMet: livePlanScore.dscrMet,
+          vsList: planDeltas.vsList,
+          equity: planDeltas.equity,
+          sourceLow: planRange?.low ?? null,
+          sourceHigh: planRange?.high ?? null,
+          options: scoredPlanOptions,
+          appliedStructureId: planCustomized ? null : appliedPathId,
+          targets: PLAN_TARGET_DEFAULTS,
+        })
+      : null
+  const resetStructure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+  const resetOptionKey: PlanOptionKey = resetStructure
+    ? optionKeyFromFamily(resetStructure.family)
+    : '3'
+
   const benchmarks = isFlipOrWholesale
     ? [
         {
@@ -1400,28 +1621,34 @@ export function StrategyWorkbench({
         {
           metric: 'Cap Rate',
           value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—',
-          target: '6.0%',
-          status: capRateVal !== null && capRateVal >= 6.0 ? 'good' : 'poor',
+          target: `${PLAN_TARGET_DEFAULTS.capRate.toFixed(1)}%`,
+          status:
+            capRateVal !== null &&
+            capRateVal >= PLAN_TARGET_DEFAULTS.capRate &&
+            strategyCashFlow >= 0
+              ? 'good'
+              : 'poor',
         },
         {
           metric: 'Cash-on-Cash',
           value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
-          target: '8.0%',
-          status: cocVal !== null && cocVal >= 8.0 ? 'good' : 'poor',
+          target: `${PLAN_TARGET_DEFAULTS.cashOnCash.toFixed(1)}%`,
+          status:
+            cocVal !== null && cocVal >= PLAN_TARGET_DEFAULTS.cashOnCash ? 'good' : 'poor',
         },
         {
           metric: 'Monthly Cash Flow',
           value: formatCurrency(strategyCashFlow),
-          target: '+$300',
-          status: strategyCashFlow >= 300 ? 'good' : 'poor',
+          target: `+$${PLAN_TARGET_DEFAULTS.monthlyCashFlow}`,
+          status: strategyCashFlow >= PLAN_TARGET_DEFAULTS.monthlyCashFlow ? 'good' : 'poor',
         },
         ...(strategyDscr != null
           ? [
               {
                 metric: 'DSCR',
                 value: strategyDscr.toFixed(2),
-                target: '1.25',
-                status: strategyDscr >= 1.25 ? 'good' : 'poor',
+                target: PLAN_TARGET_DEFAULTS.dscr.toFixed(2),
+                status: strategyDscr >= PLAN_TARGET_DEFAULTS.dscr ? 'good' : 'poor',
               },
             ]
           : []),
@@ -1483,6 +1710,7 @@ export function StrategyWorkbench({
         : listPrice
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
+    if (workflowV1) setPlanCustomized(true)
     /* Worksheet `up()` field names → InlineDealMakerValues keys (`propertyTaxes`/`insurance` match worksheetState `io.*` and verdictPayload). */
     const fieldMap: Record<string, keyof InlineDealMakerValues> = {
       buyPrice: 'buyPrice',
@@ -1646,14 +1874,49 @@ export function StrategyWorkbench({
   return (
     <div
       className="strategy-page-shell"
-      style={{
-        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-      }}
+      style={
+        workflowV1
+          ? undefined
+          : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+      }
     >
       {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className={embedded ? WORKBENCH_EMBEDDED_GUTTER : WORKBENCH_PAGE_GUTTER}>
         <div className={WORKBENCH_STACK}>
+        {workflowV1 && planModel ? (
+          <PlanView
+            model={planModel}
+            onTune={() => setTuneOpen(true)}
+            onApply={handlePlanApply}
+            onStartDeal={() => {
+              void handleStartDeal()
+            }}
+            startingDeal={startingDeal}
+            onShareFullReport={() => handlePDFDownload('light')}
+            onShareExcel={() => {
+              void handleComprehensiveExcelDownload()
+            }}
+            onSharePdf={() => handlePDFDownload('light')}
+            trialPitch={
+              fromPlan && !isPro ? (
+                <PlanNextMove
+                  remainingAnalyses={
+                    isAuthenticated ? (billingUsage?.searches_remaining ?? null) : null
+                  }
+                  onStartTrial={() => setUpgradeModalOpen(true)}
+                  onAnalyzeAnother={() => router.push('/search')}
+                />
+              ) : !worksheetUnlocked ? (
+                strategyUnlockOverlay
+              ) : null
+            }
+          />
+        ) : null}
+
+        <div
+          hidden={Boolean(workflowV1 && planModel)}
+        >
         {/* Deal Gap bar — standalone only. Discovery already renders Investment
             Overview; repeating it here looks like the page duplicated. */}
         {!embedded && (
@@ -1669,7 +1932,7 @@ export function StrategyWorkbench({
         )}
 
         {/* Strategy framing — what to do next (keeps this distinct from DealMaker) */}
-        {embedded && (
+        {embedded && !workflowV1 && (
           <WorkbenchGuidance
             dealGapPct={dealGapPct}
             optionCount={strategyFilteredPaths.slice(0, 4).length}
@@ -1681,6 +1944,7 @@ export function StrategyWorkbench({
 
         {/* Options lead the workbench — same four paths Discovery showed. Visible
             to everyone; applying requires sign-in so the worksheet can receive them. */}
+        {!workflowV1 ? (
         <OptionsSection
           hasPaths={displayDealStructurePaths.length > 0}
           optionsHiddenForStrategy={optionsHiddenForStrategy}
@@ -1706,9 +1970,10 @@ export function StrategyWorkbench({
             setPitchModalStructure(structure)
           }}
         />
+        ) : null}
 
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
-        {fromPlan && !isPro && (
+        {fromPlan && !isPro && !workflowV1 && (
           <PlanNextMove
             remainingAnalyses={
               isAuthenticated ? (billingUsage?.searches_remaining ?? null) : null
@@ -1729,12 +1994,26 @@ export function StrategyWorkbench({
           />
         )}
 
-        {/* Financial Breakdown — free account, or this-tab plan continuity */}
+        </div>
+
+        {((node: ReactNode) =>
+          workflowV1 && planModel ? (
+            <TuneDrawer
+              open={tuneOpen}
+              onClose={() => setTuneOpen(false)}
+              onReset={handlePlanReset}
+              resetLabel={formatResetToOption(resetOptionKey)}
+            >
+              {node}
+            </TuneDrawer>
+          ) : (
+            node
+          ))(
         <AuthGate
           feature="view the full strategy breakdown"
           mode="section"
-          overlay={strategyUnlockOverlay}
-          unlocked={worksheetUnlocked}
+          overlay={workflowV1 ? undefined : strategyUnlockOverlay}
+          unlocked={workflowV1 || worksheetUnlocked}
         >
           <div className="flex flex-col gap-3">
             {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
@@ -1774,7 +2053,10 @@ export function StrategyWorkbench({
               {isRecalculating && (
                 <div className="absolute top-1 right-2 flex items-center gap-1.5">
                   <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>
+                  <span
+                    className={`${workflowV1 ? 'text-[13px]' : 'text-[10px]'} font-medium`}
+                    style={{ color: 'var(--accent-sky)' }}
+                  >
                     Recalculating
                   </span>
                 </div>
@@ -1787,7 +2069,7 @@ export function StrategyWorkbench({
                   },
                   { label: 'Cash Needed', value: formatCurrency(totalCashNeeded) },
                   {
-                    label: 'Deal Gap',
+                    label: workflowV1 ? 'Gap left' : 'Deal Gap',
                     value: `${modelDealGapPct >= 0 ? '-' : '+'}${Math.abs(modelDealGapPct).toFixed(1)}%`,
                     highlight: true,
                     negative: modelDealGapPct > 0,
@@ -1821,7 +2103,11 @@ export function StrategyWorkbench({
                           ariaLabel={`What does ${m.label} mean?`}
                           label={
                             <span
-                              className="text-[10px] sm:text-xs uppercase tracking-wider underline decoration-dotted underline-offset-2"
+                              className={
+                                workflowV1
+                                  ? 'text-[13px] tracking-wide underline decoration-dotted underline-offset-2'
+                                  : 'text-[10px] sm:text-xs uppercase tracking-wider underline decoration-dotted underline-offset-2'
+                              }
                               style={{ color: 'var(--text-body)' }}
                             >
                               {m.label}
@@ -1829,7 +2115,7 @@ export function StrategyWorkbench({
                           }
                           content={
                             <p
-                              className="text-xs leading-relaxed text-left normal-case"
+                              className={`${workflowV1 ? 'text-[13px]' : 'text-xs'} leading-relaxed text-left normal-case`}
                               style={{ color: 'var(--text-body)' }}
                             >
                               {glossary}
@@ -1840,7 +2126,11 @@ export function StrategyWorkbench({
                         />
                       ) : (
                         <span
-                          className="text-[10px] sm:text-xs uppercase tracking-wider"
+                          className={
+                            workflowV1
+                              ? 'text-[13px] tracking-wide'
+                              : 'text-[10px] sm:text-xs uppercase tracking-wider'
+                          }
                           style={{ color: 'var(--text-body)' }}
                         >
                           {m.label}
@@ -1849,6 +2139,9 @@ export function StrategyWorkbench({
                       <span
                         className="text-[13px] sm:text-base font-semibold tabular-nums"
                         style={{
+                          fontFamily: workflowV1
+                            ? 'var(--font-space-mono), "Space Mono", ui-monospace, monospace'
+                            : undefined,
                           color: m.negative
                             ? 'var(--status-negative)'
                             : m.highlight
@@ -1860,7 +2153,7 @@ export function StrategyWorkbench({
                       </span>
                       {keyBenchmark && (
                         <span
-                          className="text-[9px] font-medium tabular-nums"
+                          className={`${workflowV1 ? 'text-[13px]' : 'text-[9px]'} font-medium tabular-nums`}
                           style={{
                             color:
                               keyBenchmark.status === 'good'
@@ -1904,6 +2197,9 @@ export function StrategyWorkbench({
               onExportExcel={handleComprehensiveExcelDownload}
               flushWithinParent
               highlightedFields={highlightedFields}
+              tuneOpenGroup={
+                workflowV1 && planModel ? tuneGroupForOption(resetOptionKey) : null
+              }
               operatingExpenseDefaults={
                 dealGapOperatingOverrides?.landscapingAnnual != null
                   ? { landscapingAnnual: dealGapOperatingOverrides.landscapingAnnual }
@@ -1927,6 +2223,7 @@ export function StrategyWorkbench({
                     sources={iqSources}
                     onSourceChange={(type, _sourceId, _value) => {
                       if (_value == null) return
+                      if (workflowV1) setPlanCustomized(true)
                       const patch = type === 'value' ? { price: _value } : { monthlyRent: _value }
                       const nextSrcOverrides = { ...sourceOverrides, ...patch }
                       setSourceOverrides((prev) => ({ ...prev, ...patch }))
@@ -1989,6 +2286,8 @@ export function StrategyWorkbench({
                       work.
                     </>
                   )
+                ) : workflowV1 && livePlanScore ? (
+                  formatPlanBottomLine(livePlanScore.targetsMet)
                 ) : strategyCashFlow >= 0 ? (
                   <>
                     At a buy price of {formatCurrency(targetPrice)}, this property would{' '}
@@ -2016,6 +2315,7 @@ export function StrategyWorkbench({
           <BenchmarksSection benchmarks={benchmarks} dense={denseMode} />
           </div>
         </AuthGate>
+        )}
 
         {/* Save CTA — property bookmark + worksheet persistence for dashboard */}
         <SaveCtaSection

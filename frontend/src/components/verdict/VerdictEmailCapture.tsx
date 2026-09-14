@@ -18,6 +18,8 @@ export interface VerdictEmailCaptureProps {
   incomeValue: number | null
   targetBuy: number | null
   dealGap: number | null
+  /** `slim` is the workflow-v1 logged-out bar. `box` is the current Discovery card. */
+  variant?: 'box' | 'slim'
 }
 
 type CaptureState = 'idle' | 'submitting' | 'sent' | 'error'
@@ -28,6 +30,7 @@ export function VerdictEmailCapture({
   incomeValue,
   targetBuy,
   dealGap,
+  variant = 'box',
 }: VerdictEmailCaptureProps): ReactNode {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<CaptureState>('idle')
@@ -72,10 +75,15 @@ export function VerdictEmailCapture({
     }
   }
 
+  const isSlim = variant === 'slim'
+  const label = isSlim ? 'Save this verdict. Email me the numbers.' : 'Email me this Discovery'
+  const note = isSlim ? 'One email. No account.' : 'One email. No account. Unsubscribe in one click.'
+  const buttonLabel = isSlim ? 'Email me' : 'Email me this Discovery'
+
   if (state === 'sent') {
     return (
       <div
-        className="mt-6 rounded-2xl border p-5"
+        className={isSlim ? 'mt-4 mb-6 rounded-xl border px-4 py-3' : 'mt-6 rounded-2xl border p-5'}
         style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
         role="status"
       >
@@ -93,14 +101,21 @@ export function VerdictEmailCapture({
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="mt-6 rounded-2xl border p-5"
+      className={isSlim ? 'mt-4 mb-6 rounded-xl border px-4 py-3' : 'mt-6 rounded-2xl border p-5'}
       style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
     >
-      <label htmlFor="verdict-email" className="block text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
-        Email me this Discovery
+      <label
+        htmlFor="verdict-email"
+        className={`block font-bold ${isSlim ? 'text-[13px]' : 'text-sm'}`}
+        style={{ color: 'var(--text-heading)' }}
+      >
+        {label}
       </label>
-      <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        One email. No account. Unsubscribe in one click.
+      <p
+        className={`mt-1 leading-relaxed ${isSlim ? 'text-[13px]' : 'text-xs'}`}
+        style={{ color: isSlim ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+      >
+        {note}
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input
@@ -124,15 +139,22 @@ export function VerdictEmailCapture({
         <button
           type="submit"
           disabled={state === 'submitting'}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white"
+          className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold text-white ${
+            isSlim ? 'rounded-full' : 'rounded-xl'
+          }`}
           style={{ background: 'var(--accent-brand-blue)' }}
         >
           <Mail size={16} aria-hidden />
-          {state === 'submitting' ? 'Sending…' : 'Email me this Discovery'}
+          {state === 'submitting' ? 'Sending…' : buttonLabel}
         </button>
       </div>
       {error ? (
-        <p id="verdict-email-error" role="alert" className="mt-2 text-xs" style={{ color: 'var(--status-negative)' }}>
+        <p
+          id="verdict-email-error"
+          role="alert"
+          className={`mt-2 ${isSlim ? 'text-[13px]' : 'text-xs'}`}
+          style={{ color: 'var(--status-negative)' }}
+        >
           {error}
         </p>
       ) : null}

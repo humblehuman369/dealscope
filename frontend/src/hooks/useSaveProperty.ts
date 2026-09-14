@@ -39,8 +39,10 @@ export interface UseSavePropertyResult {
   isSaved: boolean
   savedPropertyId: string | null
   isSaving: boolean
+  /** True after the address check has settled. Used so Work does not flash empty. */
+  hasChecked: boolean
   toggle: () => Promise<void>
-  save: () => Promise<void>
+  save: () => Promise<string | null>
   unsave: () => Promise<void>
   /** Re-run saved/check (e.g. after Apply to Deal auto-save). */
   refreshSavedCheck: () => Promise<void>
@@ -53,6 +55,7 @@ export function useSaveProperty({
   const [isSaved, setIsSaved] = useState(false)
   const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [hasChecked, setHasChecked] = useState(!displayAddress)
   const queryClient = useQueryClient()
 
   // Incremented after save/unsave so in-flight checkSaved calls don't
@@ -60,7 +63,10 @@ export function useSaveProperty({
   const stateVersionRef = useRef(0)
 
   const checkSaved = useCallback(async () => {
-    if (!displayAddress) return
+    if (!displayAddress) {
+      setHasChecked(true)
+      return
+    }
     const capturedVersion = stateVersionRef.current
     try {
       const params = new URLSearchParams({ address: displayAddress })
@@ -77,15 +83,23 @@ export function useSaveProperty({
         setIsSaved(false)
         setSavedPropertyId(null)
       }
+    } finally {
+      if (stateVersionRef.current === capturedVersion) setHasChecked(true)
     }
   }, [displayAddress, propertySnapshot?.zpid])
+
+  useEffect(() => {
+    setHasChecked(!displayAddress)
+    setSavedPropertyId(null)
+    setIsSaved(false)
+  }, [displayAddress])
 
   useEffect(() => {
     checkSaved()
   }, [checkSaved])
 
-  const save = useCallback(async () => {
-    if (!displayAddress || isSaving) return
+  const save = useCallback(async (): Promise<string | null> => {
+    if (!displayAddress || isSaving) return null
     const parsed = parseAddressString(displayAddress)
     const snapshot: Record<string, unknown> = {}
     if (propertySnapshot) {
@@ -126,6 +140,7 @@ export function useSaveProperty({
       stateVersionRef.current++
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
       queryClient.invalidateQueries({ queryKey: SEARCH_HISTORY_KEYS.all })
+      return result?.id ?? null
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
       if (status === 409) {
@@ -139,9 +154,11 @@ export function useSaveProperty({
             `/api/v1/properties/saved/check?${rp.toString()}`,
           )
           if (check.saved_property_id) setSavedPropertyId(check.saved_property_id)
+          return check.saved_property_id
         } catch {
           /* best-effort */
         }
+        return savedPropertyId
       }
       throw err
     } finally {
@@ -169,5 +186,14 @@ export function useSaveProperty({
     else await save()
   }, [isSaved, savedPropertyId, save, unsave])
 
-  return { isSaved, savedPropertyId, isSaving, toggle, save, unsave, refreshSavedCheck: checkSaved }
+  return {
+    isSaved,
+    savedPropertyId,
+    isSaving,
+    hasChecked,
+    toggle,
+    save,
+    unsave,
+    refreshSavedCheck: checkSaved,
+  }
 }

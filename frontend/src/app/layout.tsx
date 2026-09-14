@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Poppins, Source_Sans_3, DM_Sans, Space_Mono } from 'next/font/google'
+import { Inter, Source_Sans_3, DM_Sans, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
@@ -16,13 +16,6 @@ import { BRAND_OG_IMAGE } from '@/lib/brand'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'swap',
-})
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
   display: 'swap',
 })
 
@@ -110,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`antialiased ${poppins.variable} ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}
+      className={`antialiased ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}
     >
       <head>
         <ThemeHydrationScript />

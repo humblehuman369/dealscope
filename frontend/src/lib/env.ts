@@ -138,3 +138,6 @@ export const WEB_BASE_URL = CONFIGURED_APP_URL
  * (kept so the two experiences can be A/B compared).
  */
 export const MAKE_IT_WORK_ENABLED: boolean = process.env.NEXT_PUBLIC_MAKE_IT_WORK !== 'off'
+
+/** Phase 1 Discovery/Plan redesign. Off unless explicitly set to "true". */
+export const WORKFLOW_V1_ENV_ENABLED: boolean = process.env.NEXT_PUBLIC_WORKFLOW_V1 === 'true'

@@ -49,6 +49,12 @@ import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor } from '@/lib/env'
+import { PathStepper } from '@/components/workflow/PathStepper'
+import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
+import { parseWorkflowV1View, pipelineDealId, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
+import { STATUS_CONFIG } from '@/lib/savedPropertyStatus'
+import { useSavedProperty } from '@/hooks/useSavedProperties'
+import { useWorkflowV1 } from '@/lib/workflowV1'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -90,7 +96,14 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'strategy' | 'price-checker' | 'deal-maker' | 'estimator'
+export type AppTab =
+  | 'analyze'
+  | 'strategy'
+  | 'price-checker'
+  | 'deal-maker'
+  | 'estimator'
+  | 'math'
+  | 'work'
 
 interface PropertyInfo {
   address: string
@@ -106,6 +119,11 @@ interface PropertyInfo {
   listingStatus?: string
   latitude?: number
   longitude?: number
+  daysOnMarket?: number
+  description?: string
+  photoUrl?: string
+  photos?: string[]
+  propertyId?: string
 }
 
 interface AppHeaderProps {
@@ -131,6 +149,13 @@ const TABS: { id: AppTab; label: string }[] = [
   { id: 'price-checker', label: 'Comps' },
   { id: 'deal-maker', label: 'DealMaker' },
   { id: 'estimator', label: 'Estimator' },
+]
+
+const V1_TABS: { id: AppTab; label: string }[] = [
+  { id: 'analyze', label: 'Discovery' },
+  { id: 'strategy', label: 'Plan' },
+  { id: 'math', label: 'Math' },
+  { id: 'work', label: 'Work' },
 ]
 
 // ===================
@@ -174,7 +199,8 @@ const ANALYSIS_WORKFLOW_PREFIXES = [
   '/rehab',
 ] as const
 
-function isAnalysisWorkflowRoute(pathname: string): boolean {
+function isAnalysisWorkflowRoute(pathname: string, workflowV1 = false): boolean {
+  if (workflowV1 && pathname.startsWith('/deals')) return true
   return ANALYSIS_WORKFLOW_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
@@ -182,9 +208,28 @@ const MENU_ITEM_CLASS =
   'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-[var(--hover-overlay)]'
 
 // Map routes to active tabs
-function getActiveTabFromPath(pathname: string): AppTab | undefined {
+function getActiveTabFromPath(
+  pathname: string,
+  searchParams?: URLSearchParams | null,
+  workflowV1 = false,
+): AppTab | undefined {
   // Homepage: no tab selected
   if (pathname === '/' || pathname === '') return undefined
+  if (workflowV1) {
+    if (pathname.startsWith('/discovery')) {
+      const tab = parseWorkflowV1View(searchParams?.get('view'))
+      if (tab === 'plan') return 'strategy'
+      if (tab === 'math') return 'math'
+      if (tab === 'work') return 'work'
+      return 'analyze'
+    }
+    if (pathname.startsWith('/price-intel') || pathname.startsWith('/rental-comps') || pathname.startsWith('/rehab')) {
+      return 'math'
+    }
+    if (pathname.startsWith('/deals')) return 'work'
+    if (pathname.startsWith('/deal-maker')) return 'strategy'
+    if (pathname.startsWith('/compare')) return 'math'
+  }
   if (pathname.startsWith('/discovery')) return 'analyze'
   if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
@@ -278,6 +323,8 @@ export function AppHeader({
   const { openAuthModal } = useAuthModal()
   const logoutMutation = useLogout()
   const { theme, toggleTheme, mounted } = useTheme()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const workflowV1Layout = workflowV1
 
   // Close profile menu on outside click
   useEffect(() => {
@@ -390,19 +437,36 @@ export function AppHeader({
 
         setResolvedProperty({
           address: addrParts.streetAddress,
-          city: addrParts.city,
-          state: addrParts.state,
-          zip: addrParts.zipCode,
+          city: typeof parsed.city === 'string' && parsed.city ? parsed.city : addrParts.city,
+          state: typeof parsed.state === 'string' && parsed.state ? parsed.state : addrParts.state,
+          zip: typeof parsed.zip === 'string' && parsed.zip ? parsed.zip : addrParts.zipCode,
           beds: toNumber(parsed.beds),
           baths: toNumber(parsed.baths),
           sqft: toNumber(parsed.sqft),
           yearBuilt: toNumber(parsed.yearBuilt ?? parsed.year_built),
           price: displayPrice,
-          zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
+          zpid:
+            typeof parsed.zpid === 'string'
+              ? parsed.zpid
+              : typeof parsed.zpid === 'number' && Number.isFinite(parsed.zpid)
+                ? String(parsed.zpid)
+                : undefined,
+          propertyId:
+            typeof parsed.propertyId === 'string'
+              ? parsed.propertyId
+              : typeof parsed.id === 'string'
+                ? parsed.id
+                : undefined,
           listingStatus:
             typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
           latitude: toNumber(parsed.latitude),
           longitude: toNumber(parsed.longitude),
+          daysOnMarket: toNumber(parsed.daysOnMarket ?? parsed.days_on_market),
+          description: typeof parsed.description === 'string' ? parsed.description : undefined,
+          photoUrl: typeof parsed.photoUrl === 'string' ? parsed.photoUrl : undefined,
+          photos: Array.isArray(parsed.photos)
+            ? parsed.photos.filter((url): url is string => typeof url === 'string' && url.length > 0)
+            : undefined,
         })
         return
       }
@@ -450,6 +514,11 @@ export function AppHeader({
     displayAddress: displayAddress || '',
     propertySnapshot: savePropertySnapshot,
   })
+  const dealId = pipelineDealId(searchParams ?? new URLSearchParams())
+  const pipelineDeal = useSavedProperty(dealId)
+  const pipelineStage = pipelineDeal.data
+    ? (STATUS_CONFIG[pipelineDeal.data.status]?.label ?? null)
+    : null
 
   // Close menus on navigation
   useEffect(() => {
@@ -464,7 +533,9 @@ export function AppHeader({
   // }
 
   // Determine active tab from prop or pathname
-  const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
+  const activeTab =
+    activeTabProp ?? getActiveTabFromPath(pathname || '', searchParams, workflowV1Layout)
+  const visibleTabs = workflowV1Layout ? V1_TABS : TABS
   const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
   const isHomepage = !pathname || pathname === '/'
 
@@ -475,10 +546,10 @@ export function AppHeader({
     pathname === '/pipeline'
 
   const showAnalysisTabs =
-    showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '')
+    showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '', workflowV1Layout)
 
   const showMapSearchFab =
-    isAnalysisWorkflowRoute(pathname || '') && !pathname?.startsWith('/map-search')
+    isAnalysisWorkflowRoute(pathname || '', workflowV1Layout) && !pathname?.startsWith('/map-search')
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar =
@@ -551,6 +622,15 @@ export function AppHeader({
     const stateZip = [state, zip].filter(Boolean).join(' ')
     return [displayAddress, city, stateZip].filter(Boolean).join(', ')
   })()
+
+  useEffect(() => {
+    if (!workflowV1Ready || !workflowV1 || !pathname) return
+    const target = workflowV1RedirectTarget(pathname, searchParams ?? new URLSearchParams())
+    if (!target) return
+    const current = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`
+    if (current === target) return
+    router.replace(target)
+  }, [workflowV1, workflowV1Ready, pathname, searchParams, router])
 
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
@@ -640,6 +720,24 @@ export function AppHeader({
           router.push('/rehab')
         }
         break
+      case 'math':
+        if (navigationAddress) {
+          router.push(`/discovery?address=${encodedAddress}&view=math`)
+        } else {
+          router.push('/search')
+        }
+        break
+      case 'work':
+        if (navigationAddress) {
+          router.push(`/discovery?address=${encodedAddress}&view=work`)
+        } else {
+          router.push('/search')
+        }
+        break
+      default: {
+        const _exhaustive: never = tab
+        return _exhaustive
+      }
     }
   }
 
@@ -665,7 +763,7 @@ export function AppHeader({
           aria-hidden="true"
         />
 
-        <header className="relative z-50">
+        <header className="relative z-50" aria-label="Site">
           {/* Brand Bar — logo | centered search | tools + theme + account */}
           <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 pt-safe-header">
             <button
@@ -890,7 +988,8 @@ export function AppHeader({
 
               <button
                 onClick={toggleTheme}
-                className="flex min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
+                className="flex min-w-11 min-h-11 p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ outlineColor: 'var(--accent-sky)' }}
                 aria-label={
                   mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
                 }
@@ -1115,7 +1214,7 @@ export function AppHeader({
                 WebkitOverflowScrolling: 'touch',
               }}
             >
-              {TABS.map((tab) => {
+              {visibleTabs.map((tab) => {
                 const isActive = tab.id === activeTab
                 const tourAttr =
                   tab.id === 'strategy'
@@ -1132,17 +1231,22 @@ export function AppHeader({
                     key={tab.id}
                     role="tab"
                     type="button"
+                    id={`workflow-tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
+                    aria-controls={workflowV1Layout ? 'workflow-tabpanel' : undefined}
                     data-tour={tourAttr}
                     onClick={() => handleTabChange(tab.id)}
-                    className="flex-1 min-w-0 px-2 sm:px-4 py-2.5 text-xs sm:text-base font-medium transition-colors whitespace-nowrap"
+                    className={`flex-1 min-w-0 min-h-11 px-2 sm:px-4 font-medium transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                      workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
+                    }`}
                     style={{
                       fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
                       color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',
                       borderBottom: isActive
                         ? `2px solid ${colors.brand.teal}`
                         : '2px solid transparent',
+                      outlineColor: 'var(--accent-sky)',
                     }}
                   >
                     <span className="sm:hidden">
@@ -1177,29 +1281,70 @@ export function AppHeader({
               className="sticky z-40"
               style={{ top: 'env(safe-area-inset-top, 0px)' }}
             >
-              <PropertyAddressBar
-                address={p?.address ?? addrParts.streetAddress}
-                city={barCity}
-                state={barState}
-                zip={barZip}
-                beds={p?.beds ?? 0}
-                baths={p?.baths ?? 0}
-                sqft={p?.sqft ?? 0}
-                price={p?.price ?? 0}
-                listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
-                zpid={p?.zpid}
-                latitude={p?.latitude}
-                longitude={p?.longitude}
-                bookmarked={isSaved}
-                onBookmarkClick={
-                  isAuthenticated
-                    ? () =>
-                        handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
-                    : () => router.push(signInUrl)
-                }
-                detailsCollapsed={scrolledPast}
-                loading={!p}
-              />
+              {workflowV1Layout ? (
+                <WorkflowPropertyHeader
+                  address={p?.address ?? addrParts.streetAddress}
+                  city={barCity}
+                  zip={barZip}
+                  beds={p?.beds}
+                  baths={p?.baths}
+                  sqft={p?.sqft}
+                  yearBuilt={p?.yearBuilt}
+                  listingStatus={p?.listingStatus}
+                  daysOnMarket={p?.daysOnMarket}
+                  pipelineStage={pipelineStage}
+                  zpid={p?.zpid}
+                  description={p?.description}
+                  photoUrl={p?.photoUrl}
+                  photos={p?.photos}
+                  propertyId={p?.propertyId}
+                />
+              ) : (
+                <PropertyAddressBar
+                  address={p?.address ?? addrParts.streetAddress}
+                  city={barCity}
+                  state={barState}
+                  zip={barZip}
+                  beds={p?.beds ?? 0}
+                  baths={p?.baths ?? 0}
+                  sqft={p?.sqft ?? 0}
+                  price={p?.price ?? 0}
+                  listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
+                  zpid={p?.zpid}
+                  latitude={p?.latitude}
+                  longitude={p?.longitude}
+                  bookmarked={isSaved}
+                  onBookmarkClick={
+                    isAuthenticated
+                      ? () =>
+                          handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
+                      : () => router.push(signInUrl)
+                  }
+                  detailsCollapsed={scrolledPast}
+                  loading={!p}
+                />
+              )}
+              {workflowV1Layout && showAnalysisTabs ? (
+                <div
+                  style={{
+                    background: 'var(--surface-chrome)',
+                    borderBottom: '1px solid var(--border-chrome)',
+                  }}
+                >
+                  <PathStepper
+                    tab={
+                      activeTab === 'strategy'
+                        ? 'plan'
+                        : activeTab === 'math'
+                          ? 'math'
+                          : activeTab === 'work'
+                            ? 'work'
+                            : 'discovery'
+                    }
+                    address={navigationAddress}
+                  />
+                </div>
+              ) : null}
             </div>
           )
         })()}
@@ -1221,7 +1366,7 @@ export function AppHeader({
             right: 'max(12px, env(safe-area-inset-right, 0px))',
             bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
             background: 'var(--accent-sky)',
-            color: '#fff',
+            color: 'var(--text-inverse)',
             border: '2px solid var(--surface-card)',
           }}
           aria-label="Map Search"

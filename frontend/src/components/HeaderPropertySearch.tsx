@@ -238,18 +238,26 @@ export function HeaderPropertySearch() {
         className="w-full"
       >
         <div
-          className="w-full min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 rounded-full border flex items-center gap-2"
+          className="w-full min-h-11 px-3 sm:px-4 rounded-full border flex items-center gap-2"
           style={{
             background: 'var(--surface-elevated)',
             borderColor: 'var(--border-default)',
           }}
         >
+          <label
+            htmlFor="header-address-search"
+            className="text-[13px] font-semibold shrink-0"
+            style={{ color: 'var(--text-heading)' }}
+          >
+            Address
+          </label>
           <Search
             className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 pointer-events-none"
             style={{ color: 'var(--text-secondary)' }}
             aria-hidden
           />
           <AddressAutocomplete
+            id="header-address-search"
             placeholder="Search address or MLS #…"
             value={address}
             onChange={(v) => {
@@ -263,9 +271,8 @@ export function HeaderPropertySearch() {
             onPlaceSelect={handlePlaceSelect}
             onManualSubmit={(text) => void submitAddress(text)}
             name="header-address"
-            aria-label="Search properties by address or MLS number"
-            className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-medium truncate py-2"
-            style={{ color: 'var(--text-heading)' }}
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-[13px] sm:text-sm font-medium truncate py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--text-heading)', outlineColor: 'var(--accent-sky)' }}
           />
           {validationStatus === 'validating' && (
             <Loader2

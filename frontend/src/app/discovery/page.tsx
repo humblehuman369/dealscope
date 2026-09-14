@@ -95,7 +95,30 @@ import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
+import { HowThisCloses } from '@/components/discovery/HowThisCloses'
+import { VerdictGapSlider } from '@/components/discovery/VerdictGapSlider'
+import { VerdictCard } from '@/components/discovery/VerdictCard'
+import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
+import { MathTab } from '@/components/workflow/MathTab'
+import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
+import { DealPageContent } from '@/app/deals/[id]/page'
+import { isPlanView, parseWorkflowV1View, resolveWorkDealId } from '@/lib/workflowRoutes'
+import { summarizeSourceStatus } from '@/lib/sourceStatus'
+import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
+import { useWorkflowV1 } from '@/lib/workflowV1'
+import {
+  formatSellerRead,
+  formatVerdictSentence,
+  sellerPathFromDealStructures,
+} from '@/lib/verdictCopy'
+import {
+  anyLeverClosesGap,
+  countVerdictSignals,
+  listingSignalsFromListing,
+  resolveCall,
+  type ListingSignalInput,
+} from '@/lib/verdictRules'
 import { useReviewPrompt } from '@/hooks/useReviewPrompt'
 import { usePersona } from '@/hooks/usePersona'
 import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
@@ -250,6 +273,8 @@ function VerdictContent() {
   const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const workflowV1Layout = workflowV1
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
@@ -341,7 +366,7 @@ function VerdictContent() {
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
 
-  const { savedPropertyId, save: saveProperty } = useSaveProperty({
+  const { savedPropertyId, hasChecked, save: saveProperty } = useSaveProperty({
     displayAddress: addressParam,
     propertySnapshot:
       overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
@@ -376,8 +401,9 @@ function VerdictContent() {
     setPhase: setTourPhase,
     setJoyrideIndex: setTourJoyrideIndex,
     dismissTour,
-  } = useWorkbenchTour({ ready: tourReady, isAuthenticated })
+  } = useWorkbenchTour({ ready: tourReady && !workflowV1Layout, isAuthenticated })
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
+  const [listingSignals, setListingSignals] = useState<ListingSignalInput | null>(null)
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
   const backendFullAddressRef = useRef('')
 
@@ -424,8 +450,10 @@ function VerdictContent() {
     hasRecordedAnalysisRef.current = false
   }, [addressParam, propertyIdParam])
 
-  // Analytics: verdict page view (when user landed with a property context)
+  // Analytics: verdict page view (when user landed with a property context).
+  // Workflow v1 fires from VerdictCard once the call is known — skip the mount fire.
   useEffect(() => {
+    if (!workflowV1Ready || workflowV1) return
     if (addressParam || propertyIdParam) {
       trackEvent(
         'verdict_viewed',
@@ -436,7 +464,7 @@ function VerdictContent() {
         newMetaEventId(),
       )
     }
-  }, [addressParam, propertyIdParam])
+  }, [addressParam, propertyIdParam, workflowV1, workflowV1Ready])
 
   // Record one analysis for Starter usage when verdict loads (address or saved property)
   useEffect(() => {
@@ -525,6 +553,7 @@ function VerdictContent() {
       setProperty(null)
       setAnalysis(null)
       setPropertyPhotos([])
+      setListingSignals(null)
       setMotivatedInsights([])
       setIqSources({
         value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
@@ -619,6 +648,7 @@ function VerdictContent() {
         }
 
         setProperty(propertyData)
+        setListingSignals(listingSignalsFromListing(data.listing))
         setStrMarketData({
           str_market_stats: data.rentals?.str_market_stats ?? null,
           str_regulatory: data.rentals?.str_regulatory ?? null,
@@ -638,21 +668,32 @@ function VerdictContent() {
           const fullAddress = [propertyData.address, propertyData.city, stateZip]
             .filter(Boolean)
             .join(', ')
-          writeDealMakerOverrides(
-            fullAddress || addressParam,
-            {
-              zpid: propertyData.zpid,
-              beds: propertyData.beds,
-              baths: propertyData.baths,
-              sqft: propertyData.sqft,
-              yearBuilt: propertyData.yearBuilt,
-              price: propertyData.price,
-              listingStatus: propertyData.listingStatus || null,
-              latitude: propertyData.latitude,
-              longitude: propertyData.longitude,
-            },
-            { origin: 'verdict_sync' },
-          )
+          const headerPatch = {
+            city: propertyData.city,
+            state: propertyData.state,
+            zip: propertyData.zip,
+            zpid: propertyData.zpid != null ? String(propertyData.zpid) : undefined,
+            propertyId: propertyData.id,
+            beds: propertyData.beds,
+            baths: propertyData.baths,
+            sqft: propertyData.sqft,
+            yearBuilt: propertyData.yearBuilt,
+            price: propertyData.price,
+            listingStatus: propertyData.listingStatus || null,
+            daysOnMarket: data.listing?.days_on_market ?? null,
+            description: data.listing?.description ?? null,
+            latitude: propertyData.latitude,
+            longitude: propertyData.longitude,
+          }
+          const resolvedAddress = fullAddress || addressParam
+          writeDealMakerOverrides(resolvedAddress, headerPatch, { origin: 'verdict_sync' })
+          if (
+            addressParam &&
+            canonicalizeAddressForIdentity(addressParam) !==
+              canonicalizeAddressForIdentity(resolvedAddress)
+          ) {
+            writeDealMakerOverrides(addressParam, headerPatch, { origin: 'verdict_sync' })
+          }
         } catch {
           // Ignore storage errors
         }
@@ -890,6 +931,31 @@ function VerdictContent() {
                   setPropertyPhotos(result.photos)
                   setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
                 }
+                try {
+                  const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+                  const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                    .filter(Boolean)
+                    .join(', ')
+                  const photoPatch = {
+                    photoUrl: result.photos[0] ?? null,
+                    photoCount: result.photos.length,
+                    photos: result.photos,
+                    propertyId: propertyData.id,
+                  }
+                  const resolvedPhotoAddress = fullAddress || addressParam
+                  writeDealMakerOverrides(resolvedPhotoAddress, photoPatch, {
+                    origin: 'verdict_sync',
+                  })
+                  if (
+                    addressParam &&
+                    canonicalizeAddressForIdentity(addressParam) !==
+                      canonicalizeAddressForIdentity(resolvedPhotoAddress)
+                  ) {
+                    writeDealMakerOverrides(addressParam, photoPatch, { origin: 'verdict_sync' })
+                  }
+                } catch {
+                  /* ignore */
+                }
               },
             )
           }
@@ -932,6 +998,7 @@ function VerdictContent() {
           imageUrl: undefined,
         }
         setProperty(fallbackProperty)
+        setListingSignals(listingSignalsFromListing(null))
       } finally {
         setIsLoading(false)
       }
@@ -1084,15 +1151,22 @@ function VerdictContent() {
     [parseAnalysisResponse],
   )
 
-  // Auto-redirect to DealMaker page if navigated with openDealMaker=1
+  // Auto-redirect to DealMaker (flag off) or Plan (flag on) if navigated with openDealMaker=1
   useEffect(() => {
     if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
+      if (workflowV1Layout) {
+        const next = new URLSearchParams(searchParams.toString())
+        next.delete('openDealMaker')
+        next.set('view', 'workbench')
+        router.replace(`/discovery?${next.toString()}`)
+        return
+      }
       const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
       const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
       router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, property, analysis])
+  }, [isLoading, property, analysis, workflowV1Layout])
 
   // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
   const handleBack = useCallback(() => {
@@ -1118,10 +1192,16 @@ function VerdictContent() {
   // Navigate to Deal Maker page with property data
   const handleNavigateToDealMaker = useCallback(() => {
     if (!property) return
+    if (workflowV1Layout) {
+      const next = new URLSearchParams(searchParams.toString())
+      next.set('view', 'workbench')
+      router.push(`/discovery?${next.toString()}`)
+      return
+    }
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
-  }, [property, router])
+  }, [property, router, workflowV1Layout, searchParams])
 
   // Navigate to property details page - requires a Zillow zpid
   // Property page requires address query param for backend fetch
@@ -1327,11 +1407,17 @@ function VerdictContent() {
   // /discovery?view=workbench&… (301 in next.config.js, params passed through).
   // Only auto-expands when collapsed, so it never clobbers in-page state.
   const viewParam = searchParams.get('view')
+  const v1Tab = workflowV1Layout ? parseWorkflowV1View(viewParam) : null
+  const workDealId =
+    v1Tab === 'work' ? resolveWorkDealId(searchParams, savedPropertyId) : null
   const strategyUrlParam = searchParams.get('strategy')
   const scenarioUrlParam = searchParams.get('scenario')
   const sectionUrlParam = searchParams.get('section')
   useEffect(() => {
-    if (viewParam !== 'workbench' || !addressParam) return
+    if (!isPlanView(viewParam) || !addressParam) {
+      if (!isPlanView(viewParam)) setWorkbenchRequest(null)
+      return
+    }
     setWorkbenchRequest(
       (prev) =>
         prev ?? {
@@ -1567,8 +1653,7 @@ function VerdictContent() {
   const incomeValue = analysis.incomeValue ?? property.price
   const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.7)
   const monthlyRent = property.monthlyRent || 0
-  const isListed =
-    !!property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
+  const isListed = isListedStatus(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
   // Deal Gap: discount from market/asking to Target Buy price.
@@ -1650,20 +1735,295 @@ function VerdictContent() {
     router.push(`/price-intel?${compsQuery.toString()}`)
   }
 
+  const navigateToPlan = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('view', 'workbench')
+    router.push(`/discovery?${next.toString()}`)
+  }
+
+  const navigateToSources = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('view', workflowV1Layout ? 'math' : 'sources')
+    if (workflowV1Layout) next.set('section', 'sources')
+    router.push(`/discovery?${next.toString()}`)
+  }
+
+  const signals = listingSignals ?? listingSignalsFromListing(null)
+  const signalBreakdown = countVerdictSignals(signals)
+  const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
+  const verdictCall = resolveCall(callGap, signalBreakdown.count, {
+    listPrice: property.price,
+    incomeValue,
+  })
+  const sellerPath = sellerPathFromDealStructures({
+    blendRecommendation: analysis.dealStructures?.blendRecommendation,
+    families: analysis.dealStructures?.paths.map((p) => p.family) ?? [],
+  })
+  const sellerRead = formatSellerRead(
+    { priceCuts: signals.priceCuts, daysOnMarket: signals.daysOnMarket },
+    sellerPath,
+  )
+  const verdictSentence = formatVerdictSentence({
+    listPrice: property.price,
+    targetBuy: purchasePrice,
+    gapPct: callGap,
+    sellerRead,
+    listed: isListed,
+    marketValue: property.price,
+  })
+  const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
+
+  const whySignals: WhySignal[] = (() => {
+    const items: WhySignal[] = [
+      {
+        id: 'listing-status',
+        kind: classifySignalKind(isOffMarket ? 'Off-market' : 'Actively listed'),
+        title: isOffMarket
+          ? 'Off-market — not listed for sale'
+          : 'Actively listed — competing buyers',
+        detail: isOffMarket
+          ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+          : 'Speed and terms matter when competing with other buyers.',
+      },
+    ]
+    motivatedInsights.forEach((insight, i) => {
+      const title = insight.highlight ? `${insight.label} ${insight.highlight}` : insight.label
+      items.push({
+        id: `motivated-${i}`,
+        kind: classifySignalKind(title),
+        title,
+        detail: insight.detail,
+      })
+    })
+    items.push({
+      id: 'target-buy',
+      kind: 'rest',
+      title: `Target buy: ${fmtShort(purchasePrice)} (${dealGapDisplay} gap)`,
+      detail: `A ${fmtShort(discountAmount)} discount below market to the profit zone (Target Buy). Cash flow breakeven is Income Value.`,
+    })
+    const investorTitle =
+      investorRegionLabel && investorRegionLabel !== 'U.S.'
+        ? `About ${cumulativeInvestorPct}% of investors close at this discount or deeper in ${investorRegionLabel} markets`
+        : `About ${cumulativeInvestorPct}% of investors close at this discount or deeper (U.S. baseline)`
+    items.push({
+      id: 'calibrated',
+      kind: 'rest',
+      title: investorTitle,
+      detail: probabilityTail,
+    })
+    items.push({
+      id: 'repairs',
+      kind: 'rest',
+      title: 'Repairs not included in initial analysis',
+      detail: workflowV1Layout
+        ? 'Use Plan to add a rehab budget and see the impact on returns.'
+        : 'Use DealMaker to add a rehab budget and see the impact on returns.',
+    })
+    items.push({
+      id: 'assumptions',
+      kind: 'rest',
+      title: 'Assumes 20% down · 6.0% · 30yr',
+      detail: workflowV1Layout
+        ? 'Edit financing terms in Plan to match your actual loan scenario.'
+        : 'Edit financing terms in DealMaker to match your actual loan scenario.',
+    })
+    if (
+      strMarketData?.str_regulatory?.rating &&
+      (strMarketData.str_regulatory.rating === 'Negative' ||
+        strMarketData.str_regulatory.rating === 'Restricted')
+    ) {
+      const dayLimit = strMarketData.str_regulatory.day_limit
+      items.push({
+        id: 'str-reg',
+        kind: 'rest',
+        title: `STR regulations: ${strMarketData.str_regulatory.rating}${
+          dayLimit ? ` — ${dayLimit} day limit` : ''
+        }`,
+        detail:
+          strMarketData.str_regulatory.rules_summary ||
+          'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.',
+      })
+    }
+    if (
+      strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
+      strMarketData.str_market_stats.yoy_occupancy_change < -20
+    ) {
+      items.push({
+        id: 'str-occ',
+        kind: classifySignalKind('STR occupancy'),
+        title: `STR occupancy down ${Math.abs(
+          strMarketData.str_market_stats.yoy_occupancy_change,
+        ).toFixed(0)}% year-over-year`,
+        detail:
+          'Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections.',
+      })
+    }
+    return items
+  })()
+
+  const photoGallery = (
+    <section id="property-gallery" className="mx-0 sm:mx-5 mt-6">
+      {property.zpid ? (
+        <PropertyPhotoGallery
+          zpid={String(property.zpid)}
+          initialImages={propertyPhotos}
+          hideThumbnails
+          address={property.address}
+          latitude={property.latitude}
+          longitude={property.longitude}
+        />
+      ) : property.imageUrl ? (
+        <div
+          className="rounded-[14px] overflow-hidden"
+          style={{ backgroundColor: 'var(--surface-elevated)' }}
+        >
+          <img
+            src={property.imageUrl}
+            alt={`Property at ${property.address}`}
+            className="w-full object-cover"
+            style={{ aspectRatio: '3/2' }}
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      ) : null}
+    </section>
+  )
+
+  const dataSourcesPanel = hasDataSources ? (
+    <div
+      ref={dataSourcesRef}
+      className="mt-3 rounded-xl overflow-hidden"
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsDataSourcesOpen((prev) => !prev)}
+        className="w-full px-4 py-3 flex items-center justify-between"
+        style={{ color: 'var(--text-heading)' }}
+        aria-expanded={isDataSourcesOpen}
+        aria-controls="verdict-data-sources-panel"
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={
+              workflowV1Layout
+                ? 'text-[13px] sm:text-[14px] font-bold tracking-wide'
+                : 'text-[12px] sm:text-[14px] font-bold uppercase tracking-wide'
+            }
+          >
+            {workflowV1Layout ? 'Data sources' : 'Data Sources'}
+          </span>
+          <span
+            className={workflowV1Layout ? 'text-[13px]' : 'text-[10px] sm:text-[12px]'}
+            style={{ color: 'var(--text-label)' }}
+          >
+            {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
+          </span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isDataSourcesOpen && (
+        <div
+          id="verdict-data-sources-panel"
+          className="px-3 pb-3 border-t"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
+          <IQEstimateSelector
+            sources={iqSources}
+            highlightIntro
+            showHeader={false}
+            compact
+            onSourceChange={(type, _sourceId, _value) => {
+              if (_value == null) return
+              setProperty((prev) => {
+                if (!prev) return prev
+                if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                if (type === 'value') return { ...prev, price: _value } as IQProperty
+                return prev
+              })
+              recalculateVerdict(
+                type === 'value' ? { list_price: _value } : { monthly_rent: _value },
+              )
+              try {
+                const stateZip = [property?.state, property?.zip]
+                  .filter(Boolean)
+                  .join(' ')
+                const fullAddress = [property?.address, property?.city, stateZip]
+                  .filter(Boolean)
+                  .join(', ')
+                if (type === 'value') {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      price: _value,
+                      listPrice: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                } else {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      monthlyRent: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                }
+              } catch {
+                // Ignore storage errors
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
+  ) : null
+
   return (
     <>
-      <div
-        className="min-h-screen bg-[var(--surface-base)]"
-        style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}
-      >
         {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Centered single-column container */}
-        <div className="w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto">
+        <main
+          className="min-h-screen bg-[var(--surface-base)] w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto"
+          style={
+            workflowV1Layout
+              ? undefined
+              : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+          }
+        >
+          <div
+            id="workflow-tabpanel"
+            role={workflowV1Layout ? 'tabpanel' : undefined}
+            aria-labelledby={
+              workflowV1Layout
+                ? v1Tab === 'plan'
+                  ? 'workflow-tab-strategy'
+                  : v1Tab === 'discovery'
+                    ? 'workflow-tab-analyze'
+                    : `workflow-tab-${v1Tab}`
+                : undefined
+            }
+          >
           {/* "Back to map" breadcrumb — only renders when the user arrived from
               a meaningful map-search session (snapshot present). Low-emphasis
               by design so it's a contextual nudge, not a primary CTA. */}
-          {hasMapSession && (
+          {hasMapSession && !workflowV1Layout && (
             <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
               <button
                 type="button"
@@ -1695,7 +2055,7 @@ function VerdictContent() {
             </div>
           )}
 
-          {propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
+          {!workflowV1Layout && propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
 
           {/* When Level 3 is open, collapse the verdict so Strategy does not
               stack a second full page (and a second Deal Gap overview) under it. */}
@@ -1746,34 +2106,86 @@ function VerdictContent() {
             </div>
           ) : null}
 
-          {!workbenchRequest && (
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'math' ? (
+            <MathTab
+              address={addressParam}
+              zpid={property.zpid != null ? String(property.zpid) : undefined}
+              lat={property.latitude ?? undefined}
+              lng={property.longitude ?? undefined}
+              compsView={searchParams.get('compsView') === 'rent' ? 'rent' : 'sale'}
+              section={sectionUrlParam}
+              dataSources={dataSourcesPanel}
+            />
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
+            workDealId ? (
+              <DealPageContent propertyId={workDealId} />
+            ) : hasChecked ? (
+              <WorkEmptyState onGoToPlan={navigateToPlan} />
+            ) : null
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' ? (
           <>
-          {/* Full-width photo gallery */}
-          <section className="mx-0 sm:mx-5 mt-6">
-            {property.zpid ? (
-              <PropertyPhotoGallery
-                zpid={String(property.zpid)}
-                initialImages={propertyPhotos}
-                hideThumbnails
-                address={property.address}
-                latitude={property.latitude}
-                longitude={property.longitude}
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+              <VerdictCard
+                listPrice={property.price}
+                incomeValue={incomeValue}
+                targetBuy={purchasePrice}
+                dealGapDisplayPct={effectiveDisplayPct}
+                sentence={verdictSentence}
+                listed={isListed}
+                call={verdictCall}
+                callFired={signalBreakdown.fired}
+                propertyId={
+                  propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                }
+                propertyState={property.state || null}
+                gap={callGap}
+                signals={signalBreakdown.count}
+                closes={leverCloses}
+                isAuthenticated={isAuthenticated}
+                onShowMath={navigateToSources}
+                onBuildPlan={navigateToPlan}
+                sourceStatus={summarizeSourceStatus(iqSources)}
+                gapSlider={
+                  <VerdictGapSlider
+                    listPrice={property.price}
+                    incomeValue={incomeValue}
+                    targetBuy={purchasePrice}
+                    dealGapDisplayPct={effectiveDisplayPct}
+                  />
+                }
               />
-            ) : property.imageUrl ? (
-              <div
-                className="rounded-[14px] overflow-hidden"
-                style={{ backgroundColor: 'var(--surface-elevated)' }}
-              >
-                <img
-                  src={property.imageUrl}
-                  alt={`Property at ${property.address}`}
-                  className="w-full object-cover"
-                  style={{ aspectRatio: '3/2' }}
-                  referrerPolicy="no-referrer"
+            </div>
+            {analysis.dealStructures?.hasPaths ? (
+              <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+                <HowThisCloses payload={analysis.dealStructures} />
+              </div>
+            ) : null}
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+              <WhyWeThinkSo signals={whySignals} />
+            </div>
+            {photoGallery}
+            {!isAuthenticated ? (
+              <div className="mx-0 sm:mx-5 px-3 sm:px-5">
+                <VerdictEmailCapture
+                  variant="slim"
+                  address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
+                  propertyId={propertyIdParam || property.id || null}
+                  incomeValue={Number.isFinite(incomeValue) ? incomeValue : null}
+                  targetBuy={Number.isFinite(purchasePrice) ? purchasePrice : null}
+                  dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
                 />
               </div>
             ) : null}
-          </section>
+          </>
+          ) : null}
+
+          {!workbenchRequest && !workflowV1Layout && (
+          <>
+          {photoGallery}
 
           {/* Main verdict content */}
           <section
@@ -1784,7 +2196,33 @@ function VerdictContent() {
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            {/* Investment Overview — 3 price cards */}
+            {workflowV1 ? (
+              <div className="mb-6">
+                <VerdictCard
+                  listPrice={property.price}
+                  incomeValue={incomeValue}
+                  targetBuy={purchasePrice}
+                  dealGapDisplayPct={effectiveDisplayPct}
+                  sentence={verdictSentence}
+                  listed={isListed}
+                  call={verdictCall}
+                  callFired={signalBreakdown.fired}
+                  propertyId={
+                    propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                  }
+                  propertyState={property.state || null}
+                  gap={callGap}
+                  signals={signalBreakdown.count}
+                  closes={leverCloses}
+                  isAuthenticated={isAuthenticated}
+                  onShowMath={navigateToComps}
+                  onBuildPlan={navigateToPlan}
+                />
+              </div>
+            ) : null}
+
+            {/* Investment Overview — 3 price cards. Hidden under workflow v1; the Verdict card owns the numbers. */}
+            {!workflowV1 ? (
             <div data-tour="verdict-prices">
               <div className="w-full flex items-start justify-between gap-3 mb-4">
                 <h2
@@ -1895,6 +2333,7 @@ function VerdictContent() {
                 ))}
               </div>
             </div>
+            ) : null}
 
             <VerdictEmailCapture
               address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
@@ -2213,105 +2652,7 @@ function VerdictContent() {
               )}
             </div>
 
-            {/* Data Sources Accordion */}
-            {hasDataSources && (
-              <div
-                ref={dataSourcesRef}
-                className="mt-3 rounded-xl overflow-hidden"
-                style={{
-                  background: 'var(--surface-card)',
-                  border: '1px solid var(--border-default)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsDataSourcesOpen((prev) => !prev)}
-                  className="w-full px-4 py-3 flex items-center justify-between"
-                  style={{ color: 'var(--text-heading)' }}
-                  aria-expanded={isDataSourcesOpen}
-                  aria-controls="verdict-data-sources-panel"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">
-                      Data Sources
-                    </span>
-                    <span
-                      className="text-[10px] sm:text-[12px]"
-                      style={{ color: 'var(--text-label)' }}
-                    >
-                      {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {isDataSourcesOpen && (
-                  <div
-                    id="verdict-data-sources-panel"
-                    className="px-3 pb-3 border-t"
-                    style={{ borderColor: 'var(--border-subtle)' }}
-                  >
-                    <IQEstimateSelector
-                      sources={iqSources}
-                      highlightIntro
-                      showHeader={false}
-                      compact
-                      onSourceChange={(type, _sourceId, _value) => {
-                        if (_value == null) return
-                        setProperty((prev) => {
-                          if (!prev) return prev
-                          if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
-                          if (type === 'value') return { ...prev, price: _value } as IQProperty
-                          return prev
-                        })
-                        recalculateVerdict(
-                          type === 'value' ? { list_price: _value } : { monthly_rent: _value },
-                        )
-                        try {
-                          const stateZip = [property?.state, property?.zip]
-                            .filter(Boolean)
-                            .join(' ')
-                          const fullAddress = [property?.address, property?.city, stateZip]
-                            .filter(Boolean)
-                            .join(', ')
-                          if (type === 'value') {
-                            writeDealMakerOverrides(
-                              fullAddress || addressParam,
-                              {
-                                price: _value,
-                                listPrice: _value,
-                              },
-                              { origin: 'source_selection' },
-                            )
-                          } else {
-                            writeDealMakerOverrides(
-                              fullAddress || addressParam,
-                              {
-                                monthlyRent: _value,
-                              },
-                              { origin: 'source_selection' },
-                            )
-                          }
-                        } catch {
-                          // Ignore storage errors
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+            {dataSourcesPanel}
 
             {/* Deal Gap Summary */}
             <div
@@ -2803,7 +3144,7 @@ function VerdictContent() {
           )}
 
           {/* Trust Strip — verdict-only; clutter under Level 3 */}
-          {!workbenchRequest && (
+          {!workbenchRequest && !workflowV1Layout && (
             <div
               className="px-3 sm:px-5 py-5 text-center border-t"
               style={{ borderColor: 'var(--border-subtle)' }}
@@ -2821,8 +3162,8 @@ function VerdictContent() {
               </p>
             </div>
           )}
-        </div>
-      </div>
+          </div>
+        </main>
 
       {/* Deal Gap Methodology Sheet */}
       <ScoreMethodologySheet
@@ -2894,14 +3235,16 @@ function VerdictContent() {
         />
       )}
 
-      {tourPhase ? (
+      {tourPhase && !workflowV1Layout ? (
         <WorkbenchTour
           phase={tourPhase}
           joyrideIndex={tourJoyrideIndex}
           onPhaseChange={setTourPhase}
           onJoyrideIndexChange={setTourJoyrideIndex}
           onDismiss={dismissTour}
-          onSaveDeal={saveProperty}
+          onSaveDeal={() => {
+            void saveProperty()
+          }}
         />
       ) : null}
 

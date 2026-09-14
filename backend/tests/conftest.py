@@ -15,6 +15,12 @@ SQLite. Two ways the engine is sourced, in order:
 Schema is materialised by running Alembic migrations against the chosen
 database (matches what production does). Per-test isolation comes from
 wrapping each test in a session whose work is rolled back in teardown.
+
+A reused compose volume can still hold committed rows from an earlier
+session (or from a script pointed at the test DB). Those survive rollback.
+Job-scan tables are truncated once at session start with a committed
+TRUNCATE so leftover LinkedIn / marketing / X rows cannot leak into the
+suite.
 """
 
 from __future__ import annotations
@@ -89,7 +95,7 @@ from scripts.seed_cash_buyers import row_values as buyer_row_values
 from scripts.seed_geo_cities import load_cities
 from scripts.seed_geo_counties import load_counties
 from scripts.seed_lenders import load_lenders, row_values
-from sqlalchemy import delete, insert
+from sqlalchemy import delete, insert, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -177,8 +183,29 @@ async def async_engine(database_url: str):
     await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
 
     engine = create_async_engine(database_url, echo=False, future=True)
+    await wipe_job_scan_tables(engine)
     yield engine
     await engine.dispose()
+
+
+# Tables that jobs scan globally. A leftover approved LinkedIn row from a
+# previous pytest run (or an import script aimed at the test DB) is visible
+# to every later test because per-test rollback cannot undo a committed
+# insert on another connection.
+JOB_SCAN_TABLES = (
+    "linkedin_posts",
+    "x_posts",
+    "bot_runs",
+    "marketing_metrics_daily",
+    "marketing_briefs",
+)
+
+
+async def wipe_job_scan_tables(engine) -> None:
+    """Committed truncate. Must not run inside the per-test rollback session."""
+    tables = ", ".join(JOB_SCAN_TABLES)
+    async with engine.begin() as conn:
+        await conn.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
 
 
 @pytest.fixture(scope="function")

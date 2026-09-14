@@ -6,6 +6,7 @@
 
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { computeLtrMetricsFromState } from '@/lib/ltrWorksheetMetrics'
 import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
 import type {
   StrategyType,
@@ -348,32 +349,10 @@ export function buildWorksheetMetrics(inputs: WorksheetMetricsInputs): AnyStrate
     case 'ltr':
     default: {
       if (ltrLiveMetrics) return ltrLiveMetrics
-      const ltrState = worksheetState as LTRDealMakerState
-      const ltrGrossMonthly = ltrState.monthlyRent + (ltrState.otherIncome ?? 0)
-      const ltrOpex = computeLtrOperatingExpenseBreakdown({
-        annualPropertyTax: ltrState.annualPropertyTax,
-        annualInsurance: ltrState.annualInsurance,
-        monthlyHoa: ltrState.monthlyHoa,
-        managementRate: ltrState.managementRate ?? 0,
-        maintenanceRate: ltrState.maintenanceRate,
-        annualGrossRent: ltrGrossMonthly * 12,
-        capexPct: ltrState.capexRate,
-        utilitiesMonthly: ltrState.utilitiesMonthly,
-        pestControlAnnual: ltrState.pestControlAnnual,
+      return computeLtrMetricsFromState(worksheetState as LTRDealMakerState, {
+        dealGapPct,
         landscapingAnnual: dealGapOperatingOverrides?.landscapingAnnual,
       })
-      return {
-        cashNeeded: cashNeededFromLtrState(ltrState),
-        dealGap: dealGapPct / 100,
-        annualProfit: strategyAnnualCashFlow,
-        capRate: capRateVal ?? 0,
-        cocReturn: cocVal ?? 0,
-        monthlyPayment: monthlyPI,
-        loanAmount,
-        equityCreated: 0,
-        grossMonthlyIncome: ltrGrossMonthly,
-        totalMonthlyExpenses: ltrOpex.total / 12,
-      } satisfies LTRDealMakerMetrics
     }
   }
 }

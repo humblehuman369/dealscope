@@ -94,7 +94,7 @@ export function StrategyUnlockPanel({
           style={{ color: 'var(--accent-sky)' }}
           aria-hidden
         />
-        <p className="text-[12px] leading-snug m-0" style={{ color: 'var(--text-body)' }}>
+        <p className="text-[13px] leading-snug m-0" style={{ color: 'var(--text-body)' }}>
           <span className="font-bold" style={{ color: 'var(--text-heading)' }}>
             Then close it:
           </span>{' '}
@@ -113,11 +113,12 @@ export function StrategyUnlockPanel({
       <div className="flex flex-col items-center gap-2">
         <Link
           href={signInUrl}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
+          className="w-full flex items-center justify-center gap-2 min-h-11 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl motion-reduce:transition-none motion-reduce:hover:scale-100 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'var(--accent-sky)',
-            color: '#fff',
+            color: 'var(--text-inverse)',
             boxShadow: '0 4px 24px rgba(8,145,178,0.4)',
+            outlineColor: 'var(--accent-sky)',
           }}
         >
           Show me how to close this deal →
@@ -125,13 +126,13 @@ export function StrategyUnlockPanel({
 
         <Link
           href={signInUrl}
-          className="text-xs font-medium transition-colors hover:underline underline-offset-2"
+          className="min-h-11 inline-flex items-center text-[13px] font-medium transition-colors hover:underline underline-offset-2"
           style={{ color: 'var(--text-secondary)' }}
         >
           Already a member? Sign in
         </Link>
 
-        <p className="text-[11px] mt-1" style={{ color: 'var(--text-label)' }}>
+        <p className="text-[13px] mt-1" style={{ color: 'var(--text-secondary)' }}>
           Free forever · No credit card · Takes 30 seconds
         </p>
       </div>

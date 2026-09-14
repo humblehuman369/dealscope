@@ -14,6 +14,9 @@ const DEFAULT_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_RETRIES = 2
 const RETRY_DELAY_MS = 1500
 
+const photoResultByZpid = new Map<string, PhotoResult>()
+const photoInflightByZpid = new Map<string, Promise<PhotoResult>>()
+
 /** Backend photos response shape */
 interface PhotosApiResponse {
   success?: boolean
@@ -62,6 +65,28 @@ function logPhotoFetch(zpid: string, result: PhotoResult, durationMs: number, at
  * - Returns structured result; never throws
  */
 export async function fetchPropertyPhotos(
+  zpid: string,
+  options?: { timeout?: number; maxRetries?: number; propertyId?: string },
+): Promise<PhotoResult> {
+  const cacheKey = String(zpid)
+  const cached = photoResultByZpid.get(cacheKey)
+  if (cached) return cached
+  const inflight = photoInflightByZpid.get(cacheKey)
+  if (inflight) return inflight
+
+  const pending = fetchPropertyPhotosUncached(cacheKey, options).then((result) => {
+    photoResultByZpid.set(cacheKey, result)
+    return result
+  })
+  photoInflightByZpid.set(cacheKey, pending)
+  try {
+    return await pending
+  } finally {
+    photoInflightByZpid.delete(cacheKey)
+  }
+}
+
+async function fetchPropertyPhotosUncached(
   zpid: string,
   options?: { timeout?: number; maxRetries?: number; propertyId?: string },
 ): Promise<PhotoResult> {

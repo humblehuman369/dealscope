@@ -14,6 +14,9 @@ frontend/out/
 # UX audit artifacts (screenshots, Playwright harness, downloaded browsers)
 .cursor-ux-audit/
 
+# Nested git worktrees. Never create these inside the repo.
+.worktrees/
+
 # OS files
 .DS_Store
 Thumbs.db

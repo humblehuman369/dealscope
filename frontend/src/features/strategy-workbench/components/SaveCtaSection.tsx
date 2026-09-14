@@ -66,7 +66,7 @@ export function SaveCtaSection({
 
   return (
     <section className={`${WORKBENCH_CARD} text-center`} style={WORKBENCH_CARD_STYLE}>
-      <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
+      <p className="text-[13px] font-bold m-0" style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
         {!isAuthenticated
           ? 'You\u2019ve seen the gap.'
           : isSaved && worksheetDirty

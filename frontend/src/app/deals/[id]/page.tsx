@@ -114,7 +114,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   )
 }
 
-function DealPageContent({ propertyId }: { propertyId: string }) {
+export function DealPageContent({ propertyId }: { propertyId: string }) {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const tabParam = (searchParams.get('tab') ?? 'overview') as Tab
