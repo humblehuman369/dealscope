@@ -59,7 +59,7 @@ export function MathTab({
   }, [section])
 
   return (
-    <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5 space-y-6 pb-10">
+    <div className="px-3 sm:px-6 mt-4 space-y-6 pb-10">
       <section aria-labelledby="math-sources-heading">
         <h2
           id="math-sources-heading"
