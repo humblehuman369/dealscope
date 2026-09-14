@@ -1218,7 +1218,9 @@ export function AppHeader({
                     aria-current={isActive ? 'page' : undefined}
                     data-tour={tourAttr}
                     onClick={() => handleTabChange(tab.id)}
-                    className="flex-1 min-w-0 px-2 sm:px-4 py-2.5 text-xs sm:text-base font-medium transition-colors whitespace-nowrap"
+                    className={`flex-1 min-w-0 px-2 sm:px-4 py-2.5 font-medium transition-colors whitespace-nowrap ${
+                      workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
+                    }`}
                     style={{
                       fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
                       color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',

@@ -54,17 +54,14 @@ const CALL_ICON = {
 const CALL_TONE = {
   worth_pursuing: {
     color: 'var(--status-positive)',
-    border: 'rgba(52, 211, 153, 0.55)',
     background: 'rgba(52, 211, 153, 0.12)',
   },
   only_with_terms: {
     color: 'var(--status-warning)',
-    border: 'rgba(251, 191, 36, 0.55)',
     background: 'rgba(251, 191, 36, 0.12)',
   },
   walk_away: {
     color: 'var(--status-negative)',
-    border: 'rgba(248, 113, 113, 0.55)',
     background: 'rgba(248, 113, 113, 0.12)',
   },
 } as const
@@ -243,12 +240,15 @@ export function VerdictCard({
       ) : null}
 
       <p
-        className="text-center font-mono tabular-nums text-[15px] font-semibold mt-5 mb-2"
-        style={{ color: 'var(--accent-sky)' }}
+        className="text-center tabular-nums text-[15px] font-semibold mt-5 mb-2"
+        style={{
+          color: 'var(--accent-sky)',
+          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
+        }}
       >
         {dealGapLabel}
       </p>
-      {gapSlider}
+      {gapSlider ? <div className="mb-1">{gapSlider}</div> : null}
 
       {showTips ? (
         <div className="mt-4">
@@ -292,7 +292,7 @@ export function VerdictCard({
           className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold"
           style={{
             color: tone.color,
-            border: `1px solid ${tone.border}`,
+            border: '1px solid var(--border-default)',
             background: tone.background,
             borderRadius: 6,
           }}
@@ -370,8 +370,11 @@ function NumberTile({
       }}
     >
       <p
-        className="font-mono tabular-nums font-bold leading-tight text-[22px] m-0"
-        style={{ color }}
+        className="tabular-nums font-bold leading-tight text-[22px] m-0"
+        style={{
+          color,
+          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
+        }}
       >
         {value}
       </p>

@@ -19,6 +19,8 @@ const inter = Inter({
   display: 'swap',
 })
 
+// Loaded so --font-poppins still resolves. No component requests Poppins;
+// font-sans / font-display now point at DM Sans (P0-5 / P1-9).
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],

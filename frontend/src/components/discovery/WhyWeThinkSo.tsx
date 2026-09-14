@@ -18,7 +18,7 @@ function SignalRow({ signal, first }: { signal: WhySignal; first?: boolean }) {
       style={{ borderTop: first ? 'none' : '1px solid var(--border-default)' }}
     >
       <p
-        className="m-0 font-mono tabular-nums text-[14px] font-semibold"
+        className="m-0 text-[14px] font-semibold tabular-nums"
         style={{ color: 'var(--text-heading)' }}
       >
         {signal.title}

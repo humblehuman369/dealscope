@@ -31,7 +31,7 @@ const HERO: CSSProperties = {
 }
 
 const NUM: CSSProperties = {
-  fontFamily: "'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+  fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
   fontVariantNumeric: 'tabular-nums',
 }
 
@@ -218,9 +218,11 @@ export function PlanView({
               <div className="mt-1 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>
                 {option.lever}
               </div>
-              <div className="mt-2 flex flex-col gap-0.5 text-[13px]" style={{ ...NUM, color: 'var(--text-body)' }}>
-                <span>{option.meetsLabel}</span>
-                <span>{option.cashFlowLabel}</span>
+              <div className="mt-2 flex flex-col gap-0.5 text-[13px]" style={{ color: 'var(--text-body)' }}>
+                <span className="tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {option.meetsLabel}
+                </span>
+                <span style={NUM}>{option.cashFlowLabel}</span>
               </div>
               {option.isBest ? (
                 <span

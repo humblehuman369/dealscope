@@ -98,6 +98,18 @@ describe('WorkflowPropertyHeader', () => {
     expect(screen.getByRole('dialog', { name: 'Photo gallery' })).toBeInTheDocument()
   })
 
+  it('uses a dashed grey outline for a pending listing', () => {
+    render(
+      <WorkflowPropertyHeader
+        address="1766 Wandering Willow Way"
+        listingStatus="PENDING"
+        daysOnMarket={12}
+      />,
+    )
+    const pill = screen.getByText('Listed · 12 days')
+    expect(pill.getAttribute('style')).toContain('1px dashed var(--border-strong)')
+  })
+
   it('shows No photos instead of a broken image when the listing has none', async () => {
     fetchPhotos.mockResolvedValue({ status: 'failed', photos: [] })
     render(

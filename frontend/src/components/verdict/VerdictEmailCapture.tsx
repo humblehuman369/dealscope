@@ -104,10 +104,17 @@ export function VerdictEmailCapture({
       className={isSlim ? 'mt-4 mb-6 rounded-xl border px-4 py-3' : 'mt-6 rounded-2xl border p-5'}
       style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
     >
-      <label htmlFor="verdict-email" className="block text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
+      <label
+        htmlFor="verdict-email"
+        className={`block font-bold ${isSlim ? 'text-[13px]' : 'text-sm'}`}
+        style={{ color: 'var(--text-heading)' }}
+      >
         {label}
       </label>
-      <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+      <p
+        className={`mt-1 leading-relaxed ${isSlim ? 'text-[13px]' : 'text-xs'}`}
+        style={{ color: isSlim ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+      >
         {note}
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -132,7 +139,9 @@ export function VerdictEmailCapture({
         <button
           type="submit"
           disabled={state === 'submitting'}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white"
+          className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold text-white ${
+            isSlim ? 'rounded-full' : 'rounded-xl'
+          }`}
           style={{ background: 'var(--accent-brand-blue)' }}
         >
           <Mail size={16} aria-hidden />
@@ -140,7 +149,12 @@ export function VerdictEmailCapture({
         </button>
       </div>
       {error ? (
-        <p id="verdict-email-error" role="alert" className="mt-2 text-xs" style={{ color: 'var(--status-negative)' }}>
+        <p
+          id="verdict-email-error"
+          role="alert"
+          className={`mt-2 ${isSlim ? 'text-[13px]' : 'text-xs'}`}
+          style={{ color: 'var(--status-negative)' }}
+        >
           {error}
         </p>
       ) : null}

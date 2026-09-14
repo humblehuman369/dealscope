@@ -1874,9 +1874,11 @@ export function StrategyWorkbench({
   return (
     <div
       className="strategy-page-shell"
-      style={{
-        fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-      }}
+      style={
+        workflowV1
+          ? undefined
+          : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+      }
     >
       {/* Header and property bar are provided by AppHeader in layout */}
 
@@ -2051,7 +2053,10 @@ export function StrategyWorkbench({
               {isRecalculating && (
                 <div className="absolute top-1 right-2 flex items-center gap-1.5">
                   <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>
+                  <span
+                    className={`${workflowV1 ? 'text-[13px]' : 'text-[10px]'} font-medium`}
+                    style={{ color: 'var(--accent-sky)' }}
+                  >
                     Recalculating
                   </span>
                 </div>
@@ -2098,7 +2103,11 @@ export function StrategyWorkbench({
                           ariaLabel={`What does ${m.label} mean?`}
                           label={
                             <span
-                              className="text-[10px] sm:text-xs uppercase tracking-wider underline decoration-dotted underline-offset-2"
+                              className={
+                                workflowV1
+                                  ? 'text-[13px] tracking-wide underline decoration-dotted underline-offset-2'
+                                  : 'text-[10px] sm:text-xs uppercase tracking-wider underline decoration-dotted underline-offset-2'
+                              }
                               style={{ color: 'var(--text-body)' }}
                             >
                               {m.label}
@@ -2106,7 +2115,7 @@ export function StrategyWorkbench({
                           }
                           content={
                             <p
-                              className="text-xs leading-relaxed text-left normal-case"
+                              className={`${workflowV1 ? 'text-[13px]' : 'text-xs'} leading-relaxed text-left normal-case`}
                               style={{ color: 'var(--text-body)' }}
                             >
                               {glossary}
@@ -2117,7 +2126,11 @@ export function StrategyWorkbench({
                         />
                       ) : (
                         <span
-                          className="text-[10px] sm:text-xs uppercase tracking-wider"
+                          className={
+                            workflowV1
+                              ? 'text-[13px] tracking-wide'
+                              : 'text-[10px] sm:text-xs uppercase tracking-wider'
+                          }
                           style={{ color: 'var(--text-body)' }}
                         >
                           {m.label}
@@ -2126,6 +2139,9 @@ export function StrategyWorkbench({
                       <span
                         className="text-[13px] sm:text-base font-semibold tabular-nums"
                         style={{
+                          fontFamily: workflowV1
+                            ? 'var(--font-space-mono), "Space Mono", ui-monospace, monospace'
+                            : undefined,
                           color: m.negative
                             ? 'var(--status-negative)'
                             : m.highlight
@@ -2137,7 +2153,7 @@ export function StrategyWorkbench({
                       </span>
                       {keyBenchmark && (
                         <span
-                          className="text-[9px] font-medium tabular-nums"
+                          className={`${workflowV1 ? 'text-[13px]' : 'text-[9px]'} font-medium tabular-nums`}
                           style={{
                             color:
                               keyBenchmark.status === 'good'

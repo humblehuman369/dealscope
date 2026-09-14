@@ -95,6 +95,7 @@ import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnaps
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { HowThisCloses } from '@/components/discovery/HowThisCloses'
+import { VerdictGapSlider } from '@/components/discovery/VerdictGapSlider'
 import { VerdictCard } from '@/components/discovery/VerdictCard'
 import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
 import { MathTab } from '@/components/workflow/MathTab'
@@ -1899,11 +1900,17 @@ function VerdictContent() {
         aria-controls="verdict-data-sources-panel"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">
-            Data Sources
+          <span
+            className={
+              workflowV1Layout
+                ? 'text-[13px] sm:text-[14px] font-bold tracking-wide'
+                : 'text-[12px] sm:text-[14px] font-bold uppercase tracking-wide'
+            }
+          >
+            {workflowV1Layout ? 'Data sources' : 'Data Sources'}
           </span>
           <span
-            className="text-[10px] sm:text-[12px]"
+            className={workflowV1Layout ? 'text-[13px]' : 'text-[10px] sm:text-[12px]'}
             style={{ color: 'var(--text-label)' }}
           >
             {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
@@ -1983,7 +1990,11 @@ function VerdictContent() {
     <>
       <div
         className="min-h-screen bg-[var(--surface-base)]"
-        style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}
+        style={
+          workflowV1Layout
+            ? undefined
+            : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+        }
       >
         {/* Header and property bar are provided by AppHeader in layout */}
 
@@ -2117,6 +2128,14 @@ function VerdictContent() {
                 onShowMath={navigateToSources}
                 onBuildPlan={navigateToPlan}
                 sourceStatus={summarizeSourceStatus(iqSources)}
+                gapSlider={
+                  <VerdictGapSlider
+                    listPrice={property.price}
+                    incomeValue={incomeValue}
+                    targetBuy={purchasePrice}
+                    dealGapDisplayPct={effectiveDisplayPct}
+                  />
+                }
               />
             </div>
             {analysis.dealStructures?.hasPaths ? (

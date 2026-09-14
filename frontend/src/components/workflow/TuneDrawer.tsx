@@ -72,7 +72,7 @@ export function TuneDrawer({ open, onClose, onReset, resetLabel, children }: Tun
             type="button"
             onClick={onClose}
             className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-full border-0 bg-transparent cursor-pointer text-[15px]"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: 'var(--text-secondary)' }}
             aria-label="Close"
           >
             Close

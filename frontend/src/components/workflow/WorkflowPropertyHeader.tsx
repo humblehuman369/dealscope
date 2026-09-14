@@ -186,7 +186,7 @@ export function WorkflowPropertyHeader({
 
         <div className="min-w-0 flex-1">
           <h1
-            className="m-0 font-semibold leading-tight text-[20px] sm:text-[24px]"
+            className="m-0 font-semibold leading-tight text-[24px]"
             style={{ color: 'var(--text-heading)' }}
           >
             {address}
@@ -203,7 +203,10 @@ export function WorkflowPropertyHeader({
             className="inline-flex items-center mt-2 mb-0 text-[13px] font-medium px-2 py-0.5"
             style={{
               color: 'var(--text-heading)',
-              border: '1px solid var(--border-default)',
+              border:
+                listingStatus === 'PENDING'
+                  ? '1px dashed var(--border-strong)'
+                  : '1px solid var(--border-default)',
               borderRadius: 6,
               background: 'var(--surface-elevated)',
             }}

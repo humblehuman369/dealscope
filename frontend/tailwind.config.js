@@ -187,18 +187,17 @@ module.exports = {
       },
 
       // ==========================================
-      // Typography — Inter single-family system
+      // Typography — DM Sans UI, Space Mono for money/rates (P1-9)
       //
-      //  Headlines: 700 weight
+      //  Headlines: 600–700 weight
       //  Body:      400 weight
-      //  Financial: 600 weight + tabular-nums
+      //  Financial: Space Mono + tabular-nums
       //  Logo only: Source Sans 3
-      //  No monospace — weight and color create
-      //  the data/prose distinction.
       // ==========================================
       fontFamily: {
         sans: [
-          'var(--font-poppins)',
+          'var(--font-dm-sans)',
+          'DM Sans',
           'var(--font-inter)',
           'Inter',
           '-apple-system',
@@ -206,7 +205,14 @@ module.exports = {
           'Segoe UI',
           'sans-serif',
         ],
-        display: ['var(--font-poppins)', 'var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
+        display: [
+          'var(--font-dm-sans)',
+          'DM Sans',
+          'var(--font-inter)',
+          'Inter',
+          '-apple-system',
+          'sans-serif',
+        ],
         logo: ['var(--font-source-sans)', '"Source Sans 3"', 'sans-serif'],
       },
       fontSize: {

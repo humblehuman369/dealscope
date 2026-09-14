@@ -53,6 +53,28 @@ describe('VerdictCard', () => {
     window.sessionStorage.clear()
   })
 
+  it('renders a supplied gap slider under the three numbers', () => {
+    render(
+      <VerdictCard
+        listPrice={625_999}
+        incomeValue={477_699}
+        targetBuy={453_814}
+        dealGapDisplayPct={-27.5}
+        sentence={WILLOW_SENTENCE}
+        call="worth_pursuing"
+        callFired={[]}
+        gap={27.5}
+        signals={0}
+        closes={false}
+        isAuthenticated={false}
+        onShowMath={vi.fn()}
+        onBuildPlan={vi.fn()}
+        gapSlider={<div>Gap slider fixture</div>}
+      />,
+    )
+    expect(screen.getByText('Gap slider fixture')).toBeInTheDocument()
+  })
+
   it('shows the Wandering Willow numbers, gap, and Section 5 sentence', () => {
     renderWillow()
     expect(screen.getByText(WILLOW_SENTENCE)).toBeInTheDocument()
