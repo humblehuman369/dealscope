@@ -86,6 +86,16 @@ describe('VerdictCard', () => {
     expect(screen.getByText(NUMBER_LABELS.target)).toBeInTheDocument()
   })
 
+  it('orders price tiles Target Buy, Income Value, Market Price to match the gap bar', () => {
+    renderWillow()
+    const tiles = screen.getAllByText(/^(Target buy|Income value|Market price)\./)
+    expect(tiles.map((el) => el.textContent)).toEqual([
+      NUMBER_LABELS.target,
+      NUMBER_LABELS.income,
+      NUMBER_LABELS.market,
+    ])
+  })
+
   it('shows first-run tips until Got it, then keeps them hidden after reload', () => {
     const first = renderWillow()
     for (const tip of VERDICT_TIPS) {
