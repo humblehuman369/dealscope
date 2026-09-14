@@ -55,6 +55,7 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
+import { SPEED_CLAIM } from '@/lib/claims'
 import { VerdictEmailCapture } from '@/components/verdict/VerdictEmailCapture'
 import { newMetaEventId } from '@/lib/metaPixel'
 import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
@@ -2752,8 +2753,8 @@ function VerdictContent() {
             </button>
             <div className="flex justify-center gap-6 mt-5">
               {(dealGapPct > 20 && !isAuthenticated
-                ? ['Discovery is free', 'No card required', '60 seconds']
-                : ['Try it Free', 'No signup needed', '60 seconds']
+                ? ['Discovery is free', 'No card required', SPEED_CLAIM]
+                : ['Try it Free', 'No signup needed', SPEED_CLAIM]
               ).map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2">
                   <svg

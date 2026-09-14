@@ -25,6 +25,7 @@ import {
   formatBuyerDirectoryLabel,
   formatLenderDirectoryTotal,
 } from '@/lib/directory-promo'
+import { SPEED_CLAIM_SENTENCE } from '@/lib/claims'
 
 /** Custom events used by the tooltip to pause/resume the auto-advance timer on hover. */
 export const TOUR_HOVER_PAUSE_EVENT = 'dealgapiq:tour-hover-pause'
@@ -151,7 +152,7 @@ function WelcomeModal({
           Your first deal analysis is done.
         </h2>
         <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          60 seconds. Six tools. One number that tells you exactly what to offer. Let&apos;s walk
+          {SPEED_CLAIM_SENTENCE}. Six tools. One number that tells you exactly what to offer. Let&apos;s walk
           it.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

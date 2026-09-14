@@ -20,6 +20,7 @@ import {
 } from './types'
 import { Play, Check } from 'lucide-react'
 import { formatCompactCurrency } from '@/utils/formatters'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void
@@ -612,7 +613,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       <section className="cta-section">
         <div className="container cta-content">
           <h2 className="cta-title font-display">Get Your Target Price Free</h2>
-          <p className="cta-subtitle">Point. Scan. Know exactly what to offer in 60 seconds.</p>
+          <p className="cta-subtitle">Point. Scan. Know exactly what to offer {SPEED_CLAIM}.</p>
           <button
             onClick={handleTryItNow}
             className="btn btn-glow"

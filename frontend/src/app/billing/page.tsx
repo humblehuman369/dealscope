@@ -21,6 +21,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard'
 import { isCapacitor } from '@/lib/env'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
 import { PriceCents } from '@/components/ui/PriceCents'
+import { PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH, PRO_YEARLY_PRICE } from '@/lib/claims'
 
 /* ── Design tokens (DealGapIQ billing design system) ─────────── */
 
@@ -65,10 +66,10 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
     {
       id: 'pro',
       name: 'Pro',
-      price: isAnnual ? '$29.17' : '$34.99',
+      price: isAnnual ? `$${PRO_YEARLY_PER_MONTH}` : PRO_MONTHLY_PRICE,
       period: '/month',
       note: isAnnual
-        ? 'Billed annually at $349.99 · Cancel anytime · 7-day free trial'
+        ? `Billed annually at ${PRO_YEARLY_PRICE} · Cancel anytime · 7-day free trial`
         : 'Billed monthly · Cancel anytime · 7-day free trial',
       recommended: true,
       features: [
@@ -107,7 +108,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
 const FAQ_ITEMS = [
   {
     q: 'What happens when my trial ends?',
-    a: "You'll be charged $349.99/yr (annual) or $34.99/mo (monthly). Cancel before the trial ends and you're never charged.",
+    a: `You'll be charged ${PRO_YEARLY_PRICE}/yr (annual) or ${PRO_MONTHLY_PRICE}/mo (monthly). Cancel before the trial ends and you're never charged.`,
   },
   {
     q: 'Can I switch back to Starter?',
@@ -293,7 +294,7 @@ function BillingContent() {
                 marginBottom: '0.5rem',
               }}
             >
-              <PriceCents>{isAnnual ? '$29.17' : '$34.99'}</PriceCents>/mo vs. one bad deal
+              <PriceCents>{isAnnual ? `$${PRO_YEARLY_PER_MONTH}` : PRO_MONTHLY_PRICE}</PriceCents>/mo vs. one bad deal
             </div>
             <div style={{ fontSize: '1rem', lineHeight: 1.75 }}>
               The average investor who skips proper underwriting overpays by{' '}

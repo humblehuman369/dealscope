@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { SOURCE_COUNT } from '@/lib/claims'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 export const metadata: Metadata = {
   title: 'Methodology — How DealGapIQ Calculates the Deal Gap | DealGapIQ',
   description:
-    'How DealGapIQ blends six data sources into the IQ Estimate, derives Target Buy and Income Value, and computes the Deal Gap. What we model, what we deliberately do not, and our editable-assumptions philosophy.',
+    `How DealGapIQ blends ${SOURCE_COUNT} data sources into the IQ Estimate, derives Target Buy and Income Value, and computes the Deal Gap. What we model, what we deliberately do not, and our editable-assumptions philosophy.`,
   alternates: { canonical: '/methodology' },
   openGraph: {
     title: 'Methodology — How DealGapIQ Calculates the Deal Gap',
     description:
-      'The six data sources, the IQ Estimate, the three core metrics, and what we deliberately do not model.',
+      `The ${SOURCE_COUNT} data sources, the IQ Estimate, the three core metrics, and what we deliberately do not model.`,
     url: '/methodology',
     type: 'article',
     images: [BRAND_OG_IMAGE],
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Methodology — How DealGapIQ Calculates the Deal Gap',
     description:
-      'Six data sources, the IQ Estimate, three core metrics, and what we deliberately do not model.',
+      `${SOURCE_COUNT} data sources, the IQ Estimate, three core metrics, and what we deliberately do not model.`,
   },
 }
 
@@ -35,7 +36,7 @@ const JSONLD = {
       '@id': `${PAGE_URL}#article`,
       headline: 'Methodology — How DealGapIQ Calculates the Deal Gap',
       description:
-        'How DealGapIQ blends six data sources into the IQ Estimate, derives Target Buy and Income Value, and computes the Deal Gap.',
+        `How DealGapIQ blends ${SOURCE_COUNT} data sources into the IQ Estimate, derives Target Buy and Income Value, and computes the Deal Gap.`,
       url: PAGE_URL,
       mainEntityOfPage: PAGE_URL,
       author: { '@id': `${SITE_URL}/about#brad-geisen` },

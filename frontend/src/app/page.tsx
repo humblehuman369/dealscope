@@ -2,10 +2,11 @@ import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { LENDER_COUNT, SPEED_CLAIM } from '@/lib/claims'
 
 const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
 const defaultDescription =
-  'Analyze properties across 6 investment strategies, see the Deal Gap, and get paid Pro access to verified cash buyers and 484+ hard money lenders. Score any deal in 60 seconds.'
+  `Analyze properties across 6 investment strategies, see the Deal Gap, and get paid Pro access to verified cash buyers and ${LENDER_COUNT} hard money lenders. Score any deal ${SPEED_CLAIM}.`
 
 export const metadata: Metadata = {
   title: defaultTitle,
@@ -31,7 +32,7 @@ const HOME_FAQ = [
   {
     question: 'What is DealGapIQ?',
     answer:
-      'DealGapIQ is a real estate investment analytics platform that scores any residential property in about 60 seconds across six strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — and shows the Deal Gap between the asking price and what actually works.',
+      `DealGapIQ is a real estate investment analytics platform that scores any residential property ${SPEED_CLAIM} across six strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — and shows the Deal Gap between the asking price and what actually works.`,
   },
   {
     question: 'How is DealGapIQ different from a spreadsheet?',

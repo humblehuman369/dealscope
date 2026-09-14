@@ -3,6 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 const t = {
   bgPrimary: '#000000',
@@ -572,7 +573,7 @@ const workflowSteps = [
     num: '02',
     label: 'SCREEN',
     title: 'Set your Buy Box, get an instant Discovery',
-    desc: 'Define your criteria once. Every property gets a PASS, MARGINAL, or BUY grade in 60 seconds.',
+    desc: `Define your criteria once. Every property gets a PASS, MARGINAL, or BUY grade ${SPEED_CLAIM}.`,
   },
   {
     num: '03',
@@ -811,7 +812,7 @@ export default function WhatIsDealGapIQ() {
             opacity: 0,
           }}
         >
-          DealGapIQ answers it in 60 seconds. Instead of hunting through listings, running
+          DealGapIQ answers it {SPEED_CLAIM}. Instead of hunting through listings, running
           spreadsheets, and guessing at numbers — analyze any property, any strategy, instantly, and
           see the exact price where the deal works.
         </p>

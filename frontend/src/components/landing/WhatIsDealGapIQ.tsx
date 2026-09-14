@@ -11,6 +11,7 @@ import { CalcWalkthrough } from './CalcWalkthrough'
 import { StrategyPills } from './StrategyPills'
 import { WorkflowSteps } from './WorkflowSteps'
 import { BeforeAfterComparison } from './BeforeAfterComparison'
+import { PRO_YEARLY_PER_MONTH } from '@/lib/claims'
 import './dealgapiq-homepage.css'
 
 export function WhatIsDealGapIQ() {
@@ -133,7 +134,7 @@ export function WhatIsDealGapIQ() {
           </svg>
         </Link>
         <div className="cta-sub-simple">
-          2 free analyses per month · No credit card required · Pro from $29.17/mo
+          2 free analyses per month · No credit card required · Pro from ${PRO_YEARLY_PER_MONTH}/mo
         </div>
       </div>
 

@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
 import GetAppClient from './GetAppClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 export const metadata: Metadata = {
   title: 'Get the DealGapIQ App',
   description:
-    'Download DealGapIQ for iOS and Android. Score any property in 60 seconds, see the Deal Gap, and get the price that makes the deal work — in your pocket.',
+    `Download DealGapIQ for iOS and Android. Score any property ${SPEED_CLAIM}, see the Deal Gap, and get the price that makes the deal work — in your pocket.`,
   alternates: { canonical: '/get-app' },
   openGraph: {
     title: 'Get the DealGapIQ App',
     description:
-      'Score any property in 60 seconds. Download DealGapIQ for iOS and Android.',
+      `Score any property ${SPEED_CLAIM}. Download DealGapIQ for iOS and Android.`,
     type: 'website',
     url: '/get-app',
     siteName: 'DealGapIQ',

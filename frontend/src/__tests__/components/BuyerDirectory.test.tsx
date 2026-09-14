@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { BUYER_TOTAL } from '@/lib/claims'
 
 const mockUseSubscription = vi.fn()
 const mockApiGet = vi.fn()
@@ -105,7 +106,7 @@ describe('BuyerDirectory paid access', () => {
       isAuthenticated: true,
       isLoading: false,
     })
-    mockApiGet.mockResolvedValue({ total: 2812, byState: [] })
+    mockApiGet.mockResolvedValue({ total: BUYER_TOTAL, byState: [] })
 
     renderDirectory()
 

@@ -359,6 +359,8 @@ export interface MapListing {
   photo_url: string | null
   source: string
   days_on_market: number | null
+  /** Recorded seller price cuts when the map payload includes them. */
+  price_cuts?: number | null
   year_built: number | null
   night_price?: number | null
   occupancy?: number | null

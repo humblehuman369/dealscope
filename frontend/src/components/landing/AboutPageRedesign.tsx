@@ -4,6 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { SOURCE_COUNT } from '@/lib/claims'
 import './about-page.css'
 
 const STRATEGIES = [
@@ -55,7 +56,7 @@ const MARKETING_ITEMS = [
 ]
 
 const INVESTOR_ITEMS = [
-  'Numbers from 5 cross-referenced data sources',
+  `Numbers from ${SOURCE_COUNT} cross-referenced data sources`,
   'IQ Estimate built on investor-grade methodology',
   'Rental income analysis with neighborhood comps',
   'Full cash flow, DSCR, and cap rate breakdown',

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PRO_MONTHLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
 
 export function CtaSection() {
   return (
@@ -10,7 +11,7 @@ export function CtaSection() {
         <br />
         Now Run Them on a Real Property.
       </h2>
-      <p>Income Value. Target Buy. Deal Gap. See yours in 60 seconds &mdash; free.</p>
+      <p>Income Value. Target Buy. Deal Gap. See yours {SPEED_CLAIM} &mdash; free.</p>
       <Link href="/register" className="cta-btn">
         Analyze Your First Property{' '}
         <svg
@@ -34,7 +35,7 @@ export function CtaSection() {
         </div>
         <div className="card-sm cta-tier" style={{ borderColor: 'rgba(15,164,233,.3)' }}>
           <div className="cta-tier-name">Pro</div>
-          <div className="cta-tier-price">$34.99/mo</div>
+          <div className="cta-tier-price">{PRO_MONTHLY_PRICE}/mo</div>
           <div className="cta-tier-desc">Unlimited analyses + Excel export</div>
         </div>
       </div>
