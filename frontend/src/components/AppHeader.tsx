@@ -48,7 +48,7 @@ import {
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
-import { isCapacitor, WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { PathStepper } from '@/components/workflow/PathStepper'
 import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
 import { parseWorkflowV1View, pipelineDealId, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
@@ -324,7 +324,7 @@ export function AppHeader({
   const logoutMutation = useLogout()
   const { theme, toggleTheme, mounted } = useTheme()
   const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
-  const workflowV1Layout = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
+  const workflowV1Layout = workflowV1
 
   // Close profile menu on outside click
   useEffect(() => {

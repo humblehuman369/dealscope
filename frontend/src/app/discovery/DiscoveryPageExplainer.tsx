@@ -3,7 +3,6 @@
 import { useSearchParams } from 'next/navigation'
 import { PageExplainer } from '@/components/seo/PageExplainer'
 import { SPEED_CLAIM } from '@/lib/claims'
-import { WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
 import { useWorkflowV1 } from '@/lib/workflowV1'
 
 /**
@@ -13,8 +12,8 @@ import { useWorkflowV1 } from '@/lib/workflowV1'
  */
 export function DiscoveryPageExplainer() {
   const searchParams = useSearchParams()
-  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
-  const hideForWorkflowV1 = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
+  const { enabled: workflowV1 } = useWorkflowV1()
+  const hideForWorkflowV1 = workflowV1
   if (hideForWorkflowV1) return null
   if (searchParams?.get('view') === 'workbench') return null
 

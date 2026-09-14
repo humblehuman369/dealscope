@@ -4,17 +4,18 @@ import { isPostHogFeatureEnabled } from '@/lib/posthog'
 
 export const WORKFLOW_V1_FLAG = 'workflow-v1'
 
-/** Env is the deploy kill switch. A missing PostHog flag counts as on. */
+/** Env is the deploy kill switch. A missing or false PostHog flag is off. */
 export function resolveWorkflowV1(
   envEnabled: boolean,
   posthogFlag: boolean | null,
 ): boolean {
   if (!envEnabled) return false
-  return posthogFlag ?? true
+  return posthogFlag === true
 }
 
 /**
- * True when NEXT_PUBLIC_WORKFLOW_V1=true and PostHog `workflow-v1` is not false.
+ * True when NEXT_PUBLIC_WORKFLOW_V1=true and PostHog `workflow-v1` is true.
+ * Missing PostHog, an explicit false, or env off keeps the old layout.
  * `ready` is true once the env miss or the PostHog read has settled.
  */
 export function useWorkflowV1(): { enabled: boolean; ready: boolean } {

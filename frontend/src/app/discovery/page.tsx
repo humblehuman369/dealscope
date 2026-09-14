@@ -81,7 +81,7 @@ import {
 } from '@/components/iq-verdict/VerdictGapGuidance'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { formatGapAmount, type FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
-import { MAKE_IT_WORK_ENABLED, WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
+import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import {
   parseStrategyWorksheetSection,
@@ -274,7 +274,7 @@ function VerdictContent() {
   const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
   const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
-  const workflowV1Layout = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
+  const workflowV1Layout = workflowV1
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
