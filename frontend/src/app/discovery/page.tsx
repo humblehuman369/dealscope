@@ -100,7 +100,7 @@ import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
 import { MathTab } from '@/components/workflow/MathTab'
 import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
 import { DealPageContent } from '@/app/deals/[id]/page'
-import { isPlanView, parseWorkflowV1View, pipelineDealId } from '@/lib/workflowRoutes'
+import { isPlanView, parseWorkflowV1View, resolveWorkDealId } from '@/lib/workflowRoutes'
 import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
@@ -364,7 +364,7 @@ function VerdictContent() {
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
 
-  const { savedPropertyId, save: saveProperty } = useSaveProperty({
+  const { savedPropertyId, hasChecked, save: saveProperty } = useSaveProperty({
     displayAddress: addressParam,
     propertySnapshot:
       overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
@@ -1403,7 +1403,8 @@ function VerdictContent() {
   // Only auto-expands when collapsed, so it never clobbers in-page state.
   const viewParam = searchParams.get('view')
   const v1Tab = workflowV1Layout ? parseWorkflowV1View(viewParam) : null
-  const workDealId = v1Tab === 'work' ? pipelineDealId(searchParams) : null
+  const workDealId =
+    v1Tab === 'work' ? resolveWorkDealId(searchParams, savedPropertyId) : null
   const strategyUrlParam = searchParams.get('strategy')
   const scenarioUrlParam = searchParams.get('scenario')
   const sectionUrlParam = searchParams.get('section')
@@ -2089,9 +2090,9 @@ function VerdictContent() {
           {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
             workDealId ? (
               <DealPageContent propertyId={workDealId} />
-            ) : (
+            ) : hasChecked ? (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
-            )
+            ) : null
           ) : null}
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' ? (

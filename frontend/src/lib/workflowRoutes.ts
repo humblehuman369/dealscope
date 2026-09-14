@@ -18,6 +18,18 @@ export function pipelineDealId(
   return id || null
 }
 
+/**
+ * URL `dealId` wins. Otherwise use the pipeline id looked up for this
+ * property (saved/check `saved_property_id`). Never the saved flag, and
+ * never `propertyId` / `savedPropertyId` from the URL.
+ */
+export function resolveWorkDealId(
+  search: Pick<URLSearchParams, 'get'>,
+  propertyPipelineId: string | null | undefined,
+): string | null {
+  return pipelineDealId(search) ?? (propertyPipelineId?.trim() || null)
+}
+
 export function parseWorkflowV1View(view: string | null | undefined): WorkflowV1Tab {
   if (view === 'workbench' || view === 'plan') return 'plan'
   if (view === 'math' || view === 'sources') return 'math'

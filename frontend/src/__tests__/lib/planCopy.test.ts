@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatGuideCompare,
   formatGuideStrong,
+  formatOptionsFooter,
   formatPlanSentence,
   formatPlanTitle,
 } from '@/lib/planCopy'
@@ -69,6 +70,21 @@ describe('guide copy', () => {
   it('calls the applied option strongest when it wins', () => {
     expect(formatGuideStrong({ targetsMet: 4, monthlyCashFlow: 817 })).toBe(
       'This is the strongest plan the levers make. It meets 4 of 4 targets and pays $817 a month. Start working it.',
+    )
+  })
+})
+
+describe('formatOptionsFooter', () => {
+  it('names the standard targets and does not mention the profile', () => {
+    expect(
+      formatOptionsFooter({
+        capRate: 6,
+        cashOnCash: 8,
+        monthlyCashFlow: 300,
+        dscr: 1.25,
+      }),
+    ).toBe(
+      "Scores use DealGapIQ's standard targets: 6.0% cap rate, 8.0% cash-on-cash, $300 a month, 1.25 DSCR.",
     )
   })
 })

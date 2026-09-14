@@ -5,6 +5,7 @@ import {
   isPlanView,
   parseWorkflowV1View,
   pipelineDealId,
+  resolveWorkDealId,
   workflowV1RedirectTarget,
 } from '@/lib/workflowRoutes'
 
@@ -90,5 +91,27 @@ describe('pipelineDealId', () => {
     expect(pipelineDealId(new URLSearchParams('propertyId=saved-1'))).toBe(null)
     expect(pipelineDealId(new URLSearchParams('address=1+Main'))).toBe(null)
     expect(pipelineDealId(new URLSearchParams('dealId=%20'))).toBe(null)
+  })
+})
+
+describe('resolveWorkDealId', () => {
+  it('uses the URL dealId when present', () => {
+    expect(
+      resolveWorkDealId(
+        new URLSearchParams('dealId=deal-9&propertyId=saved-1'),
+        'pipeline-from-address',
+      ),
+    ).toBe('deal-9')
+  })
+
+  it('falls back to the property pipeline id, not the saved or watched URL ids', () => {
+    expect(
+      resolveWorkDealId(
+        new URLSearchParams('propertyId=saved-1&savedPropertyId=watched-2'),
+        'pipeline-from-address',
+      ),
+    ).toBe('pipeline-from-address')
+    expect(resolveWorkDealId(new URLSearchParams('address=1+Main'), null)).toBe(null)
+    expect(resolveWorkDealId(new URLSearchParams('address=1+Main'), '  ')).toBe(null)
   })
 })

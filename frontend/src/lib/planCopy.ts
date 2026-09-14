@@ -141,7 +141,7 @@ export function formatOptionsFooter(targets: {
   monthlyCashFlow: number
   dscr: number
 }): string {
-  return `Scores use your Investment Assumptions: ${targets.capRate.toFixed(1)}% cap rate, ${targets.cashOnCash.toFixed(1)}% cash-on-cash, ${money(targets.monthlyCashFlow)} a month, ${targets.dscr.toFixed(2)} DSCR. Change them in your profile and every score updates.`
+  return `Scores use DealGapIQ's standard targets: ${targets.capRate.toFixed(1)}% cap rate, ${targets.cashOnCash.toFixed(1)}% cash-on-cash, ${money(targets.monthlyCashFlow)} a month, ${targets.dscr.toFixed(2)} DSCR.`
 }
 
 export function formatClosePurchaseCaption(vsList: number): string {
