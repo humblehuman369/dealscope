@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { PhotoLightbox } from '@/components/property-details/PhotoLightbox'
+import { countLabel } from '@/lib/pluralize'
 import { fetchPropertyPhotos } from '@/services/photoService'
 
 export interface WorkflowPropertyHeaderProps {
@@ -19,6 +20,9 @@ export interface WorkflowPropertyHeaderProps {
   zpid?: string | number
   description?: string | null
   photoUrl?: string | null
+  /** Same listing-photo array the flag-off gallery reads. */
+  photos?: string[]
+  propertyId?: string
 }
 
 function firstSentence(text: string): string {
@@ -45,6 +49,12 @@ export function photoAltText(input: {
   return `${input.address}. ${fallback}`
 }
 
+/** Display baths to the nearest half (2.5, 3). Never a tenth like 2.7. */
+export function formatBathCount(baths: number): string {
+  const rounded = Math.round(baths * 2) / 2
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
+}
+
 export function formatFactsLine(input: {
   city?: string
   zip?: string
@@ -58,8 +68,7 @@ export function formatFactsLine(input: {
   if (cityZip) parts.push(cityZip)
   if (input.beds != null && input.beds > 0) parts.push(`${input.beds} bd`)
   if (input.baths != null && input.baths > 0) {
-    const baths = Number.isInteger(input.baths) ? String(input.baths) : input.baths.toFixed(1)
-    parts.push(`${baths} ba`)
+    parts.push(`${formatBathCount(input.baths)} ba`)
   }
   if (input.sqft != null && input.sqft > 0) parts.push(`${input.sqft.toLocaleString('en-US')} sqft`)
   if (input.yearBuilt != null && input.yearBuilt > 0) parts.push(`Built ${input.yearBuilt}`)
@@ -78,7 +87,7 @@ export function formatStatusPill(input: {
     input.listingStatus === 'FOR_RENT'
   if (!listed) return 'Off-market'
   if (input.daysOnMarket != null && input.daysOnMarket > 0) {
-    return `Listed · ${input.daysOnMarket} days`
+    return `Listed · ${countLabel(input.daysOnMarket, 'day')}`
   }
   return 'Listed'
 }
@@ -97,14 +106,25 @@ export function WorkflowPropertyHeader({
   zpid,
   description,
   photoUrl,
+  photos: photosFromGallery,
+  propertyId,
 }: WorkflowPropertyHeaderProps) {
-  const [photos, setPhotos] = useState<string[]>(photoUrl ? [photoUrl] : [])
-  const [photosReady, setPhotosReady] = useState(!zpid)
+  const sharedPhotosKey = photosFromGallery ? photosFromGallery.join('\n') : null
+  const [photos, setPhotos] = useState<string[]>(() => {
+    if (photosFromGallery && photosFromGallery.length > 0) return photosFromGallery
+    return photoUrl ? [photoUrl] : []
+  })
+  const [photosReady, setPhotosReady] = useState(!zpid || photosFromGallery != null)
   const [broken, setBroken] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
   useEffect(() => {
     setBroken(false)
+    if (sharedPhotosKey != null) {
+      setPhotos(sharedPhotosKey === '' ? [] : sharedPhotosKey.split('\n').filter(Boolean))
+      setPhotosReady(true)
+      return
+    }
     if (photoUrl) setPhotos([photoUrl])
     if (!zpid) {
       setPhotos(photoUrl ? [photoUrl] : [])
@@ -113,7 +133,7 @@ export function WorkflowPropertyHeader({
     }
     let cancelled = false
     setPhotosReady(false)
-    fetchPropertyPhotos(String(zpid)).then((result) => {
+    fetchPropertyPhotos(String(zpid), propertyId ? { propertyId } : undefined).then((result) => {
       if (cancelled) return
       if (result.status === 'success' && result.photos.length > 0) {
         setPhotos(result.photos)
@@ -125,7 +145,7 @@ export function WorkflowPropertyHeader({
     return () => {
       cancelled = true
     }
-  }, [zpid, photoUrl])
+  }, [zpid, photoUrl, propertyId, sharedPhotosKey])
 
   const firstPhoto = !broken && photos[0] ? photos[0] : null
   const showPlaceholder = photosReady && !firstPhoto

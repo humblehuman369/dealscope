@@ -112,6 +112,10 @@ def test_blend_recommendation_reflects_distress_and_signals():
     assert signalled is not None
     assert signalled.startswith("2 price cuts already:")
 
+    one_cut = neg.build_blend_recommendation(base_ctx(price_reductions=1, deal_gap_pct=18.0), [])
+    assert one_cut is not None
+    assert one_cut.startswith("1 price cut already:")
+
     off_market = neg.build_blend_recommendation(
         base_ctx(days_on_market=4666, is_listed=False, market_temperature=None, deal_gap_pct=18.0),
         [],

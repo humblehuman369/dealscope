@@ -1,11 +1,14 @@
 'use client'
 
+import { useLayoutEffect, useRef, useState } from 'react'
+
 import { formatMoneyExact } from '@/lib/verdictCopy'
 
-export const GAP_LABEL_CLOSE_PCT = 14
+export const GAP_LABEL_MIN_GAP_PX = 16
 
 export type GapMarkerId = 'target' | 'income' | 'market'
 export type GapLabelStack = 'above' | 'below'
+export type GapLabelAlign = 'start' | 'center' | 'end'
 
 export interface GapMarkerInput {
   listPrice: number
@@ -33,7 +36,34 @@ const MARKERS: {
   { id: 'market', name: 'Market', color: 'var(--status-negative)', priceKey: 'listPrice' },
 ]
 
-/** Place the three prices on a min-to-max track. Close labels stack above the bar. */
+export function gapLabelAlign(pct: number): GapLabelAlign {
+  if (pct < 8) return 'start'
+  if (pct > 92) return 'end'
+  return 'center'
+}
+
+export function gapLabelRangePx(
+  pct: number,
+  width: number,
+  trackWidth: number,
+): { left: number; right: number } {
+  const anchor = (pct / 100) * trackWidth
+  const align = gapLabelAlign(pct)
+  if (align === 'start') return { left: anchor, right: anchor + width }
+  if (align === 'end') return { left: anchor - width, right: anchor }
+  return { left: anchor - width / 2, right: anchor + width / 2 }
+}
+
+function rangesCloserThan(
+  a: { left: number; right: number },
+  b: { left: number; right: number },
+  minGapPx: number,
+): boolean {
+  const gap = a.left <= b.left ? b.left - a.right : a.left - b.right
+  return gap < minGapPx
+}
+
+/** Place the three prices on a min-to-max track. Stacking is a separate pixel pass. */
 export function placeGapMarkers(input: GapMarkerInput): PlacedGapMarker[] {
   const raw: PlacedGapMarker[] = []
   for (const marker of MARKERS) {
@@ -58,14 +88,51 @@ export function placeGapMarkers(input: GapMarkerInput): PlacedGapMarker[] {
   for (const marker of raw) {
     marker.pct = span === 0 ? 50 : ((marker.price - min) / span) * 100
   }
+  return raw
+}
 
-  const sorted = [...raw].sort((a, b) => a.pct - b.pct || a.name.localeCompare(b.name))
+/**
+ * When two labels would overlap or sit closer than `minGapPx`, lift the
+ * middle marker (by position) above the bar — the mockup treatment.
+ */
+export function stackGapLabelsByPixels(
+  markers: PlacedGapMarker[],
+  labelWidths: Partial<Record<GapMarkerId, number>>,
+  trackWidth: number,
+  minGapPx = GAP_LABEL_MIN_GAP_PX,
+): PlacedGapMarker[] {
+  const next = markers.map((marker) => ({ ...marker, stack: 'below' as GapLabelStack }))
+  if (next.length < 2 || !(trackWidth > 0)) return next
+
+  const sorted = [...next].sort((a, b) => a.pct - b.pct || a.name.localeCompare(b.name))
+  const ranges = sorted.map((marker) => {
+    const width = labelWidths[marker.id]
+    if (!(width && width > 0)) return null
+    return gapLabelRangePx(marker.pct, width, trackWidth)
+  })
+
+  let collide = false
   for (let i = 1; i < sorted.length; i++) {
-    if (Math.abs(sorted[i].pct - sorted[i - 1].pct) < GAP_LABEL_CLOSE_PCT) {
-      sorted[i].stack = sorted[i - 1].stack === 'below' ? 'above' : 'below'
+    const prev = ranges[i - 1]
+    const curr = ranges[i]
+    if (prev && curr && rangesCloserThan(prev, curr, minGapPx)) {
+      collide = true
+      break
     }
   }
-  return raw
+  if (!collide) return next
+
+  const middle = sorted[Math.floor((sorted.length - 1) / 2)]
+  const target = next.find((marker) => marker.id === middle.id)
+  if (target) target.stack = 'above'
+  return next
+}
+
+function labelTransform(pct: number): string {
+  const align = gapLabelAlign(pct)
+  if (align === 'start') return 'translateX(0%)'
+  if (align === 'end') return 'translateX(-100%)'
+  return 'translateX(-50%)'
 }
 
 function describeGap(markers: PlacedGapMarker[], dealGapDisplayPct: number): string {
@@ -84,12 +151,28 @@ export function VerdictGapSlider({
   targetBuy,
   dealGapDisplayPct,
 }: GapMarkerInput & { dealGapDisplayPct: number }) {
-  const markers = placeGapMarkers({ listPrice, incomeValue, targetBuy })
+  const placed = placeGapMarkers({ listPrice, incomeValue, targetBuy })
+  const trackRef = useRef<HTMLDivElement>(null)
+  const labelRefs = useRef<Partial<Record<GapMarkerId, HTMLElement | null>>>({})
+  const [markers, setMarkers] = useState(placed)
+
+  useLayoutEffect(() => {
+    const nextPlaced = placeGapMarkers({ listPrice, incomeValue, targetBuy })
+    const trackWidth = trackRef.current?.getBoundingClientRect().width ?? 0
+    const widths: Partial<Record<GapMarkerId, number>> = {}
+    for (const marker of nextPlaced) {
+      const width = labelRefs.current[marker.id]?.getBoundingClientRect().width
+      if (width && width > 0) widths[marker.id] = width
+    }
+    setMarkers(stackGapLabelsByPixels(nextPlaced, widths, trackWidth))
+  }, [listPrice, incomeValue, targetBuy])
+
   if (markers.length === 0) return null
 
   return (
     <div className="relative mx-1 mt-1 mb-1" style={{ minHeight: 88 }}>
       <div
+        ref={trackRef}
         className="relative mx-4"
         style={{ height: 10, marginTop: 36, marginBottom: 32 }}
         role="img"
@@ -120,17 +203,15 @@ export function VerdictGapSlider({
             }}
           >
             <small
+              ref={(node) => {
+                labelRefs.current[marker.id] = node
+              }}
               className="absolute left-1/2 whitespace-nowrap text-[13px] tabular-nums"
               style={{
                 color: 'var(--text-secondary)',
                 fontVariantNumeric: 'tabular-nums',
                 top: marker.stack === 'above' ? -28 : 26,
-                transform:
-                  marker.pct < 8
-                    ? 'translateX(0%)'
-                    : marker.pct > 92
-                      ? 'translateX(-100%)'
-                      : 'translateX(-50%)',
+                transform: labelTransform(marker.pct),
               }}
             >
               {marker.name} {formatMoneyExact(marker.price)}

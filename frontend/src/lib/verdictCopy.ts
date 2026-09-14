@@ -3,6 +3,8 @@
  * Do not invent numbers here.
  */
 
+import { countLabel } from '@/lib/pluralize'
+
 export type SellerPath = 'price' | 'terms' | 'blend'
 
 export const VERDICT_WHY =
@@ -78,9 +80,9 @@ export function formatSellerRead(
   path: SellerPath | null,
 ): string {
   const parts: string[] = []
-  if (input.priceCuts > 0) parts.push(`${input.priceCuts} price cuts`)
+  if (input.priceCuts > 0) parts.push(countLabel(input.priceCuts, 'price cut'))
   if (input.daysOnMarket != null && input.daysOnMarket > 0) {
-    parts.push(`${input.daysOnMarket} days`)
+    parts.push(countLabel(input.daysOnMarket, 'day'))
   }
   if (parts.length === 0) return NO_SIGNALS
   const clause = path ? PATH_CLAUSE[path] : PATH_CLAUSE.price

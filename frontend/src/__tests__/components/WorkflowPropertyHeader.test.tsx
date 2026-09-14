@@ -37,11 +37,23 @@ describe('header copy helpers', () => {
         yearBuilt: 2006,
       }),
     ).toBe('Wellington 33414 · 4 bd · 3 ba · 2,184 sqft · Built 2006')
+    expect(
+      formatFactsLine({
+        city: 'Greenacres',
+        zip: '33413',
+        beds: 3,
+        baths: 2.7,
+        sqft: 1600,
+      }),
+    ).toBe('Greenacres 33413 · 3 bd · 2.5 ba · 1,600 sqft')
   })
 
   it('uses listing days or the pipeline stage for the status pill', () => {
     expect(formatStatusPill({ listingStatus: 'FOR_SALE', daysOnMarket: 224 })).toBe(
       'Listed · 224 days',
+    )
+    expect(formatStatusPill({ listingStatus: 'FOR_SALE', daysOnMarket: 1 })).toBe(
+      'Listed · 1 day',
     )
     expect(formatStatusPill({ listingStatus: 'OFF_MARKET' })).toBe('Off-market')
     expect(formatStatusPill({ listingStatus: 'FOR_SALE', pipelineStage: 'Analyzing' })).toBe(
@@ -108,6 +120,19 @@ describe('WorkflowPropertyHeader', () => {
     )
     const pill = screen.getByText('Listed · 12 days')
     expect(pill.getAttribute('style')).toContain('1px dashed var(--border-strong)')
+  })
+
+  it('uses the same photo array the gallery already fetched', async () => {
+    render(
+      <WorkflowPropertyHeader
+        address="110 Crosswinds Drive"
+        zpid="999"
+        photos={['https://img.example/listing-1.jpg', 'https://img.example/listing-2.jpg']}
+      />,
+    )
+    expect(fetchPhotos).not.toHaveBeenCalled()
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://img.example/listing-1.jpg')
+    expect(screen.getByRole('button', { name: '2 photos' })).toBeInTheDocument()
   })
 
   it('shows No photos instead of a broken image when the listing has none', async () => {

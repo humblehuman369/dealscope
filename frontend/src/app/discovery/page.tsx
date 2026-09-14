@@ -672,7 +672,8 @@ function VerdictContent() {
             city: propertyData.city,
             state: propertyData.state,
             zip: propertyData.zip,
-            zpid: propertyData.zpid,
+            zpid: propertyData.zpid != null ? String(propertyData.zpid) : undefined,
+            propertyId: propertyData.id,
             beds: propertyData.beds,
             baths: propertyData.baths,
             sqft: propertyData.sqft,
@@ -929,29 +930,31 @@ function VerdictContent() {
                 if (result.status === 'success' && result.photos.length > 0) {
                   setPropertyPhotos(result.photos)
                   setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
-                  try {
-                    const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
-                    const fullAddress = [propertyData.address, propertyData.city, stateZip]
-                      .filter(Boolean)
-                      .join(', ')
-                    const photoPatch = {
-                      photoUrl: result.photos[0],
-                      photoCount: result.photos.length,
-                    }
-                    const resolvedPhotoAddress = fullAddress || addressParam
-                    writeDealMakerOverrides(resolvedPhotoAddress, photoPatch, {
-                      origin: 'verdict_sync',
-                    })
-                    if (
-                      addressParam &&
-                      canonicalizeAddressForIdentity(addressParam) !==
-                        canonicalizeAddressForIdentity(resolvedPhotoAddress)
-                    ) {
-                      writeDealMakerOverrides(addressParam, photoPatch, { origin: 'verdict_sync' })
-                    }
-                  } catch {
-                    /* ignore */
+                }
+                try {
+                  const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+                  const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                    .filter(Boolean)
+                    .join(', ')
+                  const photoPatch = {
+                    photoUrl: result.photos[0] ?? null,
+                    photoCount: result.photos.length,
+                    photos: result.photos,
+                    propertyId: propertyData.id,
                   }
+                  const resolvedPhotoAddress = fullAddress || addressParam
+                  writeDealMakerOverrides(resolvedPhotoAddress, photoPatch, {
+                    origin: 'verdict_sync',
+                  })
+                  if (
+                    addressParam &&
+                    canonicalizeAddressForIdentity(addressParam) !==
+                      canonicalizeAddressForIdentity(resolvedPhotoAddress)
+                  ) {
+                    writeDealMakerOverrides(addressParam, photoPatch, { origin: 'verdict_sync' })
+                  }
+                } catch {
+                  /* ignore */
                 }
               },
             )

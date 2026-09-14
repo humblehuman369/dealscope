@@ -40,6 +40,15 @@ describe('formatSellerRead', () => {
     )
   })
 
+  it('pluralizes 1 vs 2 price cuts and days', () => {
+    expect(formatSellerRead({ priceCuts: 1, daysOnMarket: 1 }, 'price')).toBe(
+      'After 1 price cut and 1 day, this seller will most likely take a real price cut.',
+    )
+    expect(formatSellerRead({ priceCuts: 2, daysOnMarket: 2 }, 'price')).toBe(
+      'After 2 price cuts and 2 days, this seller will most likely take a real price cut.',
+    )
+  })
+
   it('returns the no-signal line when nothing fired', () => {
     expect(formatSellerRead({ priceCuts: 0, daysOnMarket: null }, 'blend')).toBe(
       'This seller has shown no sign of moving yet.',

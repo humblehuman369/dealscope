@@ -158,6 +158,27 @@ describe('buildHowThisClosesRows', () => {
     )
   })
 
+  it('keeps the engine 1 vs 2 price-cut phrasing in How this closes', () => {
+    expect(
+      howThisClosesParagraph({
+        ...PAYLOAD,
+        blendRecommendation:
+          '1 price cut already: a modest price cut plus a small seller-carried second is the most probable close.',
+      }),
+    ).toBe(
+      'Most likely close: a blend. 1 price cut already: a modest price cut plus a small seller-carried second is the most probable close.',
+    )
+    expect(
+      howThisClosesParagraph({
+        ...PAYLOAD,
+        blendRecommendation:
+          '2 price cuts already: a modest price cut plus a small seller-carried second is the most probable close.',
+      }),
+    ).toBe(
+      'Most likely close: a blend. 2 price cuts already: a modest price cut plus a small seller-carried second is the most probable close.',
+    )
+  })
+
   it('promotes Your move text when the gap is a conversation', () => {
     const small: DealStructuresPayload = {
       ...PAYLOAD,

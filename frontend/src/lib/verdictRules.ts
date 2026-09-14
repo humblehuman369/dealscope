@@ -3,6 +3,8 @@
  * Thresholds live here so they can change without touching the component.
  */
 
+import { countLabel } from '@/lib/pluralize'
+
 export const VERDICT_CALLS = ['worth_pursuing', 'only_with_terms', 'walk_away'] as const
 export type VerdictCall = (typeof VERDICT_CALLS)[number]
 
@@ -80,10 +82,10 @@ export function listingSignalsFromListing(
 export function countVerdictSignals(input: ListingSignalInput): VerdictSignalBreakdown {
   const fired: string[] = []
   if (input.daysOnMarket != null && input.daysOnMarket >= verdictRules.daysOnMarketSignal) {
-    fired.push(`${input.daysOnMarket} days on market`)
+    fired.push(`${countLabel(input.daysOnMarket, 'day')} on market`)
   }
   if (input.priceCuts >= verdictRules.priceCutsSignal) {
-    fired.push(`${input.priceCuts} price cuts`)
+    fired.push(countLabel(input.priceCuts, 'price cut'))
   }
   if (input.ownerOccupied === false) {
     fired.push('not owner-occupied')

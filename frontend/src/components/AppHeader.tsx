@@ -122,6 +122,8 @@ interface PropertyInfo {
   daysOnMarket?: number
   description?: string
   photoUrl?: string
+  photos?: string[]
+  propertyId?: string
 }
 
 interface AppHeaderProps {
@@ -443,7 +445,18 @@ export function AppHeader({
           sqft: toNumber(parsed.sqft),
           yearBuilt: toNumber(parsed.yearBuilt ?? parsed.year_built),
           price: displayPrice,
-          zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
+          zpid:
+            typeof parsed.zpid === 'string'
+              ? parsed.zpid
+              : typeof parsed.zpid === 'number' && Number.isFinite(parsed.zpid)
+                ? String(parsed.zpid)
+                : undefined,
+          propertyId:
+            typeof parsed.propertyId === 'string'
+              ? parsed.propertyId
+              : typeof parsed.id === 'string'
+                ? parsed.id
+                : undefined,
           listingStatus:
             typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
           latitude: toNumber(parsed.latitude),
@@ -451,6 +464,9 @@ export function AppHeader({
           daysOnMarket: toNumber(parsed.daysOnMarket ?? parsed.days_on_market),
           description: typeof parsed.description === 'string' ? parsed.description : undefined,
           photoUrl: typeof parsed.photoUrl === 'string' ? parsed.photoUrl : undefined,
+          photos: Array.isArray(parsed.photos)
+            ? parsed.photos.filter((url): url is string => typeof url === 'string' && url.length > 0)
+            : undefined,
         })
         return
       }
@@ -1276,6 +1292,8 @@ export function AppHeader({
                   zpid={p?.zpid}
                   description={p?.description}
                   photoUrl={p?.photoUrl}
+                  photos={p?.photos}
+                  propertyId={p?.propertyId}
                 />
               ) : (
                 <PropertyAddressBar

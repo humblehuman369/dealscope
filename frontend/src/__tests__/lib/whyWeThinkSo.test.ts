@@ -62,5 +62,6 @@ describe('splitWhySignals', () => {
     expect(visible).toHaveLength(3)
     expect(rest).toHaveLength(2)
     expect(seeMoreSignalsLabel(rest.length)).toBe('See 2 more signals')
+    expect(seeMoreSignalsLabel(1)).toBe('See 1 more signal')
   })
 })

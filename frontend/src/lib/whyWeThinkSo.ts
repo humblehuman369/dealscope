@@ -2,6 +2,8 @@
  * Why we think so — existing Key Insights, ordered. Text is not rewritten here.
  */
 
+import { pluralNoun } from '@/lib/pluralize'
+
 export const WHY_SIGNAL_KINDS = ['dom', 'price_cuts', 'occupancy', 'distress', 'rest'] as const
 export type WhySignalKind = (typeof WHY_SIGNAL_KINDS)[number]
 
@@ -51,5 +53,5 @@ export function splitWhySignals(
 }
 
 export function seeMoreSignalsLabel(count: number): string {
-  return `See ${count} more signals`
+  return `See ${count} more ${pluralNoun(count, 'signal')}`
 }
