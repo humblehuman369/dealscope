@@ -3,7 +3,7 @@
 from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.cashflow import (
-    TARGET_MONTHLY_CASH_FLOW,
+    TARGET_MONTHLY_CASH_FLOW_USD,
     project_monthly_cash_flow,
 )
 from app.services.deal_structures.context import StructureContext
@@ -27,13 +27,13 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     # Target Buy can be stale vs current rent/opex — bisect down until cash flow clears.
     if project_monthly_cash_flow(
         ctx, purchase_price=new_price, monthly_rent=ctx.monthly_rent
-    ) < TARGET_MONTHLY_CASH_FLOW:
+    ) < TARGET_MONTHLY_CASH_FLOW_USD:
         lo, hi = 0.0, new_price
         for _ in range(40):
             mid = (lo + hi) / 2
             if project_monthly_cash_flow(
                 ctx, purchase_price=mid, monthly_rent=ctx.monthly_rent
-            ) >= TARGET_MONTHLY_CASH_FLOW:
+            ) >= TARGET_MONTHLY_CASH_FLOW_USD:
                 new_price = mid
                 lo = mid
             else:

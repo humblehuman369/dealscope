@@ -17,7 +17,7 @@ from __future__ import annotations
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.cashflow import (
-    TARGET_MONTHLY_CASH_FLOW,
+    TARGET_MONTHLY_CASH_FLOW_USD,
     project_monthly_cash_flow,
     rent_for_target_cash_flow,
 )
@@ -212,7 +212,7 @@ def solve(
         return None
 
     # Monthly cash-flow gap to close + small cushion (matches existing templates).
-    gap = max(0.0, -ctx.baseline_monthly_cash_flow) + 25
+    gap = max(0.0, -ctx.baseline_monthly_cash_flow) + TARGET_MONTHLY_CASH_FLOW_USD
 
     # Realism weights — None component means weight 0.
     w_p = float(price_result.ranking_score) if price_result else 0.0
@@ -241,7 +241,7 @@ def solve(
         seller_carry_rate=0.0,
         seller_carry_term_years=DEFAULT_BALLOON_YEARS,
     )
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         max_rent = ctx.monthly_rent * (1 + RENT_MAX_BUMP_PCT)
         bumped = rent_for_target_cash_flow(
             ctx,
@@ -268,7 +268,7 @@ def solve(
                 seller_carry_term_years=DEFAULT_BALLOON_YEARS,
             )
 
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         lo, hi = 0.0, new_price
         best_price = 0.0
         for _ in range(40):
@@ -284,7 +284,7 @@ def solve(
                 seller_carry_rate=0.0,
                 seller_carry_term_years=DEFAULT_BALLOON_YEARS,
             )
-            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW_USD:
                 best_price = mid
                 lo = mid
             else:
@@ -304,7 +304,7 @@ def solve(
             seller_carry_term_years=DEFAULT_BALLOON_YEARS,
         )
 
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         return None
 
     # Cash to close: price drop reduces it; seller carry stays in 1st/2nd ratio.

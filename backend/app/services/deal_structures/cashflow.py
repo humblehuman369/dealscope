@@ -8,8 +8,8 @@ from app.services.calculators.common import (
 )
 from app.services.deal_structures.context import StructureContext
 
-# Cushion used by rent-uplift and path solvers.
-TARGET_MONTHLY_CASH_FLOW = 25.0
+# Plan / solver cash-flow target. Unit is in the name: dollars per month.
+TARGET_MONTHLY_CASH_FLOW_USD = 300.0
 
 
 def project_monthly_cash_flow(
@@ -60,7 +60,7 @@ def rent_for_target_cash_flow(
     ctx: StructureContext,
     *,
     purchase_price: float,
-    target_monthly_cf: float = TARGET_MONTHLY_CASH_FLOW,
+    target_monthly_cf: float = TARGET_MONTHLY_CASH_FLOW_USD,
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 5,

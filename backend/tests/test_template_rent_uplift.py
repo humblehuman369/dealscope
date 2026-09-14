@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.services.deal_structures.cashflow import TARGET_MONTHLY_CASH_FLOW_USD
 from app.services.deal_structures.templates import rent_uplift
 
 from tests._deal_structures_helpers import base_ctx
@@ -29,7 +30,7 @@ def test_target_rent_positive_cash_flow_at_list_even_when_bump_exceeds_20_pct():
     new_rent = result.pre_loaded_record["custom_rent_estimate"]
     assert new_rent > ctx.monthly_rent * 1.20  # gap too large for old 20% cap
     cf = _monthly_cf_at_list(ctx, new_rent)
-    assert cf >= 25.0 - 0.01
+    assert cf >= TARGET_MONTHLY_CASH_FLOW_USD - 0.01
     assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price
 
 

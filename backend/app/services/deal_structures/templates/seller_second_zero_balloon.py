@@ -8,7 +8,7 @@ This is the trending creative-finance pattern (Pace Morby, BiggerPockets).
 from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.cashflow import (
-    TARGET_MONTHLY_CASH_FLOW,
+    TARGET_MONTHLY_CASH_FLOW_USD,
     project_monthly_cash_flow,
     rent_for_target_cash_flow,
 )
@@ -48,7 +48,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     # Solve for the 2nd-mortgage principal X such that:
     #   monthly P&I on (loan - X) at note_rate >= baseline P&I - target_savings
     # Where target_savings is the monthly gap to close.
-    target_savings = max(0.0, -ctx.baseline_monthly_cash_flow) + 25  # closes gap + $25 cushion
+    target_savings = max(0.0, -ctx.baseline_monthly_cash_flow) + TARGET_MONTHLY_CASH_FLOW_USD
 
     bank_loan = ctx.list_price * (1 - ctx.down_payment_pct)
     max_second = ctx.list_price * MAX_SECOND_AS_PCT_OF_PRICE
@@ -88,7 +88,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         seller_carry_term_years=DEFAULT_BALLOON_YEARS,
     )
     # Full ask + max 2nd still negative → step down to Target Buy and re-size the 2nd.
-    if cf < TARGET_MONTHLY_CASH_FLOW and ctx.target_buy_price < new_price:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD and ctx.target_buy_price < new_price:
         new_price = ctx.target_buy_price
         bank_loan = new_price * (1 - ctx.down_payment_pct)
         max_second = new_price * MAX_SECOND_AS_PCT_OF_PRICE
@@ -104,7 +104,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 seller_carry_rate=0.0,
                 seller_carry_term_years=DEFAULT_BALLOON_YEARS,
             )
-            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW_USD:
                 chosen_second = mid
                 hi = mid
             else:
@@ -124,7 +124,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             seller_carry_term_years=DEFAULT_BALLOON_YEARS,
         )
 
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         max_rent = ctx.monthly_rent * (1 + MAX_REALISTIC_BUMP_PCT)
         bumped = rent_for_target_cash_flow(
             ctx,
@@ -145,7 +145,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 seller_carry_term_years=DEFAULT_BALLOON_YEARS,
             )
 
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         # Maximize purchase price subject to positive cash flow (may be below Target Buy).
         lo, hi = 0.0, new_price
         best_price = 0.0
@@ -160,7 +160,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 seller_carry_rate=0.0,
                 seller_carry_term_years=DEFAULT_BALLOON_YEARS,
             )
-            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW_USD:
                 best_price = mid
                 lo = mid
             else:
@@ -184,7 +184,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             seller_carry_term_years=DEFAULT_BALLOON_YEARS,
         )
 
-    if cf < TARGET_MONTHLY_CASH_FLOW:
+    if cf < TARGET_MONTHLY_CASH_FLOW_USD:
         return None
 
     # Realism scoring — this structure has been getting more common.
