@@ -147,5 +147,8 @@ export function mapDealStructuresFromApi(
     breakevenSummary: mapSummary(raw.breakeven_summary ?? raw.breakevenSummary),
     blendRecommendation: typeof blend === 'string' && blend ? blend : null,
     unavailableWays: mapUnavailableWays(raw.unavailable_ways ?? raw.unavailableWays),
+    monthlyCashFlowTarget: finiteOrNull(
+      raw.monthly_cash_flow_target ?? raw.monthlyCashFlowTarget,
+    ),
   }
 }

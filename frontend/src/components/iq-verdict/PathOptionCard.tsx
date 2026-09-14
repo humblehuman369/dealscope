@@ -99,6 +99,8 @@ export interface DealStructuresPayload {
   breakevenSummary?: BreakevenSummary | null
   blendRecommendation?: string | null
   unavailableWays?: WayUnavailable[]
+  /** Monthly cash-flow cushion the path solvers aim at, from TARGET_MONTHLY_CASH_FLOW. */
+  monthlyCashFlowTarget?: number | null
 }
 
 export const FAMILY_ACCENT: Record<StructureFamily, string> = {

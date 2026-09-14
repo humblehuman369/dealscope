@@ -2,6 +2,7 @@
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.schemas.deal_structures import BreakevenSummary, DealStructuresPayload
+from app.services.deal_structures.cashflow import TARGET_MONTHLY_CASH_FLOW
 from app.services.deal_structures.availability import diagnose_missing
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.narrative import build_narrative
@@ -24,7 +25,12 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
     - No template produced a feasible structure AND the blended plan also can't.
     """
     if ctx.deal_gap_amount <= 0:
-        return DealStructuresPayload(paths=[], narrative_paragraphs=[], has_paths=False)
+        return DealStructuresPayload(
+            paths=[],
+            narrative_paragraphs=[],
+            has_paths=False,
+            monthly_cash_flow_target=TARGET_MONTHLY_CASH_FLOW,
+        )
 
     merged_flags = {**STRUCTURE_TEMPLATE_FLAGS, **ctx.template_flags}
     enabled_templates = [t for t in ALL_TEMPLATES if merged_flags.get(getattr(t, "ID", ""), True)]
@@ -45,7 +51,12 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
             paths = [*paths, blended]
 
     if not paths:
-        return DealStructuresPayload(paths=[], narrative_paragraphs=[], has_paths=False)
+        return DealStructuresPayload(
+            paths=[],
+            narrative_paragraphs=[],
+            has_paths=False,
+            monthly_cash_flow_target=TARGET_MONTHLY_CASH_FLOW,
+        )
 
     narrative = build_narrative(paths, ctx)
     summary = BreakevenSummary(
@@ -64,4 +75,5 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
         breakeven_summary=summary,
         blend_recommendation=build_blend_recommendation(ctx, paths),
         unavailable_ways=diagnose_missing(ctx, {p.family for p in paths}),
+        monthly_cash_flow_target=TARGET_MONTHLY_CASH_FLOW,
     )

@@ -366,6 +366,15 @@ export function StrategyWorkbench({
     return mapped.paths
   }, [data, addressParam, analysisAddressKey])
 
+  const monthlyCashFlowTarget = useMemo(() => {
+    const d = data as Record<string, unknown> | null
+    const raw =
+      (d?.deal_structures as Record<string, unknown> | undefined) ??
+      (d?.dealStructures as Record<string, unknown> | undefined)
+    const live = raw ? mapDealStructuresFromApi(raw)?.monthlyCashFlowTarget : null
+    return live ?? initialDealStructures?.monthlyCashFlowTarget ?? null
+  }, [data, initialDealStructures])
+
   /**
    * After a path is applied, `scheduleRecalc` can return a verdict payload with
    * `dealStructures` omitted (backend sets it to null when `has_paths` is
@@ -1635,6 +1644,7 @@ export function StrategyWorkbench({
           options: scoredPlanOptions,
           appliedStructureId: planCustomized ? null : appliedPathId,
           targets: PLAN_TARGET_DEFAULTS,
+          monthlyCashFlowTarget,
         })
       : null
   const resetStructure = displayDealStructurePaths.find((path) => path.id === appliedPathId)

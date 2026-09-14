@@ -19,6 +19,8 @@ Source of names: `frontend/src/lib/eventTracking.ts` (`trackEvent`, `WORKFLOW_EV
 
 `verdict_viewed` is not a `WORKFLOW_EVENTS` key; it is a pre-existing `trackEvent` name. The `call` property is on both the Verdict card path and the old Discovery path. `layout` is the screen that rendered (`v1` or `legacy`), not the raw flag, except on `card_opened` which uses the loaded flag. Never send a street address.
 
+Options 1, 3, 4, and the blend aim at break-even plus $25 a month by design, so most plans show $25 a month and 0 of 4 on cash flow; a low `deal_started` per `plan_built` may be investors reading that correctly, not a bug.
+
 ## Helpers on `eventTracking.ts`
 
 | Event | Status | Fires when | Properties |
