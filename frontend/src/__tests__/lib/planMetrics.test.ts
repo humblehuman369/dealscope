@@ -213,12 +213,12 @@ describe('scorePlanOptions', () => {
   })
 
   it('breaks a targets-met tie with the higher monthly cash flow', () => {
-    const openTargets = {
+    const openTargets: PlanTargetDefaults = {
       capRate: -999,
       cashOnCash: -999,
       monthlyCashFlow: -999_999,
       dscr: -999,
-    } as PlanTargetDefaults
+    }
     const scored = scorePlanOptions(
       [
         {

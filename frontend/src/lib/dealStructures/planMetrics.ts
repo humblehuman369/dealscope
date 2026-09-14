@@ -48,7 +48,12 @@ export const PLAN_TARGET_DEFAULTS = {
   dscr: 1.25,
 } as const
 
-export type PlanTargetDefaults = typeof PLAN_TARGET_DEFAULTS
+export type PlanTargetDefaults = {
+  capRate: number
+  cashOnCash: number
+  monthlyCashFlow: number
+  dscr: number
+}
 
 export type PlanOptionKey = '1' | '2' | '3' | '4' | 'blend' | 'custom'
 
