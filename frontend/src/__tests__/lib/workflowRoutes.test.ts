@@ -99,6 +99,14 @@ describe('resolveWorkflowRedirect', () => {
         search: math,
       }),
     ).toBe(null)
+    expect(
+      resolveWorkflowRedirect({
+        ready: false,
+        enabled: false,
+        pathname: '/discovery',
+        search: work,
+      }),
+    ).toBe(null)
   })
 
   it('moves flag-on users off old Comps, Estimator, and DealMaker routes', () => {
@@ -128,15 +136,21 @@ describe('resolveWorkflowRedirect', () => {
     ).toBe('/discovery?address=1+Main&view=workbench')
   })
 
-  it('moves flag-off users from view=math to /price-intel and from view=work to the deal or dashboard', () => {
+  it('moves flag-off view=math to /price-intel with the same params', () => {
+    const mathWithParams = new URLSearchParams(
+      'address=1 Main&view=math&zpid=9&lat=1&lng=2&compsView=rent',
+    )
     expect(
       resolveWorkflowRedirect({
         ready: true,
         enabled: false,
         pathname: '/discovery',
-        search: math,
+        search: mathWithParams,
       }),
-    ).toBe('/price-intel?address=1+Main&zpid=9')
+    ).toBe('/price-intel?address=1+Main&zpid=9&lat=1&lng=2&view=rent')
+  })
+
+  it('moves flag-off view=work to the pipeline deal or /dashboard', () => {
     expect(
       resolveWorkflowRedirect({
         ready: true,
@@ -145,6 +159,16 @@ describe('resolveWorkflowRedirect', () => {
         search: work,
       }),
     ).toBe('/deals/deal-9')
+    expect(
+      resolveWorkflowRedirect({
+        ready: true,
+        enabled: false,
+        pathname: '/discovery',
+        search: workEmpty,
+        propertyPipelineId: 'pipeline-1',
+        hasCheckedPipeline: true,
+      }),
+    ).toBe('/deals/pipeline-1')
     expect(
       resolveWorkflowRedirect({
         ready: true,

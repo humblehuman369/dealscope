@@ -10,6 +10,10 @@ One page for the `workflow-v1` test. Env flag is already `NEXT_PUBLIC_WORKFLOW_V
 
 A signed-out visitor always gets the old layout (the 20% set is signed-in email). A signed-in user who declined cookies never initializes posthog-js, gets the old layout, and is not in the test.
 
+Signed-in users with no email are never identified and are not in the test. Count from the users table: unknown (no one-line production query from this session).
+
+Before the cookie banner choice, PostHog does not initialize. The test covers only signed-in users who accepted cookies, in both groups.
+
 **posthog-js does not load through a reverse proxy.** It talks to `us.i.posthog.com` (see `frontend/src/lib/posthog.ts` and the CSP in `frontend/next.config.js`). Visitors with ad blockers never load flags, get the old layout, and are not in the test.
 
 ## Kill switch

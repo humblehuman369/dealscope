@@ -63,14 +63,20 @@ async function waitForV1(page) {
 async function afterState(page, after) {
   if (!after || after === 'option3') return
   if (after === 'blend') {
-    const buttons = await page.$$('button')
-    for (const btn of buttons) {
-      const text = await page.evaluate((el) => (el.textContent || '').trim(), btn)
-      if (/^Blend\b/i.test(text)) {
-        await btn.click()
-        await new Promise((r) => setTimeout(r, 1500))
-        return
-      }
+    const clicked = await page.evaluate(() => {
+      const blend = [...document.querySelectorAll('button[aria-pressed]')].find((b) => {
+        const title = b.querySelector('div')?.textContent?.trim()
+        return title === 'Blend'
+      })
+      if (!blend) return false
+      blend.click()
+      return true
+    })
+    if (clicked) {
+      await page.waitForFunction(
+        () => /You buy at .+ with the seller carrying/.test(document.body.innerText),
+        { timeout: 15000 },
+      )
     }
     return
   }
