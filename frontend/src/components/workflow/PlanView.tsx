@@ -196,6 +196,7 @@ export function PlanView({
         </div>
       </article>
 
+      {model.options.length > 0 ? (
       <article className="px-4 sm:px-5 py-6" style={CARD}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
           <h2 className="m-0 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
@@ -253,6 +254,7 @@ export function PlanView({
           {model.optionsFooter}
         </p>
       </article>
+      ) : null}
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
         <h2 className="m-0 mb-3 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>

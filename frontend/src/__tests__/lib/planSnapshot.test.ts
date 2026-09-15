@@ -490,6 +490,47 @@ describe('formatPlanSnapshot', () => {
     expect(model.guideText).toBe(
       'This is the strongest plan the levers make. It meets 1 of 4 targets and pays $115 a month. Start working it.',
     )
+    expect(model.closeCells.some((cell) => cell.value === '$0')).toBe(false)
+    expect(model.closeCells.some((cell) => cell.caption.includes('Owed to the seller'))).toBe(false)
+    expect(model.nextMoves[0]).toContain('before you write the offer at $453,820')
+  })
+
+  it('does not print a $0 seller-second tile on If this closes', () => {
+    const model = formatPlanSnapshot({
+      optionKey: 'custom',
+      offerPrice: 175_000,
+      cashNeeded: 40_250,
+      monthlyCashFlow: 1_791,
+      cashOnCash: 53.4,
+      capRate: 12,
+      dscr: 2,
+      bankLoan: 140_000,
+      sellerAmount: 0,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 3_892,
+      listPrice: 175_000,
+      iqEstimate: 175_000,
+      targetBuy: 175_000,
+      askingGapDisplayPct: 0,
+      gapLeftPct: 0,
+      targetsMet: 4,
+      capMet: true,
+      cocMet: true,
+      cfMet: true,
+      dscrMet: true,
+      vsList: 0,
+      equity: 0,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: null,
+      options: [],
+    })
+    expect(model.title).toBe('Your plan: your own numbers')
+    expect(model.sentence).toContain('Your own numbers: buy at $175,000.')
+    expect(model.sentence).not.toContain('seller carry $0')
+    expect(model.closeCells).toHaveLength(5)
   })
 
   it('puts the payload cushion in the Guide why text', () => {

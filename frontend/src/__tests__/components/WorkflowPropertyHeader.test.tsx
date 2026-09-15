@@ -59,6 +59,13 @@ describe('header copy helpers', () => {
     expect(formatStatusPill({ listingStatus: 'FOR_SALE', pipelineStage: 'Analyzing' })).toBe(
       'Analyzing',
     )
+    expect(formatStatusPill({})).toBeNull()
+    expect(formatStatusPill({ listingStatus: undefined })).toBeNull()
+  })
+
+  it('does not show Off-market while listing status is still unknown', () => {
+    render(<WorkflowPropertyHeader address="4944 Mcconnell Street" />)
+    expect(screen.queryByText('Off-market')).not.toBeInTheDocument()
   })
 
   it('puts the address and a one-line description in the alt text', () => {

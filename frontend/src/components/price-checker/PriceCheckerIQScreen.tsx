@@ -63,6 +63,7 @@ import {
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
 import { api } from '@/lib/api-client'
+import { useCompAnalysisPersist } from '@/hooks/useCompAnalysisPersist'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
@@ -1086,8 +1087,7 @@ export function PriceCheckerIQScreen({
   const compRestoreRequestedRef = useRef(false)
   const saleSelectionRestoredRef = useRef(false)
   const rentSelectionRestoredRef = useRef(false)
-  // JSON of the state as last seen on the server — prevents redundant PATCHes
-  const lastPersistedCompStateRef = useRef<string | null>(null)
+  const [compPersistReady, setCompPersistReady] = useState(false)
 
   const compAnalysisState = useMemo<PersistedCompAnalysis>(
     () => ({
@@ -1118,7 +1118,7 @@ export function PriceCheckerIQScreen({
     compRestoreRequestedRef.current = false
     saleSelectionRestoredRef.current = false
     rentSelectionRestoredRef.current = false
-    lastPersistedCompStateRef.current = null
+    setCompPersistReady(false)
     setRestoredCompState(null)
     setCompRestoreDone(false)
     setSaleSearchRadius(null)
@@ -1136,7 +1136,6 @@ export function PriceCheckerIQScreen({
       .then((detail) => {
         const saved = detail?.comp_analysis
         if (saved?.version === 1) {
-          lastPersistedCompStateRef.current = JSON.stringify(saved)
           setRestoredCompState(saved)
           if (saved.sale.override_market != null) setSaleOverrideMarket(saved.sale.override_market)
           if (saved.sale.override_arv != null) setSaleOverrideArv(saved.sale.override_arv)
@@ -1170,34 +1169,34 @@ export function PriceCheckerIQScreen({
     }
   }, [restoredCompState, saleComps, rentComps])
 
-  // Debounced auto-save whenever selections/overrides change on a saved
-  // property. Gated on restore completion so defaults never race the
-  // server state, and skipped while nothing differs from what's stored.
   useEffect(() => {
-    if (!resolvedSavedPropertyId || !compRestoreDone) return
-    if (saleComps.length === 0 && rentComps.length === 0) return
-    const serialized = JSON.stringify(compAnalysisState)
-    if (serialized === lastPersistedCompStateRef.current) return
-    const timer = window.setTimeout(() => {
-      api
-        .patch(`/api/v1/properties/saved/${resolvedSavedPropertyId}`, {
-          comp_analysis: compAnalysisState,
-        })
-        .then(() => {
-          lastPersistedCompStateRef.current = serialized
-        })
-        .catch(() => {
-          /* retried automatically on the next state change */
-        })
-    }, 1200)
-    return () => window.clearTimeout(timer)
+    if (!compRestoreDone) return
+    if (!restoredCompState) {
+      setCompPersistReady(true)
+      return
+    }
+    const salePending =
+      restoredCompState.sale.selected_ids.length > 0 && saleComps.length === 0
+    const rentPending =
+      restoredCompState.rent.selected_ids.length > 0 && rentComps.length === 0
+    if (salePending || rentPending) return
+    if (saleComps.length > 0 && !saleSelectionRestoredRef.current) return
+    if (rentComps.length > 0 && !rentSelectionRestoredRef.current) return
+    setCompPersistReady(true)
   }, [
-    compAnalysisState,
-    resolvedSavedPropertyId,
     compRestoreDone,
+    restoredCompState,
+    saleSelected,
+    rentSelected,
     saleComps.length,
     rentComps.length,
   ])
+
+  useCompAnalysisPersist({
+    savedPropertyId: resolvedSavedPropertyId,
+    current: compAnalysisState,
+    ready: compPersistReady,
+  })
 
   // Load source estimates from shared property cache for consensus rail
   useEffect(() => {

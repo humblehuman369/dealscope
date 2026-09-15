@@ -97,15 +97,14 @@ describe('shared property cache', () => {
     expect(mockApiPost.mock.calls[0][1]).toMatchObject({ address: ADDRESS })
   })
 
-  it('keeps zpid-scoped lookups as separate entries', async () => {
+  it('does not fire a second search when Work loads the same house with a zpid', async () => {
     mockApiPost.mockResolvedValue(propertyResponse())
     const consumer = newConsumer()
 
     await consumer.current.fetchProperty(ADDRESS)
     await consumer.current.fetchProperty(ADDRESS, { zpid: '43109841' })
 
-    expect(mockApiPost).toHaveBeenCalledTimes(2)
-    expect(mockApiPost.mock.calls[1][1]).toMatchObject({ zpid: '43109841' })
+    expect(mockApiPost).toHaveBeenCalledTimes(1)
   })
 
   it('sanitizes non-finite numerics before they reach the cache', async () => {

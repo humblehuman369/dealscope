@@ -220,10 +220,14 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
       { value: money(input.cashNeeded), caption: 'Cash in: down payment and closing costs.' },
       { value: money(input.monthlyCashFlow), caption: 'A month, after every cost and the loan.' },
       { value: pct1(input.cashOnCash), caption: 'Cash-on-cash return in year one.' },
-      {
-        value: money(input.sellerAmount),
-        caption: formatCloseSellerCaption(input.sellerAmount, input.balloonYear),
-      },
+      ...(input.sellerAmount > 0
+        ? [
+            {
+              value: money(input.sellerAmount),
+              caption: formatCloseSellerCaption(input.sellerAmount, input.balloonYear),
+            },
+          ]
+        : []),
     ],
     sourceLine: formatSourceSpreadLine({
       low: input.sourceLow,

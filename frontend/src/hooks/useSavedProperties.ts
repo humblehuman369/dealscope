@@ -17,7 +17,7 @@ import {
   keepPreviousData,
   type QueryKey,
 } from '@tanstack/react-query'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import type { RehabSelection } from '@/lib/analytics'
 import type { RehabBudgetSummary } from '@/types/rehabBudget'
 import type {
@@ -287,6 +287,10 @@ export function useRehabBudgetSummary(propertyId: string | null | undefined) {
     queryFn: () => api.get<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget`),
     enabled: Boolean(propertyId),
     staleTime: 15_000,
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.status === 404) return false
+      return failureCount < 2
+    },
   })
 }
 

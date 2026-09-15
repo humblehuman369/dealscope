@@ -146,4 +146,42 @@ describe('PlanView', () => {
 
     expect(screen.getByText('Unlock the full worksheet')).toBeInTheDocument()
   })
+
+  it('hides the empty Four levers section on an at-asking house', () => {
+    const model = formatPlanSnapshot({
+      optionKey: 'custom',
+      offerPrice: 175_000,
+      cashNeeded: 40_250,
+      monthlyCashFlow: 1_791,
+      cashOnCash: 53.4,
+      capRate: 12,
+      dscr: 2,
+      bankLoan: 140_000,
+      sellerAmount: 0,
+      sellerRate: 0,
+      balloonYear: 5,
+      downPaymentPercent: 0.2,
+      monthlyRent: 3_892,
+      listPrice: 175_000,
+      iqEstimate: 175_000,
+      targetBuy: 175_000,
+      askingGapDisplayPct: 0,
+      gapLeftPct: 0,
+      targetsMet: 4,
+      capMet: true,
+      cocMet: true,
+      cfMet: true,
+      dscrMet: true,
+      vsList: 0,
+      equity: 0,
+      sourceLow: null,
+      sourceHigh: null,
+      appliedStructureId: null,
+      options: [],
+    })
+    render(<PlanView model={model} onTune={vi.fn()} onApply={vi.fn()} onStartDeal={vi.fn()} />)
+    expect(screen.queryByText('Four levers, one blend')).not.toBeInTheDocument()
+    expect(screen.queryByText('Tap one to apply it')).not.toBeInTheDocument()
+    expect(screen.getByText('Your plan: your own numbers')).toBeInTheDocument()
+  })
 })

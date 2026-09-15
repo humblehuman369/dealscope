@@ -79,8 +79,9 @@ export function formatStatusPill(input: {
   listingStatus?: string
   daysOnMarket?: number | null
   pipelineStage?: string | null
-}): string {
+}): string | null {
   if (input.pipelineStage) return input.pipelineStage
+  if (input.listingStatus == null || input.listingStatus === '') return null
   const listed =
     input.listingStatus === 'FOR_SALE' ||
     input.listingStatus === 'PENDING' ||
@@ -221,6 +222,7 @@ export function WorkflowPropertyHeader({
               {facts}
             </p>
           ) : null}
+          {status ? (
           <p
             className="inline-flex items-center mt-2 mb-0 text-[13px] font-medium px-2 py-0.5"
             style={{
@@ -235,6 +237,7 @@ export function WorkflowPropertyHeader({
           >
             {status}
           </p>
+          ) : null}
         </div>
       </div>
 

@@ -255,6 +255,39 @@ export interface ScoredPlanOption {
   isBest: boolean
 }
 
+function asFiniteCarry(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
+
+/** Seller second on a structure. Financing with no money is not creative finance. */
+export function sellerCarryAmount(structure: {
+  family?: string
+  preLoadedRecord?: Record<string, unknown> | null
+}): number {
+  const record = structure.preLoadedRecord
+  if (!record) return 0
+  const extras = record.pending_extras
+  const fromExtras =
+    extras && typeof extras === 'object' && !Array.isArray(extras)
+      ? (extras as Record<string, unknown>).seller_carry_amount
+      : undefined
+  return asFiniteCarry(
+    fromExtras ?? record.seller_carry_amount ?? record.sellerFinancingAmount,
+  )
+}
+
+export function isCreativeFinancePath(structure: {
+  family?: string
+  preLoadedRecord?: Record<string, unknown> | null
+}): boolean {
+  return structure.family === 'financing' && sellerCarryAmount(structure) > 0
+}
+
 export function scorePlanOptions(
   paths: readonly { family: string; id: string; headline: string; familyLabel: string; preLoadedRecord?: Record<string, unknown> | null }[],
   baseline: PlanBaseline,
@@ -264,6 +297,7 @@ export function scorePlanOptions(
   for (const family of PLAN_SLOT_ORDER) {
     const structure = paths.find((p) => p.family === family)
     if (!structure?.preLoadedRecord) continue
+    if (family === 'financing' && sellerCarryAmount(structure) <= 0) continue
     const metrics = metricsFromPreLoadedRecord(structure.preLoadedRecord, baseline, structure.family)
     const { targetsMet } = scoreAgainstTargets(
       {

@@ -277,6 +277,39 @@ describe('scorePlanOptions', () => {
     expect(higher?.metrics.monthlyCashFlow).toBeGreaterThan(lower?.metrics.monthlyCashFlow ?? 0)
     expect(scored.find((option) => option.isBest)?.structureId).toBe('higher-cf')
   })
+
+  it('never scores a $0 seller second as creative finance', () => {
+    const scored = scorePlanOptions(
+      [
+        {
+          family: 'price',
+          id: 'price-negotiation',
+          headline: 'Negotiate to $349,094',
+          familyLabel: 'Price',
+          preLoadedRecord: { custom_purchase_price: 349_094 },
+        },
+        {
+          family: 'financing',
+          id: 'seller-second-zero',
+          headline: 'Seller Financing $0',
+          familyLabel: 'Creative finance',
+          preLoadedRecord: {
+            custom_purchase_price: 349_094,
+            pending_extras: { seller_carry_amount: 0, seller_carry_rate: 0 },
+          },
+        },
+      ],
+      {
+        listPrice: 499_999,
+        monthlyRent: 3_100,
+        annualPropertyTax: 0,
+        annualInsurance: 0,
+      },
+    )
+    expect(scored.map((option) => option.key)).toEqual(['2'])
+    expect(scored.find((option) => option.key === '3')).toBeUndefined()
+    expect(scored.find((option) => option.isBest)?.structureId).toBe('price-negotiation')
+  })
 })
 
 describe('rentForPlanOption', () => {
