@@ -333,6 +333,8 @@ Read this before continuing. The build added the Verdict card on top of the old 
 | P1-9 Type and tokens | Not done | Old tab bar and old panels unchanged. |
 | P1-10, P1-11, P1-12 | Not reviewed | Need the PR: tests, Lighthouse, PostHog events, screenshots. |
 
+V1 uses the old page's fonts, surfaces, glow, and pill shapes (decided Sept 15): UI font inline on the v1 shells, DM Sans headings, black tiles with colored borders and `--shadow-card`, every card glows. The Section 6 rule 'one glowing card per screen' and the 6px tag radius are reversed for v1. The app-wide font token switch, if Brad wants it, belongs in the cleanup PR that removes the old layout.
+
 Order to finish: P1-7 first (remove and move, including the tour), then P1-5 and P1-6 so the page reads as three cards, then P1-1 and P1-2, then P1-3, then P1-8, then P1-9 and P1-10, then P1-11 and P1-12. After P1-7, send a full-page screenshot of Discovery before doing anything else; it should be three cards, the gallery, and the email bar.
 
 ## Appendix A. Baseline user test script (Brad)

@@ -12,6 +12,7 @@ export function WorkEmptyState({ onGoToPlan }: { onGoToPlan: () => void }) {
           background: 'var(--surface-card)',
           border: '1px solid var(--border-default)',
           borderRadius: 16,
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         <h2

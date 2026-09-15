@@ -109,6 +109,7 @@ import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { trackDealStarted, trackEvent, trackPlanBuilt } from '@/lib/eventTracking'
 import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
 import { PlanView } from '@/components/workflow/PlanView'
+import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { TuneDrawer } from '@/components/workflow/TuneDrawer'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
 import { formatPlanSnapshot } from '@/lib/dealStructures/planSnapshot'
@@ -2065,7 +2066,7 @@ export function StrategyWorkbench({
       className="strategy-page-shell"
       style={
         workflowV1
-          ? undefined
+          ? { fontFamily: V1_UI_FONT }
           : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
       }
     >
@@ -2334,9 +2335,6 @@ export function StrategyWorkbench({
                       <span
                         className="text-[13px] sm:text-base font-semibold tabular-nums"
                         style={{
-                          fontFamily: workflowV1
-                            ? 'var(--font-space-mono), "Space Mono", ui-monospace, monospace'
-                            : undefined,
                           color: m.negative
                             ? 'var(--status-negative)'
                             : m.highlight

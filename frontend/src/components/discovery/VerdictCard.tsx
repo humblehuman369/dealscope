@@ -23,6 +23,7 @@ import {
   type VerdictCall,
 } from '@/lib/verdictRules'
 import { useDiscoveryTipsSeen } from '@/hooks/useDiscoveryTipsSeen'
+import { v1Tile } from '@/components/workflow/v1-style'
 
 export interface VerdictCardProps {
   listPrice: number
@@ -188,7 +189,7 @@ export function VerdictCard({
       ) : null}
 
       <p
-        className="m-0 mb-5 font-medium leading-[1.4] text-[19px] sm:text-[22px]"
+        className="m-0 mb-5 font-semibold leading-[1.35] tracking-[-0.01em] text-[20px] sm:text-[24px]"
         style={{ color: 'var(--text-heading)', maxWidth: '34em' }}
       >
         {sentence}
@@ -253,7 +254,6 @@ export function VerdictCard({
         className="text-center tabular-nums text-[15px] font-semibold mt-5 mb-2"
         style={{
           color: 'var(--accent-sky)',
-          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
         }}
       >
         {dealGapLabel}
@@ -304,7 +304,7 @@ export function VerdictCard({
             color: tone.color,
             border: '1px solid var(--border-default)',
             background: tone.background,
-            borderRadius: 6,
+            borderRadius: 9999,
           }}
         >
           <CallIcon size={16} strokeWidth={2.5} aria-hidden="true" />
@@ -375,23 +375,17 @@ function NumberTile({
   color: string
 }) {
   return (
-    <div
-      className="rounded-xl px-4 py-3"
-      style={{
-        background: 'var(--surface-elevated)',
-        border: '1px solid var(--border-default)',
-      }}
-    >
+    <div className="rounded-xl px-4 py-3" style={v1Tile(color)}>
       <p
-        className="tabular-nums font-bold leading-tight text-[22px] m-0"
-        style={{
-          color,
-          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
-        }}
+        className="tabular-nums font-bold leading-none m-0"
+        style={{ color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}
       >
         {value}
       </p>
-      <p className="text-[13px] leading-snug mt-1 mb-0" style={{ color: 'var(--text-secondary)' }}>
+      <p
+        className="text-xs font-bold uppercase tracking-wide mt-1 mb-0"
+        style={{ color: 'var(--text-heading)' }}
+      >
         {label}
       </p>
     </div>

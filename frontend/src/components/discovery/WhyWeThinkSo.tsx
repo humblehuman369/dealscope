@@ -6,6 +6,7 @@ import {
   splitWhySignals,
   type WhySignal,
 } from '@/lib/whyWeThinkSo'
+import { V1_CARD } from '@/components/workflow/v1-style'
 
 export interface WhyWeThinkSoProps {
   signals: readonly WhySignal[]
@@ -44,10 +45,7 @@ export function WhyWeThinkSo({ signals }: WhyWeThinkSoProps) {
     <article
       aria-labelledby={headingId}
       className="rounded-2xl px-3 sm:px-5 py-6"
-      style={{
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
-      }}
+      style={V1_CARD}
     >
       <h2
         id={headingId}

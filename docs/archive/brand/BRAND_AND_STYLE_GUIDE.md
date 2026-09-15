@@ -120,9 +120,9 @@ colors to prevent confusion between "what strategy" and "how it performed."
 
 | Font | CSS Variable | Role | Weights |
 |------|-------------|------|---------|
-| **Inter** | `--font-inter` | Primary UI — headings, body, financial data | 100–900 (variable) |
-| **DM Sans** | `--font-dm-sans` | Landing page sections | 400, 500, 600, 700 |
-| **Space Mono** | `--font-space-mono` | Monospace accent — code, data labels | 400, 700 |
+| **Inter** | `--font-inter` | Primary UI — body, labels, and financial data | 100–900 (variable) |
+| **DM Sans** | `--font-dm-sans` | Headings and landing sections | 400, 500, 600, 700 |
+| **Space Mono** | `--font-space-mono` | Small monospace accents only | 400, 700 |
 
 *Source Sans 3 (`--font-source-sans`) remains loaded for the Tailwind `font-logo` family and select Verdict wordmark styles — see `layout.tsx`, `tailwind.config.js`, and `frontend/src/app/verdict/page.tsx`.*
 
@@ -165,7 +165,9 @@ All fonts are self-hosted via `next/font` in `layout.tsx` (no external
 - **400** — Body text, descriptions
 
 Financial numbers always use `font-variant-numeric: tabular-nums` for
-column alignment.
+column alignment. The DM Sans file served by `next/font` has no tabular
+figures, so `tabular-nums` only takes effect in Inter and Space Mono;
+never set money in DM Sans.
 
 ---
 
