@@ -35,6 +35,8 @@ interface FilterPanelProps {
   onChange: (next: Partial<MapSearchFilters>) => void
   totalCount: number
   isLoading: boolean
+  /** False until the first map-search response arrives. Hides a flash of "0 results". */
+  hasSearchResponded?: boolean
   isOpen: boolean
   onToggle: () => void
   /** When true, render the "Save view as default" action inside the panel. */
@@ -163,6 +165,21 @@ export function parsePriceFilterInput(raw: string): number | undefined {
   return Number.isFinite(num) && num >= 0 ? num : undefined
 }
 
+export function filterResultsCountText(input: {
+  isLoading: boolean
+  motivatedSellerSearch: boolean
+  hasSearchResponded: boolean
+  totalCount: number
+}): string | null {
+  if (input.isLoading) {
+    return input.motivatedSellerSearch
+      ? 'Scanning motivated-seller keywords…'
+      : 'Searching...'
+  }
+  if (!input.hasSearchResponded) return null
+  return `${input.totalCount} results`
+}
+
 function PillButton({
   active,
   onClick,
@@ -221,6 +238,7 @@ export function FilterPanel({
   onChange,
   totalCount,
   isLoading,
+  hasSearchResponded = true,
   isOpen,
   onToggle,
   canSaveDefaultView = false,
@@ -298,6 +316,12 @@ export function FilterPanel({
     color: openChrome.controlIdleText,
     border: openChrome.controlIdleBorder,
   }
+  const resultsText = filterResultsCountText({
+    isLoading,
+    motivatedSellerSearch: !!filters.motivated_seller_search,
+    hasSearchResponded,
+    totalCount,
+  })
 
   if (!isOpen) {
     return (
@@ -388,13 +412,11 @@ export function FilterPanel({
             >
               Filters
             </span>
-            <span className="text-xs flex-shrink-0" style={{ color: openChrome.placeholder }}>
-              {isLoading
-                ? filters.motivated_seller_search
-                  ? 'Scanning motivated-seller keywords…'
-                  : 'Searching...'
-                : `${totalCount} results`}
-            </span>
+            {resultsText ? (
+              <span className="text-xs flex-shrink-0" style={{ color: openChrome.placeholder }}>
+                {resultsText}
+              </span>
+            ) : null}
           </div>
           <button
             type="button"

@@ -21,6 +21,8 @@ import {
   mapSelectionCtaLabel,
 } from './mapDiscoveryNavigation'
 import { markPinReviewed, pinKey, useMapPinMarks, type PinMark } from './mapPinState'
+import { MAP_CARD_COPY } from '@/lib/mapCardCopy'
+import { useWorkflowV1 } from '@/lib/workflowV1'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -100,7 +102,12 @@ function WhyBanner({ fact }: { fact: ListingWhyFact }) {
 
 export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPreviewCardProps) {
   const router = useRouter()
-  const ctaLabel = mapSelectionCtaLabel(useMapSelectionDestination())
+  const destination = useMapSelectionDestination()
+  const { enabled: workflowV1 } = useWorkflowV1()
+  const ctaLabel =
+    workflowV1 && destination !== 'deal-maker'
+      ? MAP_CARD_COPY.seeTheVerdict
+      : mapSelectionCtaLabel(destination)
   const ppsqft = formatPricePerSqft(listing.price, listing.sqft)
   const { src: photoSrc, handleError: handlePhotoError } = useListingPhoto(listing, {
     streetViewSize: '600x400',
