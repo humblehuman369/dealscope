@@ -417,3 +417,9 @@ class TestCommonHelpers:
     def test_monthly_mortgage_standard(self):
         pmt = calculate_monthly_mortgage(240_000, 0.06, 30)
         assert 1400 < pmt < 1500  # ~$1,438.92
+
+    def test_dscr_zero_debt_is_none(self):
+        from app.services.calculators.common import calculate_dscr
+
+        assert calculate_dscr(10_000, 0) is None
+        assert calculate_dscr(10_000, 5_000) == pytest.approx(2.0)

@@ -3,7 +3,6 @@ SavedProperty service for CRUD operations on user's saved properties.
 """
 
 import logging
-import math
 import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -12,6 +11,7 @@ from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer, selectinload
 
+from app.core.json_safe import sanitize_non_finite
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.subscription import Subscription
 from app.schemas.saved_property import (
@@ -94,15 +94,7 @@ def _normalize_address(address: str) -> str:
 
 def _sanitize_json_finite(obj):
     """Recursively replace non-finite floats (inf, -inf, nan) with None so JSON/JSONB accepts the value."""
-    if obj is None:
-        return None
-    if isinstance(obj, dict):
-        return {k: _sanitize_json_finite(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_sanitize_json_finite(v) for v in obj]
-    if isinstance(obj, float) and not math.isfinite(obj):
-        return None
-    return obj
+    return sanitize_non_finite(obj)
 
 
 def sanitize_for_json_storage(obj):
