@@ -103,6 +103,8 @@ import { VerdictCard } from '@/components/discovery/VerdictCard'
 import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
 import { MathTab } from '@/components/workflow/MathTab'
 import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
+import { WorkCheckError } from '@/components/workflow/WorkCheckError'
+import { fetchVerdictAnalysis, refetchVerdictAnalysis } from '@/lib/verdictAnalysisQuery'
 import { DealPageContent } from '@/app/deals/[id]/page'
 import {
   isPlanView,
@@ -375,7 +377,7 @@ function VerdictContent() {
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
 
-  const { savedPropertyId, hasChecked, save: saveProperty } = useSaveProperty({
+  const { savedPropertyId, hasChecked, checkFailed, refreshSavedCheck, save: saveProperty } = useSaveProperty({
     displayAddress: addressParam,
     propertySnapshot:
       overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
@@ -392,8 +394,7 @@ function VerdictContent() {
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
-    const cacheZpid = urlZpid?.trim() || null
-    return !queryClient.getQueryData(['property-search', canonical, cacheZpid])
+    return !queryClient.getQueryData(['property-search', canonical])
   })
   const [error, setError] = useState<string | null>(null)
   // True when the loading state has exceeded ANALYSIS_LOAD_TIMEOUT_MS.
@@ -608,8 +609,7 @@ function VerdictContent() {
 
       try {
         const canonical = canonicalizeAddressForIdentity(addressParam)
-        const cacheZpid = overrideZpid?.trim() || null
-        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical, cacheZpid])
+        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
         if (!hasCachedProperty) setIsLoading(true)
         setError(null)
         setLimitError(null)
@@ -888,12 +888,9 @@ function VerdictContent() {
         })
         analysisInputsRef.current = analysisBody
 
-        const analysisPromise = api.post<IQVerdictResponse & Record<string, any>>(
-          '/api/v1/analysis/verdict',
-          analysisBody,
-        )
-
-        const analysisData = await analysisPromise
+        const analysisData = await fetchVerdictAnalysis<
+          IQVerdictResponse & Record<string, any>
+        >(queryClient, addressParam, analysisBody)
 
         // Discard if a newer address search has started since this fetch began
         if (generation !== fetchGenerationRef.current) return
@@ -1205,13 +1202,17 @@ function VerdictContent() {
         const merged: Record<string, any> = { ...base, ...overrides }
         analysisInputsRef.current = merged
         const { purchase_price: _drop, ...body } = merged
-        const result = await api.post<Record<string, any>>('/api/v1/analysis/verdict', body)
+        const result = await refetchVerdictAnalysis<Record<string, any>>(
+          queryClient,
+          addressParam,
+          body,
+        )
         setAnalysis(parseAnalysisResponse(result))
       } catch (err) {
         console.error('[IQ Verdict] Recalculation failed:', err)
       }
     },
-    [parseAnalysisResponse],
+    [parseAnalysisResponse, queryClient, addressParam],
   )
 
   // Auto-redirect to DealMaker (flag off) or Plan (flag on) if navigated with openDealMaker=1
@@ -2135,7 +2136,7 @@ function VerdictContent() {
 
           {/* When Level 3 is open, collapse the verdict so Strategy does not
               stack a second full page (and a second Deal Gap overview) under it. */}
-          {workbenchRequest ? (
+          {workbenchRequest && !workflowV1Layout ? (
             <div
               className={
                 workflowV1Layout
@@ -2203,9 +2204,11 @@ function VerdictContent() {
           {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
             workDealId ? (
               <DealPageContent propertyId={workDealId} embedded />
+            ) : checkFailed ? (
+              <WorkCheckError onRetry={() => { void refreshSavedCheck() }} />
             ) : hasChecked ? (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
-            ) : null
+            ) : null}
           ) : null}
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' && !v1DiscoveryFailed ? (

@@ -41,6 +41,8 @@ export interface UseSavePropertyResult {
   isSaving: boolean
   /** True after the address check has settled. Used so Work does not flash empty. */
   hasChecked: boolean
+  /** True when saved/check failed after retries. Work shows a retry card, not empty. */
+  checkFailed: boolean
   toggle: () => Promise<void>
   save: () => Promise<string | null>
   unsave: () => Promise<void>
@@ -56,6 +58,7 @@ export function useSaveProperty({
   const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChecked, setHasChecked] = useState(!displayAddress)
+  const [checkFailed, setCheckFailed] = useState(false)
   const queryClient = useQueryClient()
 
   // Incremented after save/unsave so in-flight checkSaved calls don't
@@ -65,6 +68,7 @@ export function useSaveProperty({
   const checkSaved = useCallback(async () => {
     if (!displayAddress) {
       setHasChecked(true)
+      setCheckFailed(false)
       return
     }
     const capturedVersion = stateVersionRef.current
@@ -77,11 +81,13 @@ export function useSaveProperty({
       if (stateVersionRef.current === capturedVersion) {
         setIsSaved(result.is_saved)
         setSavedPropertyId(result.saved_property_id)
+        setCheckFailed(false)
       }
     } catch {
       if (stateVersionRef.current === capturedVersion) {
         setIsSaved(false)
         setSavedPropertyId(null)
+        setCheckFailed(true)
       }
     } finally {
       if (stateVersionRef.current === capturedVersion) setHasChecked(true)
@@ -92,6 +98,7 @@ export function useSaveProperty({
     setHasChecked(!displayAddress)
     setSavedPropertyId(null)
     setIsSaved(false)
+    setCheckFailed(false)
   }, [displayAddress])
 
   useEffect(() => {
@@ -191,6 +198,7 @@ export function useSaveProperty({
     savedPropertyId,
     isSaving,
     hasChecked,
+    checkFailed,
     toggle,
     save,
     unsave,

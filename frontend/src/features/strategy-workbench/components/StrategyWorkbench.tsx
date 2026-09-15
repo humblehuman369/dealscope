@@ -76,6 +76,12 @@ import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
 import { effectiveMarketValueFromRecord } from '@/lib/dealMakerOverrides'
 import { resolveSessionMonthlyRent, stripMonthlyRentFromOverrides } from '@/lib/sessionRent'
+import {
+  hydratePlanSession,
+  writePlanSession,
+  type PlanSessionState,
+} from '@/lib/planSessionStore'
+import { fetchVerdictAnalysis, refetchVerdictAnalysis } from '@/lib/verdictAnalysisQuery'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { StrategyUnlockPanel } from '@/components/auth/StrategyUnlockPanel'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
@@ -126,6 +132,7 @@ import {
   optionKeyFromFamily,
   PLAN_SLOT_ORDER,
   PLAN_TARGET_DEFAULTS,
+  isCreativeFinancePath,
   rentForPlanOption,
   scoreAgainstTargets,
   scorePlanOptions,
@@ -216,11 +223,14 @@ export function StrategyWorkbench({
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const planSessionId = address ? canonicalizeAddressForIdentity(address) : ''
+  const initialPlanSession = planSessionId ? hydratePlanSession(planSessionId) : null
   const [tuneOpen, setTuneOpen] = useState(false)
-  const [planCustomized, setPlanCustomized] = useState(false)
+  const [planCustomized, setPlanCustomized] = useState(() => initialPlanSession?.planCustomized ?? false)
   const [startingDeal, setStartingDeal] = useState(false)
   const [v1PlanFailed, setV1PlanFailed] = useState(false)
-  const option3SeededRef = useRef(false)
+  const option3SeededRef = useRef(Boolean(initialPlanSession?.appliedPathId))
+  const hydratedSessionIdRef = useRef<string | null>(planSessionId || null)
   const planContinuity = useMemo(() => readPlanContinuity(address), [address])
   const fromPlan = Boolean(planContinuity)
   const worksheetUnlocked = isAuthenticated || fromPlan
@@ -304,18 +314,26 @@ export function StrategyWorkbench({
   // Overrides from sessionStorage (Verdict / DealMaker page) — drives initial API fetch.
   const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
   // Inline slider overrides — local-only, never re-triggers API fetch.
-  const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
+  const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>(
+    () => (initialPlanSession?.worksheetPatch as Record<string, any> | null) ?? {},
+  )
   /** True after worksheet edits once a property is saved — drives "Save worksheet" CTA. */
   const [worksheetDirty, setWorksheetDirty] = useState(false)
   /** Mirrors `inlineOverrides` for debounced recalc so we always merge the latest committed state. */
-  const inlineOverridesRef = useRef<Record<string, any>>({})
+  const inlineOverridesRef = useRef<Record<string, any>>(
+    (initialPlanSession?.worksheetPatch as Record<string, any> | null) ?? {},
+  )
   useEffect(() => {
     inlineOverridesRef.current = inlineOverrides
   }, [inlineOverrides])
   // Currently applied Three Paths structure (so the matching button highlights).
-  const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
+  const [appliedPathId, setAppliedPathId] = useState<string | null>(
+    () => initialPlanSession?.appliedPathId ?? null,
+  )
   /** Snapshot of the structure the user applied — do not rebind from a later re-solve. */
-  const [appliedStructure, setAppliedStructure] = useState<DealStructure | null>(null)
+  const [appliedStructure, setAppliedStructure] = useState<DealStructure | null>(
+    () => initialPlanSession?.appliedStructure ?? null,
+  )
   const modelTargetBuyRef = useRef<number | null>(null)
   // Worksheet state-field names whose value the most recently applied path
   // actually changed vs the prior baseline. Drives the soft glow on
@@ -333,12 +351,35 @@ export function StrategyWorkbench({
 
   // Wipe highlights whenever the analyzed address changes — different property,
   // different baseline.
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const session = planSessionId ? hydratePlanSession(planSessionId) : null
     setHighlightedFields(new Set())
-    setAppliedPathId(null)
-    setAppliedStructure(null)
+    setAppliedPathId(session?.appliedPathId ?? null)
+    setAppliedStructure(session?.appliedStructure ?? null)
+    setPlanCustomized(session?.planCustomized ?? false)
+    const patch = (session?.worksheetPatch as Record<string, any> | null) ?? {}
+    setInlineOverrides(patch)
+    inlineOverridesRef.current = patch
+    option3SeededRef.current = Boolean(session?.appliedPathId)
     modelTargetBuyRef.current = null
-  }, [addressParam])
+    hydratedSessionIdRef.current = planSessionId || null
+  }, [planSessionId])
+
+  useEffect(() => {
+    if (!planSessionId || hydratedSessionIdRef.current !== planSessionId) return
+    const rent =
+      typeof inlineOverrides.monthlyRent === 'number' && Number.isFinite(inlineOverrides.monthlyRent)
+        ? inlineOverrides.monthlyRent
+        : null
+    const next: PlanSessionState = {
+      appliedPathId,
+      appliedStructure,
+      planCustomized,
+      worksheetPatch: Object.keys(inlineOverrides).length > 0 ? inlineOverrides : null,
+      monthlyRentOverride: rent,
+    }
+    writePlanSession(planSessionId, next)
+  }, [planSessionId, appliedPathId, appliedStructure, planCustomized, inlineOverrides])
 
   useEffect(() => {
     if (!fromPlan || isPro || planProCtaTrackedRef.current) return
@@ -413,10 +454,10 @@ export function StrategyWorkbench({
     }
   }, [dealStructurePaths, initialDealStructures])
 
-  const displayDealStructurePaths = useMemo(
-    () => (dealStructurePaths.length > 0 ? dealStructurePaths : cachedDealStructurePaths),
-    [dealStructurePaths, cachedDealStructurePaths],
-  )
+  const displayDealStructurePaths = useMemo(() => {
+    const raw = dealStructurePaths.length > 0 ? dealStructurePaths : cachedDealStructurePaths
+    return raw.filter((path) => path.family !== 'financing' || isCreativeFinancePath(path))
+  }, [dealStructurePaths, cachedDealStructurePaths])
 
   /**
    * Lock the visual order of the four Path buttons to the first non-empty
@@ -906,8 +947,9 @@ export function StrategyWorkbench({
           stripMonthlyRentFromOverrides(overrides),
           { ...mergedSrc, monthlyRent: sessionRent },
         )
-        const analysis = await api.post<BackendAnalysisResponse>(
-          '/api/v1/analysis/verdict',
+        const analysis = await refetchVerdictAnalysis<BackendAnalysisResponse>(
+          queryClient,
+          addressParam ?? '',
           payload,
         )
         setData(analysis)
@@ -920,7 +962,7 @@ export function StrategyWorkbench({
         setIsRecalculating(false)
       }
     },
-    [toPayloadBase, addressParam, dealRecord?.market_value_override, dealRecord?.monthly_rent_override],
+    [toPayloadBase, addressParam, queryClient, dealRecord?.market_value_override, dealRecord?.monthly_rent_override],
   )
 
   const verdictSourceOverrides = useMemo(
@@ -1006,8 +1048,9 @@ export function StrategyWorkbench({
           stripMonthlyRentFromOverrides(dealMakerOverrides),
           { ...appraiserOverrides, monthlyRent },
         )
-        const analysis = await api.post<BackendAnalysisResponse>(
-          '/api/v1/analysis/verdict',
+        const analysis = await fetchVerdictAnalysis<BackendAnalysisResponse>(
+          queryClient,
+          fetchAddr,
           payload,
         )
         setData(analysis)
@@ -1322,8 +1365,11 @@ export function StrategyWorkbench({
       option3SeededRef.current = true
       return
     }
-    const financing = displayDealStructurePaths.find((path) => path.family === 'financing')
-    if (!financing?.preLoadedRecord) return
+    const financing = displayDealStructurePaths.find((path) => isCreativeFinancePath(path))
+    if (!financing?.preLoadedRecord) {
+      option3SeededRef.current = true
+      return
+    }
     option3SeededRef.current = true
     applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'), { track: false })
   }, [workflowV1, scenarioParam, appliedPathId, displayDealStructurePaths, applyPathPatch])
@@ -1748,9 +1794,7 @@ export function StrategyWorkbench({
             ? 'custom'
             : appliedPlanOption
               ? appliedPlanOption.key
-              : appliedPathId
-                ? 'custom'
-                : '3',
+              : 'custom',
           offerPrice: ltrState.buyPrice,
           cashNeeded: ltrLiveMetrics.cashNeeded,
           monthlyCashFlow: ltrLiveMetrics.annualProfit / 12,
@@ -1787,7 +1831,7 @@ export function StrategyWorkbench({
   const resetStructure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
   const resetOptionKey: PlanOptionKey = resetStructure
     ? optionKeyFromFamily(resetStructure.family)
-    : '3'
+    : 'custom'
 
   const benchmarks = isFlipOrWholesale
     ? [

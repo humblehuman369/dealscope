@@ -99,7 +99,7 @@ export function usePropertyData() {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
       const zpid = opts?.zpid?.trim() || null
       return queryClient.ensureQueryData({
-        queryKey: ['property-search', canonicalAddress, zpid],
+        queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
           const body: Record<string, string> = { address: canonicalAddress }
           if (opts?.city) body.city = opts.city
@@ -124,8 +124,7 @@ export function usePropertyData() {
   const invalidateProperty = useCallback(
     (address: string, opts?: FetchPropertyOptions) => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
-      const zpid = opts?.zpid?.trim() || null
-      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress, zpid] })
+      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress] })
     },
     [queryClient],
   )
