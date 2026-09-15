@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-import type { WorkflowV1Tab } from '@/lib/workflowRoutes'
+import { workflowV1TabHref, type WorkflowV1Tab } from '@/lib/workflowRoutes'
 
 export type PathStepId = 'find' | 'discovery' | 'plan' | 'work' | 'track'
 
@@ -21,16 +21,15 @@ export function currentPathStep(tab: WorkflowV1Tab): PathStepId {
 }
 
 function stepHref(id: PathStepId, address: string): string {
-  const encoded = encodeURIComponent(address)
   switch (id) {
     case 'find':
       return '/map-search'
     case 'discovery':
-      return address ? `/discovery?address=${encoded}` : '/discovery'
+      return workflowV1TabHref('discovery', address)
     case 'plan':
-      return address ? `/discovery?address=${encoded}&view=workbench` : '/search'
+      return workflowV1TabHref('plan', address)
     case 'work':
-      return address ? `/discovery?address=${encoded}&view=work` : '/search'
+      return workflowV1TabHref('work', address)
     case 'track':
       return '/dashboard'
     default: {
@@ -63,6 +62,7 @@ export function PathStepper({
               ) : null}
               <Link
                 href={stepHref(step.id, address)}
+                prefetch={false}
                 aria-current={lit ? 'step' : undefined}
                 className="inline-flex items-center min-h-11 px-2 text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{

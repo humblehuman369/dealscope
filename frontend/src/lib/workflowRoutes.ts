@@ -45,18 +45,22 @@ export function isPlanView(view: string | null | undefined): boolean {
  * V1 tab targets. Discovery is the bare address URL. Plan keeps the
  * workbench query the Plan tab and stepper already use.
  */
-export function workflowV1TabHref(tab: WorkflowV1Tab, address: string): string {
+export function workflowV1TabHref(
+  tab: WorkflowV1Tab,
+  address: string,
+  extra?: Record<string, string | undefined>,
+): string {
   const trimmed = address.trim()
   if (!trimmed) return '/search'
   switch (tab) {
     case 'discovery':
-      return buildWorkflowDiscoveryUrl(trimmed)
+      return buildWorkflowDiscoveryUrl(trimmed, undefined, extra)
     case 'plan':
-      return buildWorkflowDiscoveryUrl(trimmed, 'workbench')
+      return buildWorkflowDiscoveryUrl(trimmed, 'workbench', extra)
     case 'math':
-      return buildWorkflowDiscoveryUrl(trimmed, 'math')
+      return buildWorkflowDiscoveryUrl(trimmed, 'math', extra)
     case 'work':
-      return buildWorkflowDiscoveryUrl(trimmed, 'work')
+      return buildWorkflowDiscoveryUrl(trimmed, 'work', extra)
     default: {
       const exhaustive: never = tab
       return exhaustive

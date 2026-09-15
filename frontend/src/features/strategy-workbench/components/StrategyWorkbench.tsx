@@ -30,6 +30,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useSaveStrategyWorksheet } from '@/hooks/useSaveStrategyWorksheet'
+import { toast } from 'sonner'
 import { api } from '@/lib/api-client'
 import { webBaseUrl, isCapacitor } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -140,7 +141,9 @@ import {
   type PlanBaseline,
   type PlanOptionKey,
 } from '@/lib/dealStructures/planMetrics'
-import { sourceValueRange } from '@/lib/sourceStatus'
+import { sourceValueRange, summarizeSourceStatus } from '@/lib/sourceStatus'
+import { PHASE_15_COPY } from '@/lib/phase15Copy'
+import { startWorkingThisDeal } from '@/lib/startWorkingThisDeal'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
 import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
@@ -1430,37 +1433,46 @@ export function StrategyWorkbench({
     setTuneOpen(false)
   }, [emitPlanBuilt, scoreTargetsMetFromState])
 
-  const handleStartDeal = useCallback(async () => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
-    setStartingDeal(true)
-    try {
-      const dealId = (await save()) ?? savedPropertyId
-      if (!dealId) return
-      emitDealStarted(dealId, true)
-      const next = new URLSearchParams(
-        searchParams?.toString() ||
-          (typeof window !== 'undefined' ? window.location.search : ''),
-      )
-      next.set('view', 'work')
-      next.set('dealId', dealId)
-      router.push(`/discovery?${next.toString()}`)
-    } catch (err) {
-      console.error('Start working this deal failed:', err)
-    } finally {
-      setStartingDeal(false)
-    }
-  }, [
-    isAuthenticated,
-    openAuthModal,
-    save,
-    savedPropertyId,
-    emitDealStarted,
-    searchParams,
-    router,
-  ])
+  const handleStartDeal = useCallback(
+    async (titles: readonly string[]) => {
+      if (!isAuthenticated) {
+        openAuthModal('login')
+        return
+      }
+      setStartingDeal(true)
+      try {
+        const result = await startWorkingThisDeal({
+          save,
+          existingDealId: savedPropertyId,
+          titles,
+          emitDealStarted,
+          push: (href) => {
+            router.push(href)
+          },
+          address: addressParam,
+          zpid: searchParams?.get('zpid') || undefined,
+        })
+        if (result === 'no-deal') {
+          toast.error(PHASE_15_COPY.couldNotSaveProperty)
+        }
+      } catch (err) {
+        console.error('Start working this deal failed:', err)
+        toast.error(PHASE_15_COPY.couldNotSaveProperty)
+      } finally {
+        setStartingDeal(false)
+      }
+    },
+    [
+      isAuthenticated,
+      openAuthModal,
+      save,
+      savedPropertyId,
+      emitDealStarted,
+      searchParams,
+      router,
+      addressParam,
+    ],
+  )
 
   /**
    * Strip every key the path mapper might have written from `inlineOverrides`,
@@ -1784,6 +1796,7 @@ export function StrategyWorkbench({
     modelTargetBuyRef.current ?? initialDealStructures?.breakevenSummary?.targetBuyPrice ?? 0
   const planIq = iqSources.value.iq ?? null
   const planRange = sourceValueRange(iqSources)
+  const planSourceStatus = summarizeSourceStatus(iqSources)
   const planDeltas = ltrLiveMetrics
     ? closeDeltas(ltrState.buyPrice, listPrice, planIq)
     : null
@@ -1822,6 +1835,9 @@ export function StrategyWorkbench({
           equity: planDeltas.equity,
           sourceLow: planRange?.low ?? null,
           sourceHigh: planRange?.high ?? null,
+          sourceAnswered: planSourceStatus.answered,
+          sourceTotal: planSourceStatus.total,
+          sourceMissingLabels: planSourceStatus.missingLabels,
           options: scoredPlanOptions,
           appliedStructureId: planCustomized ? null : appliedPathId,
           targets: PLAN_TARGET_DEFAULTS,
@@ -2127,7 +2143,7 @@ export function StrategyWorkbench({
               onTune={() => setTuneOpen(true)}
               onApply={handlePlanApply}
               onStartDeal={() => {
-                void handleStartDeal()
+                void handleStartDeal(planModel.nextMoves)
               }}
               startingDeal={startingDeal}
               onShareFullReport={() => handlePDFDownload('light')}

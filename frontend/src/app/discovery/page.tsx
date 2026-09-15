@@ -1070,9 +1070,12 @@ function VerdictContent() {
     addressParam,
     isSavedPropertyMode,
     hasRecord,
-    dealMakerStore.record,
-    dealMakerStore.error,
-    dealMakerStore.isLoading,
+    // Address-mode must not refetch when a deal record appears after save —
+    // that wipes analysis, unmounts Plan, and lets the Discovery tab's
+    // prefetched bare URL win the in-flight navigation.
+    isSavedPropertyMode ? dealMakerStore.record : null,
+    isSavedPropertyMode ? dealMakerStore.error : null,
+    isSavedPropertyMode ? dealMakerStore.isLoading : null,
     isClient,
     overridePurchasePrice,
     overrideMonthlyRent,

@@ -1270,6 +1270,7 @@ export function AppHeader({
                     <Link
                       key={tab.id}
                       href={v1Href}
+                      prefetch={false}
                       role="tab"
                       id={`workflow-tab-${tab.id}`}
                       aria-selected={isActive}

@@ -4,6 +4,7 @@
  */
 
 import { formatMoneyExact } from '@/lib/verdictCopy'
+import { formatPlanSourceCountLine } from '@/lib/phase15Copy'
 import type { PlanOptionKey, PlanTargetDefaults, ScoredPlanOption } from '@/lib/dealStructures/planMetrics'
 import { PLAN_TARGET_DEFAULTS } from '@/lib/dealStructures/planMetrics'
 import {
@@ -51,6 +52,9 @@ export interface PlanSnapshotNumbers {
   equity: number | null
   sourceLow: number | null
   sourceHigh: number | null
+  sourceAnswered?: number | null
+  sourceTotal?: number | null
+  sourceMissingLabels?: readonly string[]
   options: readonly ScoredPlanOption[]
   appliedStructureId: string | null
   targets?: PlanTargetDefaults
@@ -229,11 +233,25 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
           ]
         : []),
     ],
-    sourceLine: formatSourceSpreadLine({
-      low: input.sourceLow,
-      high: input.sourceHigh,
-      iqEstimate: input.iqEstimate,
-    }),
+    sourceLine:
+      input.sourceAnswered != null &&
+      input.sourceTotal != null &&
+      input.sourceLow != null &&
+      input.sourceHigh != null &&
+      input.iqEstimate != null
+        ? formatPlanSourceCountLine({
+            answered: input.sourceAnswered,
+            total: input.sourceTotal,
+            missingLabels: input.sourceMissingLabels ?? [],
+            low: money(input.sourceLow),
+            high: money(input.sourceHigh),
+            iqEstimate: money(input.iqEstimate),
+          })
+        : formatSourceSpreadLine({
+            low: input.sourceLow,
+            high: input.sourceHigh,
+            iqEstimate: input.iqEstimate,
+          }),
     nextMoves: formatNextMoves({
       offerPrice: input.offerPrice,
       monthlyRent: input.monthlyRent,

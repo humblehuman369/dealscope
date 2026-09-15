@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { currentPathStep, PathStepper } from '@/components/workflow/PathStepper'
+import { workflowV1TabHref } from '@/lib/workflowRoutes'
 
 describe('currentPathStep', () => {
   it('lights Discovery for both Discovery and Math', () => {
@@ -21,6 +22,18 @@ describe('PathStepper', () => {
     expect(screen.getByRole('navigation', { name: 'Deal path' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Find' })).toHaveAttribute('href', '/map-search')
     expect(screen.getByRole('link', { name: 'Track' })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('link', { name: 'Work' })).toHaveAttribute(
+      'href',
+      workflowV1TabHref('work', '110 Crosswinds Drive, Greenacres, FL 33413'),
+    )
+    expect(screen.getByRole('link', { name: 'Discovery' })).toHaveAttribute(
+      'href',
+      workflowV1TabHref('discovery', '110 Crosswinds Drive, Greenacres, FL 33413'),
+    )
+    expect(screen.getByRole('link', { name: 'Plan' })).toHaveAttribute(
+      'href',
+      workflowV1TabHref('plan', '110 Crosswinds Drive, Greenacres, FL 33413'),
+    )
     expect(screen.getByRole('link', { name: 'Plan' })).toHaveAttribute('aria-current', 'step')
     expect(screen.getByRole('link', { name: 'Discovery' })).not.toHaveAttribute('aria-current')
   })
