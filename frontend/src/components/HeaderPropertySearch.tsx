@@ -9,6 +9,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { useAppPathname } from '@/hooks/useAppNavigation'
 import { Search, Loader2, AlertTriangle, AlertCircle } from 'lucide-react'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -60,8 +61,10 @@ async function geocodeLocationQuery(
 
 export function HeaderPropertySearch() {
   const router = useRouter()
+  const pathname = useAppPathname()
   const { isAuthenticated } = useSession()
   const { isPro } = useSubscription()
+  const hideRemainingHint = Boolean(pathname?.startsWith('/map-search'))
   const { data: usage } = useQuery<{ searches_remaining: number }>({
     queryKey: ['billing', 'usage'],
     queryFn: () => api.get('/api/v1/billing/usage'),
@@ -69,7 +72,7 @@ export function HeaderPropertySearch() {
     enabled: isAuthenticated && !isPro,
   })
   const remaining = usage?.searches_remaining
-  const showRemainingHint = remaining != null && remaining <= 1
+  const showRemainingHint = !hideRemainingHint && remaining != null && remaining <= 1
   const [address, setAddress] = useState('')
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)

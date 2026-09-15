@@ -69,7 +69,7 @@ const STATE_STYLES: Record<
 
 // Discovery and Strategy are deliberately NOT hidden: those are the pages
 // where free users consume their analysis quota, and the visible countdown
-// ("1 of 2 analyses left") is the upgrade nudge leading into the server-side
+// ("1 of N analyses left") is the upgrade nudge leading into the server-side
 // limit screen. Only suppress on conversion/marketing surfaces.
 const HIDDEN_ON = ['/pricing', '/register', '/what-is-dealgapiq', '/billing']
 
@@ -93,6 +93,7 @@ export function UsageBar() {
   if (HIDDEN_ON.some((r) => pathname?.startsWith(r))) return null
   if (!usage || usage.searches_limit <= 0) return null
 
+  const compact = Boolean(pathname?.startsWith('/map-search'))
   const analysesPct = Math.min(100, (usage.searches_used / usage.searches_limit) * 100)
   const savedPct =
     usage.properties_limit > 0
@@ -109,6 +110,45 @@ export function UsageBar() {
       : state === 'warning'
         ? `${remaining} analysis${remaining !== 1 ? 'es' : ''} left — Upgrade →`
         : 'Upgrade for unlimited →'
+
+  if (compact) {
+    return (
+      <div
+        className="flex items-center gap-3 mx-4 md:mx-6 mt-1.5 py-1.5 px-3"
+        style={{
+          fontFamily: FONT_DM,
+          background: 'var(--surface-base)',
+          border: `1px solid ${s.border}`,
+          borderRadius: 8,
+        }}
+      >
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-heading)' }}>
+          Starter
+        </span>
+        <span
+          style={{
+            fontFamily: FONT_MONO,
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: s.fill,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Analyses {usage.searches_used}
+          <span style={{ color: 'var(--text-heading)', fontWeight: 400 }}>
+            /{usage.searches_limit}
+          </span>
+        </span>
+        <Link
+          href="/billing"
+          className="ml-auto whitespace-nowrap text-[0.72rem] font-semibold hover:opacity-90"
+          style={{ color: s.ctaColor, textDecoration: 'none' }}
+        >
+          Upgrade
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div

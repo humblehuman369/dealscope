@@ -12,7 +12,11 @@ import {
   SOURCE_COUNT,
   SPEED_CLAIM,
   SPEED_CLAIM_SENTENCE,
+  ANON_VERDICTS_PER_DAY,
+  STARTER_VERDICTS_PER_MONTH,
 } from '@/lib/claims'
+import { ANON_FUNNEL_COPY, STARTER_LIMIT_COPY } from '@/lib/anonFunnelCopy'
+import { FREE_ANALYSES_PER_MONTH } from '@/constants/subscriptions'
 import { PRO_PRICE_ANNUAL, PRO_PRICE_MONTHLY } from '@/lib/planFeatures'
 import { ALL_SOURCE_IDS } from '@/utils/propertySourceMapper'
 
@@ -66,5 +70,13 @@ describe('claims', () => {
   it('exports the approved speed phrase', () => {
     expect(SPEED_CLAIM).toBe('under 60 seconds')
     expect(SPEED_CLAIM_SENTENCE).toBe('Under 60 seconds')
+  })
+
+  it('is the only typed source for free-verdict counts used in funnel copy', () => {
+    expect(ANON_VERDICTS_PER_DAY).toBe(1)
+    expect(STARTER_VERDICTS_PER_MONTH).toBe(3)
+    expect(FREE_ANALYSES_PER_MONTH).toBe(STARTER_VERDICTS_PER_MONTH)
+    expect(ANON_FUNNEL_COPY.gateBody).toContain(`${STARTER_VERDICTS_PER_MONTH} more verdicts`)
+    expect(STARTER_LIMIT_COPY.title).toContain(`${STARTER_VERDICTS_PER_MONTH} free verdicts`)
   })
 })

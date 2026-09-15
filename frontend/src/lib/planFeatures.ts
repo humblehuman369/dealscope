@@ -1,3 +1,5 @@
+import { STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
+
 /**
  * Single source of truth for plan-feature marketing claims.
  *
@@ -17,7 +19,7 @@
 /** Free / Starter tier — pricing page card. */
 export const STARTER_FEATURES: string[] = [
   'Property search + Interactive Map Search',
-  '2 property analyses per month',
+  `${STARTER_VERDICTS_PER_MONTH} property analyses per month`,
   'Discovery with deal score & plain-language explanations',
   'Income Value, Target Buy & Deal Gap on every property',
   'Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor',
@@ -45,7 +47,7 @@ export const PRO_FEATURES: string[] = [
 
 /** Free tier — homepage pricing section (short list). */
 export const HOMEPAGE_FREE_FEATURES: string[] = [
-  '2 discoveries per month',
+  `${STARTER_VERDICTS_PER_MONTH} discoveries per month`,
   'Full 4-path analysis',
   'Negotiation scripts',
   'Save up to 10 properties',

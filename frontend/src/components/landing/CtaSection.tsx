@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { PRO_MONTHLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
+import { PRO_MONTHLY_PRICE, SPEED_CLAIM, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 export function CtaSection() {
   return (
@@ -31,7 +31,7 @@ export function CtaSection() {
         <div className="card-sm cta-tier">
           <div className="cta-tier-name">Starter</div>
           <div className="cta-tier-price">Free</div>
-          <div className="cta-tier-desc">2 analyses / month</div>
+          <div className="cta-tier-desc">{STARTER_VERDICTS_PER_MONTH} analyses / month</div>
         </div>
         <div className="card-sm cta-tier" style={{ borderColor: 'rgba(15,164,233,.3)' }}>
           <div className="cta-tier-name">Pro</div>
