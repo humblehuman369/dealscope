@@ -1,0 +1,1128 @@
+{
+  "shots": [
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-discovery-dark-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-plan-dark-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/old-discovery-dark-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-discovery-dark-390.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-plan-dark-390.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/old-discovery-dark-390.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-discovery-light-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-plan-light-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/old-discovery-light-1280.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-discovery-light-390.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/v1-plan-light-390.png",
+    "/Users/bradgeisen/Projects/dealscope/docs/redesign/v1-old-style-screenshots/old-discovery-light-390.png"
+  ],
+  "computed": {
+    "v1-discovery-dark-1280": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "PlanPlan",
+          "MathMath",
+          "WorkWork"
+        ],
+        "hasVerdict": true,
+        "hasOverview": false
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": {
+        "text": "2652 Yarmouth Drive",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "verdictH2": {
+        "text": "The verdict",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "13px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 164, 233)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "whyH2": {
+        "text": "Why we think so",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "16px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "sentence": {
+        "text": "Listed at $500K. Worth about $500K to you as a rental. That is a 0.0% gap. After 5 days, t",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "dealGap": {
+        "text": "Deal Gap +35.3%",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "15px",
+        "font-weight": "600",
+        "font-variant-numeric": "tabular-nums",
+        "color": "rgb(15, 164, 233)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "tiles": [
+        {
+          "text": "$499,500Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(52, 211, 153)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(250, 204, 21)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(248, 113, 113)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        }
+      ],
+      "tileValues": [
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(52, 211, 153)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(250, 204, 21)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(248, 113, 113)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "tileLabels": [
+        {
+          "text": "Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        }
+      ],
+      "callChip": {
+        "text": "Worth pursuing",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "14px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(52, 211, 153)",
+        "background-color": "rgba(52, 211, 153, 0.12)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "leverTag": null,
+      "statusPill": {
+        "text": "Listed · 5 days",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "13px",
+        "font-weight": "500",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgb(12, 18, 32)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "planTiles": [
+        {
+          "text": "{\"@context\":\"https://schema.org\",\"@type\":\"WebPage\",\"@id\":\"https://dealgapiq.com/discovery\"",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Target buy: $499,500 (+35.3% gap)A $0 discount below market to the profit zone (Target Buy",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(51, 65, 85) rgb(229, 231, 235) rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    },
+    "v1-plan-dark-1280": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414&view=plan",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "PlanPlan",
+          "MathMath",
+          "WorkWork"
+        ],
+        "hasVerdict": false,
+        "hasOverview": false
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": {
+        "text": "2652 Yarmouth Drive",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "verdictH2": null,
+      "whyH2": null,
+      "sentence": null,
+      "dealGap": null,
+      "tiles": [],
+      "tileValues": [],
+      "tileLabels": [],
+      "callChip": null,
+      "leverTag": null,
+      "statusPill": {
+        "text": "Listed · 5 days",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "13px",
+        "font-weight": "500",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgb(12, 18, 32)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "planTiles": [
+        {
+          "text": "{\"@context\":\"https://schema.org\",\"@type\":\"WebPage\",\"@id\":\"https://dealgapiq.com/discovery\"",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Back to Discovery overviewStrategy WorkbenchThe baseline works — stress-test assumptions, ",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500Offer price",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(51, 65, 85)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$114,885Cash you bring",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(51, 65, 85)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    },
+    "old-discovery-dark-1280": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "StrategyStrategy",
+          "CompsComps",
+          "DealMakerDealMaker",
+          "EstimatorEstimator"
+        ],
+        "hasVerdict": false,
+        "hasOverview": true
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": null,
+      "verdictH2": null,
+      "whyH2": null,
+      "sentence": null,
+      "dealGap": {
+        "text": "DealGap IQ analyzes rental income, expenses, market conditions and comparable sales to cal",
+        "font-family": "Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "12px",
+        "font-weight": "400",
+        "font-variant-numeric": "normal",
+        "color": "rgb(203, 213, 225)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "tiles": [],
+      "tileValues": [],
+      "tileLabels": [],
+      "callChip": null,
+      "leverTag": null,
+      "statusPill": null,
+      "planTiles": [
+        {
+          "text": "Target buy: $499,500 (+35.3% gap)A $0 discount below market to the profit zone (Target Buy",
+          "font-family": "Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Target buy: $499,500 (+35.3% gap)A $0 discount below market to the profit zone (Target Buy",
+          "font-family": "Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "What it tells youFor each of six strategies — Long-Term Rental, Short-Term Rental, BRRRR, ",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    },
+    "v1-discovery-dark-390": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "PlanPlan",
+          "MathMath",
+          "WorkWork"
+        ],
+        "hasVerdict": true,
+        "hasOverview": false
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": {
+        "text": "2652 Yarmouth Drive",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "verdictH2": {
+        "text": "The verdict",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "13px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 164, 233)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "whyH2": {
+        "text": "Why we think so",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "16px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "sentence": {
+        "text": "Listed at $500K. Worth about $500K to you as a rental. That is a 0.0% gap. After 5 days, t",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "20px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "dealGap": {
+        "text": "Deal Gap +35.3%",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "15px",
+        "font-weight": "600",
+        "font-variant-numeric": "tabular-nums",
+        "color": "rgb(15, 164, 233)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "tiles": [
+        {
+          "text": "$499,500Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(52, 211, 153)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(250, 204, 21)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(248, 113, 113)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        }
+      ],
+      "tileValues": [
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "22px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(52, 211, 153)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "22px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(250, 204, 21)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "22px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(248, 113, 113)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "tileLabels": [
+        {
+          "text": "Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(241, 245, 249)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        }
+      ],
+      "callChip": {
+        "text": "Worth pursuing",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "14px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(52, 211, 153)",
+        "background-color": "rgba(52, 211, 153, 0.12)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "leverTag": null,
+      "statusPill": {
+        "text": "Listed · 5 days",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "13px",
+        "font-weight": "500",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgb(12, 18, 32)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "planTiles": [
+        {
+          "text": "{\"@context\":\"https://schema.org\",\"@type\":\"WebPage\",\"@id\":\"https://dealgapiq.com/discovery\"",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Target buy: $499,500 (+35.3% gap)A $0 discount below market to the profit zone (Target Buy",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(51, 65, 85) rgb(229, 231, 235) rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    },
+    "v1-plan-dark-390": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414&view=plan",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "PlanPlan",
+          "MathMath",
+          "WorkWork"
+        ],
+        "hasVerdict": false,
+        "hasOverview": false
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": {
+        "text": "2652 Yarmouth Drive",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "verdictH2": null,
+      "whyH2": null,
+      "sentence": null,
+      "dealGap": null,
+      "tiles": [],
+      "tileValues": [],
+      "tileLabels": [],
+      "callChip": null,
+      "leverTag": null,
+      "statusPill": {
+        "text": "Listed · 5 days",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "13px",
+        "font-weight": "500",
+        "font-variant-numeric": "normal",
+        "color": "rgb(241, 245, 249)",
+        "background-color": "rgb(12, 18, 32)",
+        "border-color": "rgb(51, 65, 85)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "planTiles": [
+        {
+          "text": "{\"@context\":\"https://schema.org\",\"@type\":\"WebPage\",\"@id\":\"https://dealgapiq.com/discovery\"",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Back to Discovery overviewStrategy WorkbenchThe baseline works — stress-test assumptions, ",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500Offer price",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(51, 65, 85)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$114,885Cash you bring",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(203, 213, 225)",
+          "background-color": "rgb(0, 0, 0)",
+          "border-color": "rgb(51, 65, 85)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 164, 233, 0.15) 0px 0px 20px 0px",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    },
+    "v1-discovery-light-1280": {
+      "url": "http://localhost:3010/discovery?address=2652%20Yarmouth%20Drive%2C%20Wellington%2C%20FL%2033414",
+      "layout": {
+        "tabs": [
+          "DiscoveryDiscovery",
+          "PlanPlan",
+          "MathMath",
+          "WorkWork"
+        ],
+        "hasVerdict": true,
+        "hasOverview": false
+      },
+      "cssVarInter": "\"Inter\", \"Inter Fallback\"",
+      "interFaceNames": [
+        "Inter",
+        "\"Inter Fallback\""
+      ],
+      "address": {
+        "text": "2652 Yarmouth Drive",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 23, 42)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "verdictH2": {
+        "text": "The verdict",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "13px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(4, 101, 242)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "whyH2": {
+        "text": "Why we think so",
+        "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "font-size": "16px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 23, 42)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "sentence": {
+        "text": "Listed at $500K. Worth about $500K to you as a rental. That is a 0.0% gap. After 5 days, t",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "24px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 23, 42)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "dealGap": {
+        "text": "Deal Gap +35.3%",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "15px",
+        "font-weight": "600",
+        "font-variant-numeric": "tabular-nums",
+        "color": "rgb(4, 101, 242)",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "border-color": "rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "tiles": [
+        {
+          "text": "$499,500Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(30, 41, 59)",
+          "background-color": "rgb(255, 255, 255)",
+          "border-color": "rgb(21, 128, 61)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.04) 0px 4px 14px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(30, 41, 59)",
+          "background-color": "rgb(255, 255, 255)",
+          "border-color": "rgb(183, 121, 31)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.04) 0px 4px 14px 0px",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(30, 41, 59)",
+          "background-color": "rgb(255, 255, 255)",
+          "border-color": "rgb(180, 35, 24)",
+          "border-radius": "16px",
+          "box-shadow": "rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.04) 0px 4px 14px 0px",
+          "text-transform": "none"
+        }
+      ],
+      "tileValues": [
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(21, 128, 61)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$675,953",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(183, 121, 31)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "$499,500",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "24.832px",
+          "font-weight": "700",
+          "font-variant-numeric": "tabular-nums",
+          "color": "rgb(180, 35, 24)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "tileLabels": [
+        {
+          "text": "Target buy. The price that pays you. Aim here.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(15, 23, 42)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Income value. The most you can pay and still break even.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(15, 23, 42)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        },
+        {
+          "text": "Market price. What it is listed for.",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "12px",
+          "font-weight": "700",
+          "font-variant-numeric": "normal",
+          "color": "rgb(15, 23, 42)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "uppercase"
+        }
+      ],
+      "callChip": {
+        "text": "Worth pursuing",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "14px",
+        "font-weight": "600",
+        "font-variant-numeric": "normal",
+        "color": "rgb(21, 128, 61)",
+        "background-color": "rgba(52, 211, 153, 0.12)",
+        "border-color": "rgb(184, 196, 206)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "leverTag": null,
+      "statusPill": {
+        "text": "Listed · 5 days",
+        "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+        "font-size": "13px",
+        "font-weight": "500",
+        "font-variant-numeric": "normal",
+        "color": "rgb(15, 23, 42)",
+        "background-color": "rgb(241, 244, 248)",
+        "border-color": "rgb(184, 196, 206)",
+        "border-radius": "9999px",
+        "box-shadow": "none",
+        "text-transform": "none"
+      },
+      "planTiles": [
+        {
+          "text": "{\"@context\":\"https://schema.org\",\"@type\":\"WebPage\",\"@id\":\"https://dealgapiq.com/discovery\"",
+          "font-family": "\"DM Sans\", \"DM Sans Fallback\", \"DM Sans\", Inter, \"Inter Fallback\", Inter, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(30, 41, 59)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        },
+        {
+          "text": "Target buy: $499,500 (+35.3% gap)A $0 discount below market to the profit zone (Target Buy",
+          "font-family": "Inter, \"Inter Fallback\", Inter, -apple-system, system-ui, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "font-variant-numeric": "normal",
+          "color": "rgb(30, 41, 59)",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "border-color": "rgb(184, 196, 206) rgb(229, 231, 235) rgb(229, 231, 235)",
+          "border-radius": "0px",
+          "box-shadow": "none",
+          "text-transform": "none"
+        }
+      ],
+      "optionCard": null
+    }
+  },
+  "axe": {
+    "v1-discovery-dark-1280": {
+      "violations": []
+    },
+    "v1-plan-dark-1280": {
+      "violations": []
+    },
+    "v1-discovery-dark-390": {
+      "violations": [
+        {
+          "id": "nested-interactive",
+          "impact": "serious",
+          "help": "Interactive controls must not be nested",
+          "nodes": 1
+        }
+      ]
+    },
+    "v1-plan-dark-390": {
+      "violations": []
+    },
+    "v1-discovery-light-1280": {
+      "violations": []
+    }
+  }
+}
