@@ -37,6 +37,11 @@ class IQVerdictInput(BaseModel):
     model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
 
     list_price: float = Field(..., gt=0, le=100_000_000, description="Property list price")
+    address: str | None = Field(
+        None,
+        max_length=300,
+        description="Full address so the anonymous quota shares a fingerprint with property search",
+    )
     purchase_price: float | None = Field(
         None, gt=0, le=100_000_000, description="User-override purchase price (bypasses buy_price calculation)"
     )

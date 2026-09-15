@@ -154,6 +154,17 @@ async def test_ip_cap_trips_at_its_number(cache, monkeypatch):
     assert gated.value.detail["limit"] == 2
 
 
+def test_verdict_route_calls_the_rekeyed_anonymous_quota():
+    from app.routers import analytics as analytics_mod
+
+    src = inspect.getsource(analytics_mod.calculate_iq_verdict)
+    assert "if not current_user:" in src
+    assert "_check_anonymous_quota" in src
+    assert src.index("if not current_user:") < src.index("_check_anonymous_quota")
+    assert "anon_quota:" not in src
+    assert "X-Forwarded-For" not in src
+
+
 def test_signed_in_path_never_calls_anonymous_quota():
     """Guard: search_property only calls the anon check in the else of current_user."""
     from app.routers import property as property_mod
