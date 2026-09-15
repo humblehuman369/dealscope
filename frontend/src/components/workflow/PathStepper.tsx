@@ -62,6 +62,7 @@ export function PathStepper({
               ) : null}
               <Link
                 href={stepHref(step.id, address)}
+                prefetch={false}
                 aria-current={lit ? 'step' : undefined}
                 className="inline-flex items-center min-h-11 px-2 text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{
