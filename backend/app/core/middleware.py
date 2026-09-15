@@ -5,6 +5,7 @@ request timing, request-ID injection, and correlation-ID logging.
 
 import contextvars
 import logging
+import re
 import secrets
 import time
 import uuid
@@ -226,6 +227,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                     if not header_token or header_token != csrf_cookie:
                         return JSONResponse(status_code=403, content={"detail": "CSRF token missing or invalid"})
 
+        visitor_id = request.cookies.get(settings.ANON_VISITOR_COOKIE)
+        if not visitor_id or not re.fullmatch(r"[0-9a-f]{32}", visitor_id):
+            visitor_id = uuid.uuid4().hex
+        request.state.anon_visitor_id = visitor_id
+
         response = await call_next(request)
 
         # Set (or refresh) CSRF cookie — readable by JS
@@ -237,6 +243,17 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             samesite=settings.COOKIE_SAMESITE,
             domain=settings.COOKIE_DOMAIN,
             max_age=86400 * 7,
+            path="/",
+        )
+        # First-party anonymous visitor id. HttpOnly, one year. Quota key.
+        response.set_cookie(
+            key=settings.ANON_VISITOR_COOKIE,
+            value=visitor_id,
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+            domain=settings.COOKIE_DOMAIN,
+            max_age=settings.ANON_VISITOR_COOKIE_MAX_AGE,
             path="/",
         )
         return response

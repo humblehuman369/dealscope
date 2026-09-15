@@ -11,6 +11,13 @@ export function verdictAnalysisQueryKey(address: string) {
   return ['analysis-verdict', canonicalizeAddressForIdentity(address)] as const
 }
 
+function verdictBody(address: string, payload: unknown): unknown {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+    return { ...payload, address }
+  }
+  return { address }
+}
+
 export function fetchVerdictAnalysis<T>(
   queryClient: QueryClient,
   address: string,
@@ -18,7 +25,7 @@ export function fetchVerdictAnalysis<T>(
 ): Promise<T> {
   return queryClient.ensureQueryData({
     queryKey: verdictAnalysisQueryKey(address),
-    queryFn: () => api.post<T>('/api/v1/analysis/verdict', payload),
+    queryFn: () => api.post<T>('/api/v1/analysis/verdict', verdictBody(address, payload)),
     staleTime: 30_000,
   })
 }
@@ -30,7 +37,7 @@ export function refetchVerdictAnalysis<T>(
 ): Promise<T> {
   return queryClient.fetchQuery({
     queryKey: verdictAnalysisQueryKey(address),
-    queryFn: () => api.post<T>('/api/v1/analysis/verdict', payload),
+    queryFn: () => api.post<T>('/api/v1/analysis/verdict', verdictBody(address, payload)),
     staleTime: 0,
   })
 }

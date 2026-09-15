@@ -58,6 +58,14 @@ describe('useWorkflowV1 with env on', () => {
     expect(result.current.enabled).toBe(true)
   })
 
+  it('enables v1 when the flag is true even if analytics consent is essential', async () => {
+    flagValue = true
+    const { result } = renderHook(() => useWorkflowV1())
+    await waitFor(() => expect(result.current.ready).toBe(true))
+    expect(result.current.enabled).toBe(true)
+    expect(initPostHog).toHaveBeenCalled()
+  })
+
   it('stays off when PostHog is missing', async () => {
     initPostHog.mockResolvedValue(null)
     const { result } = renderHook(() => useWorkflowV1())

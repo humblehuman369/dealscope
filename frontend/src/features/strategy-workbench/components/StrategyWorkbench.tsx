@@ -84,6 +84,7 @@ import {
 } from '@/lib/planSessionStore'
 import { fetchVerdictAnalysis, refetchVerdictAnalysis } from '@/lib/verdictAnalysisQuery'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
 import { StrategyUnlockPanel } from '@/components/auth/StrategyUnlockPanel'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
 import { readPlanContinuity } from '@/lib/makeItWorkContinuity'
@@ -2134,6 +2135,14 @@ export function StrategyWorkbench({
       <div className={embedded ? WORKBENCH_EMBEDDED_GUTTER : WORKBENCH_PAGE_GUTTER}>
         <div className={WORKBENCH_STACK}>
         {showV1Plan && planModel ? (
+          <AuthGate
+            mode="section"
+            heading={ANON_FUNNEL_COPY.buildPlanCta}
+            ctaMode="register"
+            ctaLabel={ANON_FUNNEL_COPY.buildPlanCta}
+            secondaryLabel={ANON_FUNNEL_COPY.signIn}
+            unlocked={worksheetUnlocked}
+          >
           <WorkflowV1ErrorBoundary
             route="/discovery?view=plan"
             onCaught={() => setV1PlanFailed(true)}
@@ -2166,6 +2175,7 @@ export function StrategyWorkbench({
               }
             />
           </WorkflowV1ErrorBoundary>
+          </AuthGate>
         ) : null}
 
         <div
@@ -2268,7 +2278,7 @@ export function StrategyWorkbench({
           feature="view the full strategy breakdown"
           mode="section"
           overlay={workflowV1 ? undefined : strategyUnlockOverlay}
-          unlocked={workflowV1 || worksheetUnlocked}
+          unlocked={worksheetUnlocked}
         >
           <div className="flex flex-col gap-3">
             {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}

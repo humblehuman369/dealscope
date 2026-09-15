@@ -5,7 +5,10 @@ const trackEvent = vi.fn()
 const post = vi.fn().mockResolvedValue({ ok: true })
 vi.mock('@/lib/eventTracking', () => ({ trackEvent: (...args: unknown[]) => trackEvent(...args) }))
 vi.mock('@/lib/api-client', () => ({ api: { post: (...args: unknown[]) => post(...args) } }))
-vi.mock('@/lib/cookieConsent', () => ({ hasAnalyticsConsent: () => true }))
+vi.mock('@/lib/cookieConsent', () => ({
+  hasAnalyticsConsent: () => true,
+  subscribeConsent: () => () => undefined,
+}))
 vi.mock('@/lib/attribution', () => ({
   getFirstTouch: () => ({ landing_path: '/for/wholesalers', utm_campaign: 'wholesalers', ts: 1 }),
   firstTouchEventProps: () => ({ ft_utm_campaign: 'wholesalers' }),
@@ -46,7 +49,7 @@ describe('VerdictEmailCapture', () => {
       />,
     )
     expect(screen.getByLabelText('Save this verdict. Email me the numbers.')).toBeInTheDocument()
-    expect(screen.getByText('One email. No account.')).toBeInTheDocument()
+    expect(screen.getByText('One email. We will not sign you up for anything.')).toBeInTheDocument()
     expect(screen.queryByText('Email me this Discovery')).not.toBeInTheDocument()
     fireEvent.change(screen.getByLabelText('Save this verdict. Email me the numbers.'), {
       target: { value: 'investor@example.com' },

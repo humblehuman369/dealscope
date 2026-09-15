@@ -140,7 +140,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
             DealGap<span className="text-[var(--accent-sky)]">IQ</span>
           </Link>
 
-          <div className="hidden items-center gap-10 text-sm md:flex">
+          <div className="hidden items-center gap-10 text-sm lg:flex">
             {navLinks.map((link) =>
               link.href.startsWith('/') ? (
                 <Link
@@ -162,7 +162,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
             )}
           </div>
 
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden items-center gap-4 lg:flex">
             {isAuthenticated ? (
               <MarketingUserMenu />
             ) : (
@@ -184,7 +184,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
           </div>
 
           {isAuthenticated ? (
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <MarketingUserMenu />
             </div>
           ) : null}
@@ -192,7 +192,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] ${isAuthenticated ? 'hidden' : 'md:hidden'}`}
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] ${isAuthenticated ? 'hidden' : 'lg:hidden'}`}
             aria-label="Toggle navigation"
             aria-expanded={mobileOpen}
           >
@@ -201,7 +201,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-[var(--border-default)] pb-5 pt-4 md:hidden">
+          <div className="border-t border-[var(--border-default)] pb-5 pt-4 lg:hidden">
             <div className="flex flex-col gap-3">
               {navLinks.map((link) =>
                 link.href.startsWith('/') ? (

@@ -1,34 +1,59 @@
 /**
- * PostHog product analytics — consent-gated, lazy-loaded.
+ * PostHog — flags load without analytics consent; capture stays gated.
  *
- * PostHog only initializes when:
- *   1. NEXT_PUBLIC_POSTHOG_KEY is configured, AND
- *   2. the user accepted analytics cookies (consent === 'all').
- *
- * The SDK is dynamically imported so it never lands in the main bundle for
- * users without consent. All exports are safe to call anywhere (no-ops when
- * PostHog is unavailable).
- *
- * Funnel identity: `identifyPostHog(user.id, ...)` stitches anonymous
- * pre-signup events to the account, enabling signup → verdict → trial → paid
- * funnel analysis. `resetPostHog()` must run on logout so shared devices
- * don't cross-link users.
+ * Init runs whenever NEXT_PUBLIC_POSTHOG_KEY is set. Without consent === 'all'
+ * the client is flags-only: capturing opted out, no autocapture / pageviews /
+ * session replay, persistence in memory. `capturePostHog` and `identifyPostHog`
+ * are no-ops until consent is "all". When the user accepts analytics, the
+ * existing client opts in without a reload.
  */
 
 import type { PostHog } from 'posthog-js'
-import { hasAnalyticsConsent } from '@/lib/cookieConsent'
+import { hasAnalyticsConsent, subscribeConsent } from '@/lib/cookieConsent'
 
 let client: PostHog | null = null
 let initPromise: Promise<PostHog | null> | null = null
+let subscribedToConsent = false
+
+function applyConsentMode(ph: PostHog): void {
+  if (hasAnalyticsConsent()) {
+    ph.opt_in_capturing()
+    ph.set_config({ persistence: 'localStorage+cookie' })
+    return
+  }
+  ph.opt_out_capturing()
+}
+
+function applyDevWorkflowOverride(ph: PostHog): void {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    (window as Window & { __WORKFLOW_V1_OVERRIDE__?: boolean }).__WORKFLOW_V1_OVERRIDE__ ===
+      true
+  ) {
+    const local = ph as unknown as {
+      overrideFeatureFlags?: (flags: Record<string, boolean | string>) => void
+    }
+    local.overrideFeatureFlags?.({ 'workflow-v1': true })
+  }
+}
 
 export function initPostHog(): Promise<PostHog | null> {
   if (typeof window === 'undefined') return Promise.resolve(null)
 
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  if (!key || !hasAnalyticsConsent()) return Promise.resolve(null)
+  if (!key) return Promise.resolve(null)
+
+  if (!subscribedToConsent) {
+    subscribedToConsent = true
+    subscribeConsent?.(() => {
+      if (client) applyConsentMode(client)
+      else void initPostHog()
+    })
+  }
 
   if (initPromise) return initPromise
 
+  const analyticsOn = hasAnalyticsConsent()
   initPromise = import('posthog-js')
     .then(({ default: posthog }) => {
       posthog.init(key, {
@@ -36,32 +61,28 @@ export function initPostHog(): Promise<PostHog | null> {
         // '2026-05-30' is the current PostHog config snapshot (SPA pageviews,
         // head script injection for Next.js SSR, plus later flag/replay defaults).
         defaults: '2026-05-30',
-        persistence: 'localStorage+cookie',
+        persistence: analyticsOn ? 'localStorage+cookie' : 'memory',
+        autocapture: analyticsOn,
+        capture_pageview: analyticsOn,
+        disable_session_recording: !analyticsOn,
+        opt_out_capturing_by_default: !analyticsOn,
+        advanced_disable_decide: false,
       })
       client = posthog
-      // Local screenshot / Lighthouse bootstrap only. Production builds
-      // never see NODE_ENV === 'development', so this cannot bypass the flag.
-      if (
-        process.env.NODE_ENV === 'development' &&
-        (window as Window & { __WORKFLOW_V1_OVERRIDE__?: boolean }).__WORKFLOW_V1_OVERRIDE__ ===
-          true
-      ) {
-        const local = posthog as unknown as {
-          overrideFeatureFlags?: (flags: Record<string, boolean | string>) => void
-        }
-        local.overrideFeatureFlags?.({ 'workflow-v1': true })
-      }
+      applyConsentMode(posthog)
+      applyDevWorkflowOverride(posthog)
       return posthog
     })
     .catch(() => null)
   return initPromise
 }
 
-/** Capture an event. Initializes PostHog on first call if consent allows. */
+/** Capture an event. No-op until analytics consent is "all". */
 export function capturePostHog(
   name: string,
   props?: Record<string, string | number | boolean>,
 ): void {
+  if (!hasAnalyticsConsent()) return
   void initPostHog().then((ph) => ph?.capture(name, props))
 }
 
@@ -70,6 +91,7 @@ export function identifyPostHog(
   distinctId: string,
   props?: Record<string, string | number | boolean>,
 ): void {
+  if (!hasAnalyticsConsent()) return
   void initPostHog().then((ph) => {
     if (!ph) return
     const set: Record<string, string | number | boolean> = {}
@@ -90,7 +112,7 @@ export function resetPostHog(): void {
 }
 
 /**
- * Feature-flag read. `null` when PostHog is not initialized (no key / no consent),
+ * Feature-flag read. `null` when PostHog is not initialized (no key),
  * so callers can treat "unknown" as a miss instead of false.
  */
 export function isPostHogFeatureEnabled(flag: string): Promise<boolean | null> {

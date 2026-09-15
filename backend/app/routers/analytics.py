@@ -7,10 +7,11 @@ Schemas live in ``app.schemas.analytics``.
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from app.core.deps import DbSession, OptionalUser
+from app.routers.property import _check_anonymous_quota, _record_anonymous_analysis
 from app.schemas.analytics import (
     DealScoreInput,
     DealScoreResponse,
@@ -41,14 +42,27 @@ router = APIRouter(tags=["Analytics"])
 @router.post("/api/v1/analysis/verdict", response_model=IQVerdictResponse)
 async def calculate_iq_verdict(
     input_data: IQVerdictInput,
+    http_request: Request,
     db: DbSession,
     current_user: OptionalUser = None,
 ):
     """Calculate IQ Verdict multi-strategy analysis.
 
     Signed-in users are scored against the defaults they saved in their profile;
-    anonymous callers get the admin defaults.
+    anonymous callers get the admin defaults and the same visitor-cookie
+    daily quota as ``POST /properties/search``.
     """
+    anon_counter_key: str | None = None
+    anon_marker_key: str | None = None
+    anon_ip_key: str | None = None
+    is_repeat = True
+    if not current_user:
+        address = (input_data.address or "").strip() or (
+            f"{input_data.list_price}|{input_data.state}|{input_data.bedrooms}|{input_data.sqft}"
+        )
+        anon_counter_key, anon_marker_key, anon_ip_key, is_repeat = await _check_anonymous_quota(
+            http_request, address
+        )
     try:
         assumptions = await resolve_assumptions(db, user=current_user)
         result = compute_iq_verdict(input_data, assumptions=assumptions)
@@ -63,7 +77,11 @@ async def calculate_iq_verdict(
             response_dict.get("marketAlignmentScore"),
             response_dict.get("dealProbabilityScore"),
         )
+        if not current_user and not is_repeat and anon_counter_key and anon_marker_key and anon_ip_key:
+            await _record_anonymous_analysis(anon_counter_key, anon_marker_key, anon_ip_key)
         return JSONResponse(content=response_dict)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"IQ Verdict analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

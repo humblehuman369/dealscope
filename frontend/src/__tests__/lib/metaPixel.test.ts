@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const hasAnalyticsConsent = vi.fn(() => true)
-vi.mock('@/lib/cookieConsent', () => ({ hasAnalyticsConsent: () => hasAnalyticsConsent() }))
+vi.mock('@/lib/cookieConsent', () => ({
+  hasAnalyticsConsent: () => hasAnalyticsConsent(),
+  subscribeConsent: () => () => undefined,
+}))
 
 import { META_STANDARD_EVENTS, captureMetaPixel, initMetaPixel, resetMetaPixelForTests } from '@/lib/metaPixel'
 

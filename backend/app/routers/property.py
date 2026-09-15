@@ -7,6 +7,7 @@ Extracted from main.py for cleaner architecture.
 import hashlib
 import logging
 import re
+import uuid
 from datetime import UTC, datetime
 from io import BytesIO
 
@@ -182,47 +183,78 @@ def _analysis_limit_http_error(e: SubscriptionLimitError) -> HTTPException:
     )
 
 
-async def _check_anonymous_quota(http_request: Request, full_address: str) -> tuple[str, str, bool]:
-    """Enforce the per-IP daily cap for signed-out users.
+_ANON_VISITOR_RE = re.compile(r"^[0-9a-f]{32}$")
 
-    Returns ``(counter_key, marker_key, is_repeat)``; raises 403 when exhausted.
-    Repeat views of an already-analyzed address never consume quota.
+
+def _anon_visitor_id(http_request: Request) -> str:
+    """Visitor id from the first-party cookie, or a new id if this is the first hit."""
+    state_id = getattr(http_request.state, "anon_visitor_id", None)
+    if isinstance(state_id, str) and _ANON_VISITOR_RE.match(state_id):
+        return state_id
+    raw = http_request.cookies.get(settings.ANON_VISITOR_COOKIE)
+    if raw and _ANON_VISITOR_RE.match(raw):
+        return raw
+    return uuid.uuid4().hex
+
+
+def _anonymous_limit_error(*, used: int, limit: int, limit_type: str) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "code": "ANONYMOUS_LIMIT_REACHED",
+            "message": (
+                f"You've used today's {settings.ANON_ANALYSES_PER_DAY} free analyses. "
+                "Create a free account to keep analyzing properties."
+            ),
+            "limit_type": limit_type,
+            "current": used,
+            "limit": limit,
+            "tier_required": "free",
+        },
+    )
+
+
+async def _check_anonymous_quota(http_request: Request, full_address: str) -> tuple[str, str, str, bool]:
+    """Enforce the per-visitor daily cap for signed-out users.
+
+    Primary key is the first-party visitor cookie. The client IP is only a
+    secondary abuse cap (``ANON_IP_CAP_PER_DAY``). Signed-in callers never
+    reach this function.
+
+    Returns ``(counter_key, marker_key, ip_key, is_repeat)``; raises 403
+    when exhausted. Repeat views of an already-analyzed address never
+    consume quota.
     """
     cache = get_cache_service()
+    visitor_id = _anon_visitor_id(http_request)
     ip = _client_ip(http_request)
     today = datetime.now(UTC).strftime("%Y%m%d")
-    counter_key = f"anon_quota:{ip}:{today}"
-    marker_key = f"anon_seen:{ip}:{_address_fingerprint(full_address)}"
+    counter_key = f"anon_quota:{visitor_id}:{today}"
+    ip_key = f"anon_ip_cap:{ip}:{today}"
+    marker_key = f"anon_seen:{visitor_id}:{_address_fingerprint(full_address)}"
 
     if await cache.exists(marker_key):
-        return counter_key, marker_key, True
+        return counter_key, marker_key, ip_key, True
 
     limit = settings.ANON_ANALYSES_PER_DAY
-    used = await cache.get(counter_key) or 0
-    if int(used) >= limit:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "code": "ANONYMOUS_LIMIT_REACHED",
-                "message": (
-                    f"You've used today's {limit} free analyses. "
-                    "Create a free account to keep analyzing properties."
-                ),
-                "limit_type": "anonymous_analyses",
-                "current": int(used),
-                "limit": limit,
-                "tier_required": "free",
-            },
-        )
-    return counter_key, marker_key, False
+    used = int(await cache.get(counter_key) or 0)
+    if used >= limit:
+        raise _anonymous_limit_error(used=used, limit=limit, limit_type="anonymous_analyses")
+
+    ip_cap = settings.ANON_IP_CAP_PER_DAY
+    ip_used = int(await cache.get(ip_key) or 0)
+    if ip_used >= ip_cap:
+        raise _anonymous_limit_error(used=ip_used, limit=ip_cap, limit_type="anonymous_ip_cap")
+
+    return counter_key, marker_key, ip_key, False
 
 
-async def _record_anonymous_analysis(counter_key: str, marker_key: str) -> None:
+async def _record_anonymous_analysis(counter_key: str, marker_key: str, ip_key: str) -> None:
     """Count one anonymous analysis after a successful fetch (24h windows).
 
     The address marker is claimed first (SET NX) so parallel searches of the
     same property — Discovery + workbench, React Strict Mode — only burn one
-    slot.
+    slot. The IP counter increments only when the visitor slot is claimed.
     """
     cache = get_cache_service()
     claimed = await cache.set_if_not_exists(marker_key, 1, ttl_seconds=86400)
@@ -230,6 +262,8 @@ async def _record_anonymous_analysis(counter_key: str, marker_key: str) -> None:
         return
     used = await cache.get(counter_key) or 0
     await cache.set(counter_key, int(used) + 1, ttl_seconds=86400)
+    ip_used = await cache.get(ip_key) or 0
+    await cache.set(ip_key, int(ip_used) + 1, ttl_seconds=86400)
 
 
 @router.post("/properties/search", response_model=PropertyResponse)
@@ -248,7 +282,8 @@ async def search_property(
 
     Usage limits are enforced server-side: free-tier users get
     ``searches_per_month`` distinct properties per month; anonymous users get
-    ``ANON_ANALYSES_PER_DAY`` distinct properties per IP per day. Returns 403
+    ``ANON_ANALYSES_PER_DAY`` distinct properties per visitor cookie per day,
+    with ``ANON_IP_CAP_PER_DAY`` as a shared-address abuse cap. Returns 403
     with a structured detail payload when the limit is reached.
     """
     full_address = _build_full_address(request)
@@ -258,6 +293,7 @@ async def search_property(
     is_repeat = False
     anon_counter_key: str | None = None
     anon_marker_key: str | None = None
+    anon_ip_key: str | None = None
     if current_user:
         is_repeat = await has_recent_successful_analysis(db, current_user.id, full_address)
         if not is_repeat:
@@ -275,7 +311,9 @@ async def search_property(
                         pass
                 raise _analysis_limit_http_error(e)
     else:
-        anon_counter_key, anon_marker_key, is_repeat = await _check_anonymous_quota(http_request, full_address)
+        anon_counter_key, anon_marker_key, anon_ip_key, is_repeat = await _check_anonymous_quota(
+            http_request, full_address
+        )
 
     logger.info(f"Searching for property: {full_address}")
 
@@ -398,9 +436,9 @@ async def search_property(
                 pass
     else:
         logger.debug("Search history not recorded: no authenticated user")
-        if not is_repeat and anon_counter_key and anon_marker_key:
+        if not is_repeat and anon_counter_key and anon_marker_key and anon_ip_key:
             try:
-                await _record_anonymous_analysis(anon_counter_key, anon_marker_key)
+                await _record_anonymous_analysis(anon_counter_key, anon_marker_key, anon_ip_key)
             except Exception as anon_err:
                 logger.warning("Failed to record anonymous analysis quota: %s", anon_err)
 

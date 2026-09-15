@@ -5,7 +5,10 @@ vi.mock('@vercel/analytics', () => ({ track: (...args: unknown[]) => vercelTrack
 const capturePostHog = vi.fn()
 vi.mock('@/lib/posthog', () => ({ capturePostHog: (...args: unknown[]) => capturePostHog(...args) }))
 const hasAnalyticsConsent = vi.fn(() => true)
-vi.mock('@/lib/cookieConsent', () => ({ hasAnalyticsConsent: () => hasAnalyticsConsent() }))
+vi.mock('@/lib/cookieConsent', () => ({
+  hasAnalyticsConsent: () => hasAnalyticsConsent(),
+  subscribeConsent: () => () => undefined,
+}))
 vi.mock('@/lib/metaPixel', () => ({
   captureMetaPixel: () => undefined,
   META_STANDARD_EVENTS: {},
