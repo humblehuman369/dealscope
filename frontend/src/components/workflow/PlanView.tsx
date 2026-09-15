@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
 import { PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
-import { V1_CARD, V1_NUM, v1Tile } from '@/components/workflow/v1-style'
 
 export interface PlanViewProps {
   model: PlanViewModel
@@ -23,7 +22,6 @@ const CARD: CSSProperties = {
   background: 'var(--surface-card)',
   border: '1px solid var(--border-default)',
   borderRadius: 16,
-  boxShadow: 'var(--shadow-card)',
 }
 
 const HERO: CSSProperties = {
@@ -32,6 +30,11 @@ const HERO: CSSProperties = {
     'radial-gradient(120% 120% at 0% 0%, rgba(14,165,233,0.09), transparent 60%), var(--surface-card)',
   border: '1px solid var(--border-subtle)',
   boxShadow: 'var(--shadow-card)',
+}
+
+const NUM: CSSProperties = {
+  fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontVariantNumeric: 'tabular-nums',
 }
 
 function WhyToggle({ id, label, text }: { id: string; label: string; text: string }) {
@@ -135,16 +138,12 @@ export function PlanView({
             <div
               key={label}
               className="rounded-xl px-3 py-3"
-              style={
-                index === 2 && model.cashFlowNegative
-                  ? v1Tile('var(--status-negative)')
-                  : V1_CARD
-              }
+              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
               <div
                 className="text-[20px] font-bold leading-tight"
                 style={{
-                  ...V1_NUM,
+                  ...NUM,
                   color:
                     index === 2 && model.cashFlowNegative
                       ? 'var(--status-negative)'
@@ -153,10 +152,7 @@ export function PlanView({
               >
                 {value}
               </div>
-              <div
-                className="mt-1 text-xs font-bold uppercase tracking-wide"
-                style={{ color: 'var(--text-heading)' }}
-              >
+              <div className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                 {label}
               </div>
             </div>
@@ -218,8 +214,7 @@ export function PlanView({
               onClick={() => onApply(option.structureId)}
               className="text-left rounded-xl px-3 py-3 min-h-11 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
-                background: 'var(--surface-card)',
-                boxShadow: 'var(--shadow-card)',
+                background: 'var(--surface-elevated)',
                 border: option.isApplied
                   ? '2px solid var(--accent-sky)'
                   : '1px solid var(--border-default)',
@@ -236,7 +231,7 @@ export function PlanView({
                 <span className="tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {option.meetsLabel}
                 </span>
-                <span style={V1_NUM}>{option.cashFlowLabel}</span>
+                <span style={NUM}>{option.cashFlowLabel}</span>
               </div>
               {option.isBest ? (
                 <span
@@ -244,7 +239,7 @@ export function PlanView({
                   style={{
                     color: 'var(--accent-sky)',
                     border: '1px solid var(--border-default)',
-                    borderRadius: 9999,
+                    borderRadius: 6,
                     padding: '2px 8px',
                   }}
                 >
@@ -279,10 +274,10 @@ export function PlanView({
                   <td className="py-2 pr-3" style={{ color: 'var(--text-body)' }}>
                     {row.measure}
                   </td>
-                  <td className="py-2 pr-3" style={{ ...V1_NUM, color: 'var(--text-heading)' }}>
+                  <td className="py-2 pr-3" style={{ ...NUM, color: 'var(--text-heading)' }}>
                     {row.plan}
                   </td>
-                  <td className="py-2 pr-3" style={{ ...V1_NUM, color: 'var(--text-secondary)' }}>
+                  <td className="py-2 pr-3" style={{ ...NUM, color: 'var(--text-secondary)' }}>
                     {row.target}
                   </td>
                   <td
@@ -307,15 +302,12 @@ export function PlanView({
             <div
               key={cell.caption}
               className="rounded-xl px-3 py-3"
-              style={V1_CARD}
+              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
-              <div className="text-[20px] font-bold leading-tight" style={{ ...V1_NUM, color: 'var(--text-heading)' }}>
+              <div className="text-[20px] font-bold leading-tight" style={{ ...NUM, color: 'var(--text-heading)' }}>
                 {cell.value}
               </div>
-              <div
-                className="mt-1 text-xs font-bold uppercase tracking-wide"
-                style={{ color: 'var(--text-heading)' }}
-              >
+              <div className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                 {cell.caption}
               </div>
             </div>

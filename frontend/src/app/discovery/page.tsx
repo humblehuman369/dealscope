@@ -115,7 +115,6 @@ import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
-import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import {
   formatSellerRead,
   formatVerdictSentence,
@@ -2080,7 +2079,7 @@ function VerdictContent() {
           }`}
           style={
             workflowV1Layout
-              ? { fontFamily: V1_UI_FONT }
+              ? undefined
               : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
           }
         >

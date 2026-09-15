@@ -73,7 +73,6 @@ export function TuneDrawer({
         style={{
           background: 'var(--surface-card)',
           borderLeft: '1px solid var(--border-default)',
-          boxShadow: 'var(--shadow-dropdown)',
         }}
       >
         <div

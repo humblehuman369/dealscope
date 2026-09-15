@@ -3,7 +3,6 @@
 import Link from 'next/link'
 
 import type { WorkflowV1Tab } from '@/lib/workflowRoutes'
-import { V1_UI_FONT } from '@/components/workflow/v1-style'
 
 export type PathStepId = 'find' | 'discovery' | 'plan' | 'work' | 'track'
 
@@ -51,7 +50,7 @@ export function PathStepper({
   const current = currentPathStep(tab)
 
   return (
-    <nav aria-label="Deal path" className="px-2 sm:px-4 py-2" style={{ fontFamily: V1_UI_FONT }}>
+    <nav aria-label="Deal path" className="px-2 sm:px-4 py-2">
       <ol className="flex flex-wrap items-center gap-1">
         {STEPS.map((step, index) => {
           const lit = step.id === current

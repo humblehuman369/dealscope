@@ -9,7 +9,6 @@ import {
   startHereRowId,
   type LeverTag,
 } from '@/lib/leverTags'
-import { V1_CARD } from '@/components/workflow/v1-style'
 
 export interface HowThisClosesProps {
   payload: DealStructuresPayload
@@ -30,7 +29,7 @@ function Tag({ tag }: { tag: LeverTag }) {
       className="inline-flex items-center text-[13px] leading-snug"
       style={{
         padding: '3px 10px',
-        borderRadius: 9999,
+        borderRadius: 6,
         border: '1px solid var(--border-default)',
         color: TAG_COLOR[tag.tone],
         whiteSpace: 'nowrap',
@@ -54,7 +53,10 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
     <article
       aria-labelledby={headingId}
       className="rounded-2xl px-3 sm:px-5 py-6"
-      style={V1_CARD}
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+      }}
     >
       <h2
         id={headingId}
