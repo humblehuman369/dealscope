@@ -2208,7 +2208,7 @@ function VerdictContent() {
               <WorkCheckError onRetry={() => { void refreshSavedCheck() }} />
             ) : hasChecked ? (
               <WorkEmptyState onGoToPlan={navigateToPlan} />
-            ) : null}
+            ) : null
           ) : null}
 
           {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' && !v1DiscoveryFailed ? (
