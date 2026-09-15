@@ -27,7 +27,13 @@ ID = "seller-second-zero-balloon"
 # Caps: keeps the structure plausible.
 MAX_PRICE_PREMIUM_PCT = 0.05  # offer up to 5% above asking
 MAX_SECOND_AS_PCT_OF_PRICE = 0.20  # 2nd ≤ 20% of total price
+MIN_SECOND_AS_PCT_OF_PRICE = 0.02  # below this is Option 2 wearing Option 3's label
 DEFAULT_BALLOON_YEARS = 5
+
+
+def _below_min_second(price: float, second: float) -> bool:
+    """True when a returned 2nd would be too small to call seller financing."""
+    return price > 0 and second < price * MIN_SECOND_AS_PCT_OF_PRICE
 
 
 def solve(ctx: StructureContext) -> DealStructure | None:
@@ -48,7 +54,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     # Solve for the 2nd-mortgage principal X such that:
     #   monthly P&I on (loan - X) at note_rate >= baseline P&I - target_savings
     # Where target_savings is the monthly gap to close.
-    target_savings = max(0.0, -ctx.baseline_monthly_cash_flow) + 25  # closes gap + $25 cushion
+    target_savings = max(0.0, -ctx.baseline_monthly_cash_flow) + TARGET_MONTHLY_CASH_FLOW
 
     bank_loan = ctx.list_price * (1 - ctx.down_payment_pct)
     max_second = ctx.list_price * MAX_SECOND_AS_PCT_OF_PRICE
@@ -87,8 +93,20 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         seller_carry_rate=0.0,
         seller_carry_term_years=DEFAULT_BALLOON_YEARS,
     )
-    # Full ask + max 2nd still negative → step down to Target Buy and re-size the 2nd.
+    # Full ask + max 2nd still short → step down to Target Buy and re-size the 2nd.
+    # If Target Buy already clears the cushion with no second, Option 2 owns that
+    # outcome. Returning a $0 "seller second" here is what shipped on Mcconnell.
     if cf < TARGET_MONTHLY_CASH_FLOW and ctx.target_buy_price < new_price:
+        cf_at_target_no_second = project_monthly_cash_flow(
+            ctx,
+            purchase_price=ctx.target_buy_price,
+            monthly_rent=custom_rent,
+            seller_carry_amount=0.0,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+        )
+        if cf_at_target_no_second >= TARGET_MONTHLY_CASH_FLOW:
+            return None
         new_price = ctx.target_buy_price
         bank_loan = new_price * (1 - ctx.down_payment_pct)
         max_second = new_price * MAX_SECOND_AS_PCT_OF_PRICE
@@ -185,6 +203,8 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         )
 
     if cf < TARGET_MONTHLY_CASH_FLOW:
+        return None
+    if _below_min_second(new_price, chosen_second):
         return None
 
     # Realism scoring — this structure has been getting more common.

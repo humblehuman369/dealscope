@@ -2,6 +2,7 @@
 
 from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
+from app.services.deal_structures.cashflow import TARGET_MONTHLY_CASH_FLOW
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import fmt_money, fmt_money_precise
 
@@ -22,7 +23,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if ctx.list_price <= 0:
         return None
 
-    target_cf = 0.0
+    target_cf = TARGET_MONTHLY_CASH_FLOW
     if _monthly_cf_at_down_pct(ctx, ctx.down_payment_pct) >= target_cf:
         return None
     if _monthly_cf_at_down_pct(ctx, 0.50) < target_cf:

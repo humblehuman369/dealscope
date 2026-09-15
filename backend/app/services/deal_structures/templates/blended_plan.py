@@ -34,6 +34,7 @@ from app.services.deal_structures.templates.rent_uplift import (
 from app.services.deal_structures.templates.seller_second_zero_balloon import (
     DEFAULT_BALLOON_YEARS,
     MAX_SECOND_AS_PCT_OF_PRICE,
+    _below_min_second,
 )
 
 FAMILY = "blended"
@@ -116,6 +117,8 @@ def _solve_seller_second_for_savings(
             hi = mid
         else:
             lo = mid
+    if _below_min_second(price, chosen):
+        return 0.0, 0.0
     return chosen, savings_at(chosen)
 
 
@@ -211,8 +214,8 @@ def solve(
     if ctx.list_price <= 0:
         return None
 
-    # Monthly cash-flow gap to close + small cushion (matches existing templates).
-    gap = max(0.0, -ctx.baseline_monthly_cash_flow) + 25
+    # Monthly cash-flow gap to close + the same cushion the single-lever templates use.
+    gap = max(0.0, -ctx.baseline_monthly_cash_flow) + TARGET_MONTHLY_CASH_FLOW
 
     # Realism weights — None component means weight 0.
     w_p = float(price_result.ranking_score) if price_result else 0.0
@@ -304,6 +307,19 @@ def solve(
             seller_carry_term_years=DEFAULT_BALLOON_YEARS,
         )
 
+    if chosen_second > 0 and _below_min_second(new_price, chosen_second):
+        chosen_second = 0.0
+        savings_f = 0.0
+        monthly_savings = round(savings_p + savings_r, 2)
+        cf = project_monthly_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            monthly_rent=new_rent,
+            seller_carry_amount=0.0,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+        )
+
     if cf < TARGET_MONTHLY_CASH_FLOW:
         return None
 
@@ -327,19 +343,39 @@ def solve(
     bump_pct = (rent_bump / ctx.monthly_rent * 100) if ctx.monthly_rent > 0 else 0.0
     price_pct = ((ctx.list_price - new_price) / ctx.list_price * 100) if ctx.list_price > 0 else 0.0
 
-    headline = f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + {bump_pct:.1f}% rent lift"
+    has_second = chosen_second > 0
+    if has_second:
+        headline = (
+            f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + "
+            f"{bump_pct:.1f}% rent lift"
+        )
+    else:
+        headline = f"Blend: {price_pct:.1f}% price cut + {bump_pct:.1f}% rent lift"
     # Bullets carry the full math for the blended card (no separate lever block on the card).
     # Each bullet uses the "Label: before → after" pattern for at-a-glance scanning.
     bullets = [
         f"Offer price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
-        f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
-        f"Target Rent:\u00a0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
     ]
+    if has_second:
+        bullets.append(
+            f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)"
+        )
+    bullets.append(
+        f"Target Rent:\u00a0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%"
+    )
     # Combined selection-reason + savings so the card only renders one supporting paragraph.
+    if has_second:
+        blend_thesis = (
+            "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
+            "and a modest rent lift can clear the gap together when no single lever wants to do it alone."
+        )
+    else:
+        blend_thesis = (
+            "Real deals usually combine moves — a smaller price cut "
+            "and a modest rent lift can clear the gap together when no single lever wants to do it alone."
+        )
     summary = (
-        "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
-        "and a modest rent lift can clear the gap together when no single lever wants to do it alone. "
-        f"Together they save about {fmt_monthly(monthly_savings)} vs the baseline."
+        f"{blend_thesis} Together they save about {fmt_monthly(monthly_savings)} vs the baseline."
     )
     if not closes_gap:
         summary += (
@@ -350,68 +386,114 @@ def solve(
     # Selection-reason is preserved for downstream consumers (PDF, Strategy,
     # accessibility). The verdict card renderer suppresses it for blended plans
     # because the summary below already carries the same thesis.
-    sel_reason = (
-        "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
-        "and a modest rent lift can clear the gap together when no single lever wants to do it alone."
-    )
+    sel_reason = blend_thesis
 
-    pitch = (
-        "WHO TO CALL\n"
-        "Listing agent first. This pitch works because no single ask is unreasonable — together "
-        "they bridge the gap. Frame it that way.\n\n"
-        "WHY THIS APPROACH WORKS\n"
-        "Real deals rarely close on a single concession. A small price cut, a partial seller "
-        "carry, and a modest rent verification — none of which is dramatic alone — together make "
-        "the math pencil. You're asking the seller to share the gap across three small moves "
-        "instead of swallowing one large one.\n\n"
-        "OPEN — discover before you ask\n"
-        "\"Before I send a number, can you walk me through what's driving the sale and where the "
-        "seller would ideally land? I have a structure in mind that I think can get us close to "
-        'their number — but I want to understand their situation first."\n\n'
-        "ANCHOR — frame the gap honestly\n"
-        f"\"At {fmt_money_precise(ctx.list_price)}, the deal doesn't pencil for me. But I don't "
-        "think it has to come down to a single big concession. I'd like to propose a blended "
-        'structure where we share the lift across three small moves."\n\n'
-        "THE PROPOSAL — three small asks instead of one big one\n"
-        f"1. PRICE — {fmt_pct_delta(ctx.list_price, new_price)} from asking, to "
-        f"{fmt_money_precise(new_price)}. A modest cut, not a haircut.\n"
-        f"2. SELLER CARRY — the seller holds {fmt_money_precise(chosen_second)} as a 0% second "
-        f"mortgage for {DEFAULT_BALLOON_YEARS} years, then balloons to a single payoff check from "
-        "my refinance.\n"
-        f"3. RENT VERIFICATION — I confirm market rent at roughly ${round(new_rent):,}/mo "
-        f"({bump_pct:.1f}% above current modeled rent) before we go hard on earnest. This is on "
-        "me — not an ask of the seller.\n\n"
-        "WHAT'S IN IT FOR THE SELLER\n"
-        f"\u2022 Headline price drops only {fmt_pct_delta(ctx.list_price, new_price)} — "
-        f"{price_pct:.1f}% off their number, vs. typical investor offers of 10-20% below.\n"
-        f"\u2022 The {fmt_money(chosen_second)} second is a recorded, secured note — better than "
-        "cash sitting in their bank account at 0.5%.\n"
-        f"\u2022 In {DEFAULT_BALLOON_YEARS} years they receive a single check for "
-        f"{fmt_money_precise(chosen_second)}, paid by my refinance.\n"
-        "\u2022 Clean fast close. No financing contingency drama.\n\n"
-        "OFFER MULTIPLE OPTIONS (Brandon Turner's three-offer rule)\n"
-        "Sellers say no to single asks but pick between options. Frame your offer as a choice:\n"
-        f"\u2022 OPTION A — Cash, lower price: {fmt_money_precise(ctx.target_buy_price)}, all cash, 14-day close.\n"
-        f"\u2022 OPTION B — Blended (recommended): {fmt_money_precise(new_price)} + "
-        f"{fmt_money(chosen_second)} seller second at 0%.\n"
-        f"\u2022 OPTION C — Full price, full terms: {fmt_money_precise(ctx.list_price)} with the "
-        f"seller carrying ~{fmt_money(chosen_second * 1.6)} at 0% (Pace Morby's pure price-for-terms play).\n\n"
-        "Which one feels closest to what the seller would consider?\n\n"
-        "HANDLE PUSHBACK — break it into pieces\n"
-        "If they balk at the whole package, ask: \"Which part doesn't work for the seller — the "
-        "price, the carry, or the timeline? Let's figure out where there's flexibility and where "
-        "there isn't.\"\n\n"
-        "TRIAL CLOSE\n"
-        "\"If the seller is open to Option B, I'll have a clean offer with proof of funds and "
-        "draft seller-carry note in your inbox within 48 hours. My creative-finance attorney "
-        "papers the second so the seller's counsel has clean documents to review.\"\n\n"
-        "TACTICS\n"
-        "\u2022 Always offer 2-3 options. Sellers pick between options; they say no to single asks.\n"
-        '\u2022 Lead with the seller\'s situation. "Help me understand..." beats "I need..." every time.\n'
-        '\u2022 Use the words "creative offer" early — the agent and seller can prep for an unusual structure.\n'
-        '\u2022 Have an attorney lined up before the call. "My attorney will paper this" is a trust signal.\n'
-        "\u2022 Trade concessions for concessions — never give without getting (faster close, leaseback, fewer contingencies)."
-    )
+    if has_second:
+        pitch = (
+            "WHO TO CALL\n"
+            "Listing agent first. This pitch works because no single ask is unreasonable — together "
+            "they bridge the gap. Frame it that way.\n\n"
+            "WHY THIS APPROACH WORKS\n"
+            "Real deals rarely close on a single concession. A small price cut, a partial seller "
+            "carry, and a modest rent verification — none of which is dramatic alone — together make "
+            "the math pencil. You're asking the seller to share the gap across three small moves "
+            "instead of swallowing one large one.\n\n"
+            "OPEN — discover before you ask\n"
+            "\"Before I send a number, can you walk me through what's driving the sale and where the "
+            "seller would ideally land? I have a structure in mind that I think can get us close to "
+            'their number — but I want to understand their situation first."\n\n'
+            "ANCHOR — frame the gap honestly\n"
+            f"\"At {fmt_money_precise(ctx.list_price)}, the deal doesn't pencil for me. But I don't "
+            "think it has to come down to a single big concession. I'd like to propose a blended "
+            'structure where we share the lift across three small moves."\n\n'
+            "THE PROPOSAL — three small asks instead of one big one\n"
+            f"1. PRICE — {fmt_pct_delta(ctx.list_price, new_price)} from asking, to "
+            f"{fmt_money_precise(new_price)}. A modest cut, not a haircut.\n"
+            f"2. SELLER CARRY — the seller holds {fmt_money_precise(chosen_second)} as a 0% second "
+            f"mortgage for {DEFAULT_BALLOON_YEARS} years, then balloons to a single payoff check from "
+            "my refinance.\n"
+            f"3. RENT VERIFICATION — I confirm market rent at roughly ${round(new_rent):,}/mo "
+            f"({bump_pct:.1f}% above current modeled rent) before we go hard on earnest. This is on "
+            "me — not an ask of the seller.\n\n"
+            "WHAT'S IN IT FOR THE SELLER\n"
+            f"\u2022 Headline price drops only {fmt_pct_delta(ctx.list_price, new_price)} — "
+            f"{price_pct:.1f}% off their number, vs. typical investor offers of 10-20% below.\n"
+            f"\u2022 The {fmt_money(chosen_second)} second is a recorded, secured note — better than "
+            "cash sitting in their bank account at 0.5%.\n"
+            f"\u2022 In {DEFAULT_BALLOON_YEARS} years they receive a single check for "
+            f"{fmt_money_precise(chosen_second)}, paid by my refinance.\n"
+            "\u2022 Clean fast close. No financing contingency drama.\n\n"
+            "OFFER MULTIPLE OPTIONS (Brandon Turner's three-offer rule)\n"
+            "Sellers say no to single asks but pick between options. Frame your offer as a choice:\n"
+            f"\u2022 OPTION A — Cash, lower price: {fmt_money_precise(ctx.target_buy_price)}, all cash, 14-day close.\n"
+            f"\u2022 OPTION B — Blended (recommended): {fmt_money_precise(new_price)} + "
+            f"{fmt_money(chosen_second)} seller second at 0%.\n"
+            f"\u2022 OPTION C — Full price, full terms: {fmt_money_precise(ctx.list_price)} with the "
+            f"seller carrying ~{fmt_money(chosen_second * 1.6)} at 0% (Pace Morby's pure price-for-terms play).\n\n"
+            "Which one feels closest to what the seller would consider?\n\n"
+            "HANDLE PUSHBACK — break it into pieces\n"
+            "If they balk at the whole package, ask: \"Which part doesn't work for the seller — the "
+            "price, the carry, or the timeline? Let's figure out where there's flexibility and where "
+            "there isn't.\"\n\n"
+            "TRIAL CLOSE\n"
+            "\"If the seller is open to Option B, I'll have a clean offer with proof of funds and "
+            "draft seller-carry note in your inbox within 48 hours. My creative-finance attorney "
+            "papers the second so the seller's counsel has clean documents to review.\"\n\n"
+            "TACTICS\n"
+            "\u2022 Always offer 2-3 options. Sellers pick between options; they say no to single asks.\n"
+            '\u2022 Lead with the seller\'s situation. "Help me understand..." beats "I need..." every time.\n'
+            '\u2022 Use the words "creative offer" early — the agent and seller can prep for an unusual structure.\n'
+            '\u2022 Have an attorney lined up before the call. "My attorney will paper this" is a trust signal.\n'
+            "\u2022 Trade concessions for concessions — never give without getting (faster close, leaseback, fewer contingencies)."
+        )
+    else:
+        pitch = (
+            "WHO TO CALL\n"
+            "Listing agent first. This pitch works because no single ask is unreasonable — together "
+            "they bridge the gap. Frame it that way.\n\n"
+            "WHY THIS APPROACH WORKS\n"
+            "Real deals rarely close on a single concession. A small price cut and a modest rent "
+            "verification — neither of which is dramatic alone — together make the math pencil. "
+            "You're asking the seller to share the gap across two small moves instead of swallowing "
+            "one large one.\n\n"
+            "OPEN — discover before you ask\n"
+            "\"Before I send a number, can you walk me through what's driving the sale and where the "
+            "seller would ideally land? I have a structure in mind that I think can get us close to "
+            'their number — but I want to understand their situation first."\n\n'
+            "ANCHOR — frame the gap honestly\n"
+            f"\"At {fmt_money_precise(ctx.list_price)}, the deal doesn't pencil for me. But I don't "
+            "think it has to come down to a single big concession. I'd like to propose a blended "
+            'structure where we share the lift across two small moves."\n\n'
+            "THE PROPOSAL — two small asks instead of one big one\n"
+            f"1. PRICE — {fmt_pct_delta(ctx.list_price, new_price)} from asking, to "
+            f"{fmt_money_precise(new_price)}. A modest cut, not a haircut.\n"
+            f"2. RENT VERIFICATION — I confirm market rent at roughly ${round(new_rent):,}/mo "
+            f"({bump_pct:.1f}% above current modeled rent) before we go hard on earnest. This is on "
+            "me — not an ask of the seller.\n\n"
+            "WHAT'S IN IT FOR THE SELLER\n"
+            f"\u2022 Headline price drops only {fmt_pct_delta(ctx.list_price, new_price)} — "
+            f"{price_pct:.1f}% off their number, vs. typical investor offers of 10-20% below.\n"
+            "\u2022 Clean fast close. No financing contingency drama.\n\n"
+            "OFFER MULTIPLE OPTIONS (Brandon Turner's three-offer rule)\n"
+            "Sellers say no to single asks but pick between options. Frame your offer as a choice:\n"
+            f"\u2022 OPTION A — Cash, lower price: {fmt_money_precise(ctx.target_buy_price)}, all cash, 14-day close.\n"
+            f"\u2022 OPTION B — Blended (recommended): {fmt_money_precise(new_price)}.\n"
+            f"\u2022 OPTION C — Full price, full terms: {fmt_money_precise(ctx.list_price)}.\n\n"
+            "Which one feels closest to what the seller would consider?\n\n"
+            "HANDLE PUSHBACK — break it into pieces\n"
+            "If they balk at the whole package, ask: \"Which part doesn't work for the seller — the "
+            "price or the timeline? Let's figure out where there's flexibility and where "
+            "there isn't.\"\n\n"
+            "TRIAL CLOSE\n"
+            "\"If the seller is open to Option B, I'll have a clean offer with proof of funds "
+            "in your inbox within 48 hours.\"\n\n"
+            "TACTICS\n"
+            "\u2022 Always offer 2-3 options. Sellers pick between options; they say no to single asks.\n"
+            '\u2022 Lead with the seller\'s situation. "Help me understand..." beats "I need..." every time.\n'
+            '\u2022 Use the words "creative offer" early — the agent and seller can prep for an unusual structure.\n'
+            '\u2022 Have an attorney lined up before the call. "My attorney will paper this" is a trust signal.\n'
+            "\u2022 Trade concessions for concessions — never give without getting (faster close, leaseback, fewer contingencies)."
+        )
 
     caveat = None
     if not closes_gap:
@@ -435,11 +517,17 @@ def solve(
                 after_label=fmt_money(new_price),
                 delta_label=fmt_pct_delta(ctx.list_price, new_price),
             ),
-            StructureLever(
-                label=f"Seller 2nd (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
-                before_label="—",
-                after_label=fmt_money(chosen_second),
-                delta_label=None,
+            *(
+                [
+                    StructureLever(
+                        label=f"Seller 2nd (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
+                        before_label="—",
+                        after_label=fmt_money(chosen_second),
+                        delta_label=None,
+                    )
+                ]
+                if has_second
+                else []
             ),
             StructureLever(
                 label="Monthly rent",
