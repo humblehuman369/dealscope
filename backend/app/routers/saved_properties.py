@@ -14,6 +14,7 @@ from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, VerifiedUser
+from app.core.json_safe import finite_model
 from app.core.posthog_client import posthog_client
 from app.core.schema_guard import is_schema_mismatch, log_schema_mismatch
 from app.models.saved_property import FlipStage as FlipStageORM
@@ -1634,14 +1635,16 @@ async def update_deal_maker(
 
     # Return response with convenience fields
 
-    return DealMakerResponse(
-        record=updated_record,
-        cash_needed=metrics.total_cash_needed if metrics else None,
-        deal_gap=metrics.deal_gap_pct if metrics else None,
-        annual_profit=metrics.annual_cash_flow if metrics else None,
-        cap_rate=metrics.cap_rate if metrics else None,
-        coc_return=metrics.cash_on_cash if metrics else None,
-        monthly_payment=metrics.monthly_payment if metrics else None,
+    return finite_model(
+        DealMakerResponse(
+            record=updated_record,
+            cash_needed=metrics.total_cash_needed if metrics else None,
+            deal_gap=metrics.deal_gap_pct if metrics else None,
+            annual_profit=metrics.annual_cash_flow if metrics else None,
+            cap_rate=metrics.cap_rate if metrics else None,
+            coc_return=metrics.cash_on_cash if metrics else None,
+            monthly_payment=metrics.monthly_payment if metrics else None,
+        )
     )
 
 
@@ -1687,14 +1690,16 @@ async def get_deal_maker(
 
     metrics = record.cached_metrics
 
-    return DealMakerResponse(
-        record=record,
-        cash_needed=metrics.total_cash_needed if metrics else None,
-        deal_gap=metrics.deal_gap_pct if metrics else None,
-        annual_profit=metrics.annual_cash_flow if metrics else None,
-        cap_rate=metrics.cap_rate if metrics else None,
-        coc_return=metrics.cash_on_cash if metrics else None,
-        monthly_payment=metrics.monthly_payment if metrics else None,
+    return finite_model(
+        DealMakerResponse(
+            record=record,
+            cash_needed=metrics.total_cash_needed if metrics else None,
+            deal_gap=metrics.deal_gap_pct if metrics else None,
+            annual_profit=metrics.annual_cash_flow if metrics else None,
+            cap_rate=metrics.cap_rate if metrics else None,
+            coc_return=metrics.cash_on_cash if metrics else None,
+            monthly_payment=metrics.monthly_payment if metrics else None,
+        )
     )
 
 

@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from app.core.deps import DbSession, OptionalUser
+from app.core.json_safe import dump_json_safe
 from app.routers.property import _check_anonymous_quota, _record_anonymous_analysis
 from app.schemas.analytics import (
     DealScoreInput,
@@ -67,7 +68,7 @@ async def calculate_iq_verdict(
         assumptions = await resolve_assumptions(db, user=current_user)
         result = compute_iq_verdict(input_data, assumptions=assumptions)
 
-        response_dict = result.model_dump(mode="json", by_alias=True)
+        response_dict = dump_json_safe(result, by_alias=True)
         logger.info(
             "IQ Verdict response — dealScore=%s, dealGapScore=%s, returnQualityScore=%s, "
             "marketAlignmentScore=%s, dealProbabilityScore=%s",
@@ -100,7 +101,7 @@ async def recompute_deal_structures(
     try:
         assumptions = await resolve_assumptions(db, user=current_user)
         result = compute_deal_structures_only(input_data, assumptions=assumptions)
-        return JSONResponse(content=result.model_dump(mode="json", by_alias=True))
+        return JSONResponse(content=dump_json_safe(result, by_alias=True))
     except Exception as e:
         logger.error(f"Deal structures re-solve error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

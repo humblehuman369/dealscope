@@ -5,6 +5,8 @@ Validation, mortgage math, and common financial formulas used
 across all strategy calculators.
 """
 
+import math
+
 
 class CalculationInputError(ValueError):
     """Raised when calculator inputs are outside acceptable bounds."""
@@ -223,11 +225,17 @@ def calculate_cash_on_cash(annual_cash_flow: float, total_cash_invested: float) 
     return annual_cash_flow / total_cash_invested
 
 
-def calculate_dscr(noi: float, annual_debt_service: float) -> float:
-    """Calculate Debt Service Coverage Ratio."""
+def calculate_dscr(noi: float, annual_debt_service: float) -> float | None:
+    """Calculate Debt Service Coverage Ratio.
+
+    DSCR is undefined when there is no debt service (all-cash, or a 0%
+    deferred seller note that fully replaced the bank loan). Return None
+    rather than Inf so JSON responses stay serializable.
+    """
     if annual_debt_service == 0:
-        return float("inf")
-    return noi / annual_debt_service
+        return None
+    result = noi / annual_debt_service
+    return result if math.isfinite(result) else None
 
 
 def calculate_grm(property_price: float, annual_gross_rent: float) -> float:

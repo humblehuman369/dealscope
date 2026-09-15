@@ -8,6 +8,7 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 """
 
 import logging
+import math
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.core.formulas import calculate_buy_price
@@ -42,6 +43,23 @@ from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
 
 logger = logging.getLogger(__name__)
+
+
+def _json_float(value: float | None, ndigits: int | None = None) -> float | None:
+    """JSON-safe float: NaN/Inf become None (Starlette rejects them)."""
+    if value is None:
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if ndigits is not None:
+        number = round(number, ndigits)
+        if not math.isfinite(number):
+            return None
+    return number
 
 
 # ===========================================
@@ -131,9 +149,11 @@ def _calculate_ltr_strategy(
     # Cash-on-cash is undefined when no positive cash is invested (over-funded deal
     # returning cash at close); report 0 to keep the metric JSON-serializable.
     coc = calculate_cash_on_cash(annual_cash_flow, total_cash) if total_cash > 0 else 0.0
-    coc_pct = coc * 100
-    cap_rate = calculate_cap_rate(noi, price) * 100
-    dscr = calculate_dscr(noi, annual_debt)
+    coc_pct = _json_float(coc * 100) or 0.0
+    cap_rate = _json_float(calculate_cap_rate(noi, price) * 100, 2)
+    # No debt (all-cash / 0% IO seller-second covering the bank loan) → DSCR is
+    # undefined, not Inf. Inf is what 500'd Discovery after a Plan save.
+    dscr = _json_float(calculate_dscr(noi, annual_debt), 2)
     score = _performance_score(coc_pct, 5)
     return {
         "id": "long-term-rental",
@@ -142,9 +162,9 @@ def _calculate_ltr_strategy(
         "metric_label": "CoC Return",
         "metric_value": coc_pct,
         "score": score,
-        "cap_rate": round(cap_rate, 2),
+        "cap_rate": cap_rate,
         "cash_on_cash": round(coc_pct, 2),
-        "dscr": round(dscr, 2),
+        "dscr": dscr,
         "annual_cash_flow": round(annual_cash_flow, 0),
         "monthly_cash_flow": round(monthly_cash_flow, 0),
         "breakdown": {
@@ -262,9 +282,9 @@ def _calculate_str_strategy(
     # Cash-on-cash is undefined when no positive cash is invested (over-funded deal
     # returning cash at close); report 0 to keep the metric JSON-serializable.
     coc = calculate_cash_on_cash(annual_cash_flow, total_cash) if total_cash > 0 else 0.0
-    coc_pct = coc * 100
-    cap_rate = calculate_cap_rate(noi, price) * 100
-    dscr = calculate_dscr(noi, annual_debt)
+    coc_pct = _json_float(coc * 100) or 0.0
+    cap_rate = _json_float(calculate_cap_rate(noi, price) * 100, 2)
+    dscr = _json_float(calculate_dscr(noi, annual_debt), 2)
     score = _performance_score(coc_pct, 3.33)
     return {
         "id": "short-term-rental",
@@ -273,9 +293,9 @@ def _calculate_str_strategy(
         "metric_label": "CoC Return",
         "metric_value": coc_pct,
         "score": score,
-        "cap_rate": round(cap_rate, 2),
+        "cap_rate": cap_rate,
         "cash_on_cash": round(coc_pct, 2),
-        "dscr": round(dscr, 2),
+        "dscr": dscr,
         "annual_cash_flow": round(annual_cash_flow, 0),
         "monthly_cash_flow": round(monthly_cash_flow, 0),
         "breakdown": {
@@ -361,9 +381,10 @@ def _calculate_brrrr_strategy(
         display_coc = "<-100%"
     else:
         display_coc = f"{coc * 100:.1f}%"
-    cap_rate = calculate_cap_rate(noi, price) * 100
-    dscr_val = calculate_dscr(noi, annual_debt)
+    cap_rate = _json_float(calculate_cap_rate(noi, price) * 100, 2)
+    dscr_val = _json_float(calculate_dscr(noi, annual_debt), 2)
     score = _performance_score(recovery_pct, 1)
+    coc_pct = _json_float(coc * 100, 2)
     return {
         "id": "brrrr",
         "name": "BRRRR",
@@ -371,9 +392,9 @@ def _calculate_brrrr_strategy(
         "metric_label": "CoC Return",
         "metric_value": recovery_pct,
         "score": score,
-        "cap_rate": round(cap_rate, 2),
-        "cash_on_cash": round(coc * 100, 2) if coc < 100 else 999,
-        "dscr": round(dscr_val, 2),
+        "cap_rate": cap_rate,
+        "cash_on_cash": coc_pct if coc_pct is not None and coc < 100 else 999,
+        "dscr": dscr_val,
         "annual_cash_flow": round(annual_cash_flow, 0),
         "monthly_cash_flow": round(annual_cash_flow / 12, 0),
         "breakdown": {
@@ -433,8 +454,8 @@ def _calculate_flip_strategy(
     selling_costs = arv * fl.selling_costs_pct
     total_investment = price + purchase_costs + rehab_cost + holding_costs
     net_profit = arv - total_investment - selling_costs
-    roi = calculate_cash_on_cash(net_profit, total_investment)
-    roi_pct = roi * 100
+    roi = calculate_cash_on_cash(net_profit, total_investment) if total_investment > 0 else 0.0
+    roi_pct = _json_float(roi * 100) or 0.0
     score = _performance_score(roi_pct, 2.5)
     return {
         "id": "fix-and-flip",
