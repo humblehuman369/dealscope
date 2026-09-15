@@ -16,6 +16,10 @@ import { UpcomingTasks } from './_components/UpcomingTasks'
 import { SavedContactsSection } from './_components/SavedContactsSection'
 import { ContinueWorkflowBanner } from '@/components/ui/ContinueWorkflowBanner'
 import { useSearchHistory } from '@/hooks/useSearchHistory'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useWorkflowV1 } from '@/lib/workflowV1'
+import { PHASE_15_COPY } from '@/lib/phase15Copy'
+import { workflowV1TabHref } from '@/lib/workflowRoutes'
 
 function DashboardContent() {
   const router = useRouter()
@@ -25,6 +29,25 @@ function DashboardContent() {
   // Most recent successful analysis powers the "continue where you left off" banner.
   const { data: recentSearches } = useSearchHistory({ page: 0, pageSize: 1, successfulOnly: true })
   const lastSearch = recentSearches?.[0]
+  const { enabled: workflowV1 } = useWorkflowV1()
+  const { savedPropertyId } = useSaveProperty({
+    displayAddress: lastSearch?.search_query ?? '',
+  })
+  const continueHref = lastSearch
+    ? workflowV1 && savedPropertyId
+      ? workflowV1TabHref('work', lastSearch.search_query, {
+          dealId: savedPropertyId,
+          tab: 'tasks',
+        })
+      : workflowV1
+        ? workflowV1TabHref('discovery', lastSearch.search_query)
+        : `/discovery?address=${encodeURIComponent(lastSearch.search_query)}`
+    : '/saved-properties'
+  const continueLabel = workflowV1
+    ? savedPropertyId
+      ? PHASE_15_COPY.openTheDeal
+      : PHASE_15_COPY.seeTheVerdict
+    : 'Resume analysis'
 
   useEffect(() => {
     markDashboardVisited()
@@ -42,8 +65,8 @@ function DashboardContent() {
         {lastSearch && (
           <ContinueWorkflowBanner
             lastProperty={lastSearch.search_query}
-            resumeHref={`/discovery?address=${encodeURIComponent(lastSearch.search_query)}`}
-            label="Resume analysis"
+            resumeHref={continueHref}
+            label={continueLabel}
           />
         )}
 

@@ -208,7 +208,7 @@ export function formatSourceSpreadLine(input: {
       ? `The IQ Estimate is ${money(input.iqEstimate)}. Tap any number for its source.`
       : 'Tap any number for its source.'
   }
-  return `Five sources value this house between ${money(input.low)} and ${money(input.high)}. The IQ Estimate is ${money(input.iqEstimate)}. Tap any number for its source.`
+  return `Sources value this house between ${money(input.low)} and ${money(input.high)}. The IQ Estimate is ${money(input.iqEstimate)}. Tap any number for its source.`
 }
 
 export function formatPlanBottomLine(targetsMet: number): string {

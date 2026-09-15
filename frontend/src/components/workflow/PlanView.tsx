@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
 import { PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
+import { PHASE_15_COPY } from '@/lib/phase15Copy'
 
 export interface PlanViewProps {
   model: PlanViewModel
@@ -190,7 +191,7 @@ export function PlanView({
             }}
             disabled={model.guideApplyKind === 'start' && startingDeal}
           >
-            {model.guideApplyKind === 'start' && startingDeal ? 'Starting…' : model.guideApplyLabel}
+            {model.guideApplyKind === 'start' && startingDeal ? PHASE_15_COPY.startingDeal : model.guideApplyLabel}
           </button>
           <WhyToggle id={whyGuideId} label="Where do these numbers come from?" text={model.guideWhy} />
         </div>
@@ -339,7 +340,7 @@ export function PlanView({
             className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >
-            {startingDeal ? 'Starting…' : 'Start working this deal'}
+            {startingDeal ? PHASE_15_COPY.startingDeal : 'Start working this deal'}
           </button>
           <div className="relative" ref={shareRef}>
             <button

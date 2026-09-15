@@ -229,6 +229,17 @@ describe('workflowV1TabHref', () => {
     expect(workflowV1TabHref('work', '1 Main')).toBe('/discovery?address=1+Main&view=work')
   })
 
+  it('Start working this deal uses the Work tab href plus dealId and tasks', () => {
+    expect(
+      workflowV1TabHref('work', '7026 NW 21st Ave, Miami, FL 33147', {
+        dealId: 'deal-1',
+        tab: 'tasks',
+      }),
+    ).toBe(
+      '/discovery?address=7026+NW+21st+Ave%2C+Miami%2C+FL+33147&view=work&dealId=deal-1&tab=tasks',
+    )
+  })
+
   it('sends a tab with no address to search', () => {
     expect(workflowV1TabHref('math', '')).toBe('/search')
     expect(workflowV1TabHref('discovery', '   ')).toBe('/search')

@@ -30,6 +30,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useSaveStrategyWorksheet } from '@/hooks/useSaveStrategyWorksheet'
+import { toast } from 'sonner'
 import { api } from '@/lib/api-client'
 import { webBaseUrl, isCapacitor } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -140,7 +141,9 @@ import {
   type PlanBaseline,
   type PlanOptionKey,
 } from '@/lib/dealStructures/planMetrics'
-import { sourceValueRange } from '@/lib/sourceStatus'
+import { sourceValueRange, summarizeSourceStatus } from '@/lib/sourceStatus'
+import { seedPlanNextMoveTasks } from '@/lib/seedPlanNextMoveTasks'
+import { workflowV1TabHref } from '@/lib/workflowRoutes'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
 import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
@@ -228,6 +231,7 @@ export function StrategyWorkbench({
   const [tuneOpen, setTuneOpen] = useState(false)
   const [planCustomized, setPlanCustomized] = useState(() => initialPlanSession?.planCustomized ?? false)
   const [startingDeal, setStartingDeal] = useState(false)
+  const planNextMovesRef = useRef<readonly string[]>([])
   const [v1PlanFailed, setV1PlanFailed] = useState(false)
   const option3SeededRef = useRef(Boolean(initialPlanSession?.appliedPathId))
   const hydratedSessionIdRef = useRef<string | null>(planSessionId || null)
@@ -1439,16 +1443,17 @@ export function StrategyWorkbench({
     try {
       const dealId = (await save()) ?? savedPropertyId
       if (!dealId) return
+      await seedPlanNextMoveTasks(dealId, planNextMovesRef.current)
       emitDealStarted(dealId, true)
-      const next = new URLSearchParams(
-        searchParams?.toString() ||
-          (typeof window !== 'undefined' ? window.location.search : ''),
-      )
-      next.set('view', 'work')
-      next.set('dealId', dealId)
-      router.push(`/discovery?${next.toString()}`)
+      const workHref = workflowV1TabHref('work', addressParam, {
+        dealId,
+        tab: 'tasks',
+        zpid: searchParams?.get('zpid') || undefined,
+      })
+      router.push(workHref)
     } catch (err) {
       console.error('Start working this deal failed:', err)
+      toast.error('Could not save property')
     } finally {
       setStartingDeal(false)
     }
@@ -1460,6 +1465,7 @@ export function StrategyWorkbench({
     emitDealStarted,
     searchParams,
     router,
+    addressParam,
   ])
 
   /**
@@ -1784,6 +1790,7 @@ export function StrategyWorkbench({
     modelTargetBuyRef.current ?? initialDealStructures?.breakevenSummary?.targetBuyPrice ?? 0
   const planIq = iqSources.value.iq ?? null
   const planRange = sourceValueRange(iqSources)
+  const planSourceStatus = summarizeSourceStatus(iqSources)
   const planDeltas = ltrLiveMetrics
     ? closeDeltas(ltrState.buyPrice, listPrice, planIq)
     : null
@@ -1822,12 +1829,16 @@ export function StrategyWorkbench({
           equity: planDeltas.equity,
           sourceLow: planRange?.low ?? null,
           sourceHigh: planRange?.high ?? null,
+          sourceAnswered: planSourceStatus.answered,
+          sourceTotal: planSourceStatus.total,
+          sourceMissingLabels: planSourceStatus.missingLabels,
           options: scoredPlanOptions,
           appliedStructureId: planCustomized ? null : appliedPathId,
           targets: PLAN_TARGET_DEFAULTS,
           monthlyCashFlowTarget,
         })
       : null
+  planNextMovesRef.current = planModel?.nextMoves ?? []
   const resetStructure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
   const resetOptionKey: PlanOptionKey = resetStructure
     ? optionKeyFromFamily(resetStructure.family)
