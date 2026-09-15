@@ -22,6 +22,7 @@ from app.services.calculators import (
     calculate_str,
     calculate_wholesale,
 )
+from app.services.calculators.common import calculate_dscr
 
 # =====================================================
 # LTR
@@ -419,7 +420,5 @@ class TestCommonHelpers:
         assert 1400 < pmt < 1500  # ~$1,438.92
 
     def test_dscr_zero_debt_is_none(self):
-        from app.services.calculators.common import calculate_dscr
-
         assert calculate_dscr(10_000, 0) is None
         assert calculate_dscr(10_000, 5_000) == pytest.approx(2.0)

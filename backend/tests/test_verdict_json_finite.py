@@ -14,10 +14,14 @@ import logging
 import math
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from starlette.responses import JSONResponse
 
 from app.core.json_safe import dump_json_safe, sanitize_non_finite
-from app.schemas.analytics import IQVerdictInput
+from app.db.session import get_db
+from app.main import app
+from app.schemas.analytics import IQVerdictInput, StrategyResult
+from app.schemas.property import AllAssumptions
 from app.services.calculators.common import calculate_dscr
 from app.services.iq_verdict_service import compute_iq_verdict
 
@@ -76,8 +80,6 @@ class TestSanitizeNonFinite:
         json.dumps(out)
 
     def test_dump_json_safe_strips_inf_on_verdict_shape(self):
-        from app.schemas.analytics import StrategyResult
-
         strategy = StrategyResult(
             id="long-term-rental",
             name="Long-Term Rental",
@@ -129,17 +131,35 @@ class TestVerdictSavedSellerSecondZeroDebt:
 
 
 @pytest.mark.asyncio
-async def test_verdict_route_returns_200_for_zero_debt_plan(client):
-    payload = {
-        **_MIAMI_HOUSE,
-        "seller_carry_interest_only": True,
-    }
-    resp = await client.post("/api/v1/analysis/verdict", json=payload)
-    assert resp.status_code == 200, resp.text
-    body = resp.json()
-    ltr = next(s for s in body["strategies"] if s["id"] == "long-term-rental")
-    assert ltr["dscr"] is None
-    str_row = next(s for s in body["strategies"] if s["id"] == "short-term-rental")
-    # STR may be Unavailable (no occupancy) — either way DSCR must not be Inf.
-    if str_row.get("dscr") is not None:
-        assert math.isfinite(str_row["dscr"])
+async def test_verdict_route_returns_200_for_zero_debt_plan(monkeypatch):
+    """POST /analysis/verdict must 200 (not 500) for the saved-plan zero-debt shape.
+
+    Does not use the suite Postgres fixture — quota + assumptions are stubbed
+    so this still runs when Docker/OrbStack is unavailable.
+    """
+
+    async def _fake_db():
+        yield None
+
+    async def _fake_assumptions(db, user=None, zip_code=None):
+        return AllAssumptions()
+
+    async def _fake_quota(*args, **kwargs):
+        return "counter", "marker", "ip", True
+
+    monkeypatch.setattr("app.routers.analytics.resolve_assumptions", _fake_assumptions)
+    monkeypatch.setattr("app.routers.analytics._check_anonymous_quota", _fake_quota)
+    app.dependency_overrides[get_db] = _fake_db
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            resp = await ac.post("/api/v1/analysis/verdict", json=_MIAMI_HOUSE)
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        ltr = next(s for s in body["strategies"] if s["id"] == "long-term-rental")
+        assert ltr["dscr"] is None
+        str_row = next(s for s in body["strategies"] if s["id"] == "short-term-rental")
+        if str_row.get("dscr") is not None:
+            assert math.isfinite(str_row["dscr"])
+    finally:
+        app.dependency_overrides.pop(get_db, None)
