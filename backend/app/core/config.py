@@ -127,11 +127,14 @@ class Settings(BaseSettings):
     # Empty default means these endpoints are disabled in production until configured.
     MONITORING_TOKEN: str = ""
 
-    # Anonymous (signed-out) property analyses allowed per IP per day. Preserves the
-    # anonymous-first funnel (landing -> search -> verdict without an account) while
-    # capping paid-API spend from unauthenticated traffic. Repeat views of the same
-    # address within the day do not consume quota. Set to 0 to require login.
+    # Anonymous (signed-out) property analyses allowed per visitor cookie per day.
+    # The IP is only a secondary abuse cap so one NAT cannot lock out a household.
+    # Repeat views of the same address within the day do not consume quota.
+    # Set to 0 to require login.
     ANON_ANALYSES_PER_DAY: int = 3
+    ANON_IP_CAP_PER_DAY: int = 50
+    ANON_VISITOR_COOKIE: str = "ds_anon_vid"
+    ANON_VISITOR_COOKIE_MAX_AGE: int = 365 * 24 * 60 * 60
 
     # Run the APScheduler-based job scheduler inside the web process (with a
     # Redis leader lock so exactly one scheduler runs across workers/replicas).

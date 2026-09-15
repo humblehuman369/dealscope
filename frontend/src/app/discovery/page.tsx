@@ -59,6 +59,8 @@ import { SPEED_CLAIM } from '@/lib/claims'
 import { VerdictEmailCapture } from '@/components/verdict/VerdictEmailCapture'
 import { newMetaEventId } from '@/lib/metaPixel'
 import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
+import { DiscoveryQuotaGate } from '@/components/discovery/DiscoveryQuotaGate'
+import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
 import {
   buildMotivatedSellerInsights,
   type MotivatedSellerInsight,
@@ -1036,7 +1038,11 @@ function VerdictContent() {
           if (limitType === 'analyses') {
             setLimitError('free')
             trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
-          } else if (limitType === 'anonymous_analyses' || code === 'ANONYMOUS_LIMIT_REACHED') {
+          } else if (
+            limitType === 'anonymous_analyses' ||
+            limitType === 'anonymous_ip_cap' ||
+            code === 'ANONYMOUS_LIMIT_REACHED'
+          ) {
             setLimitError('anonymous')
             trackEvent('analysis_limit_reached', { kind: 'anonymous_daily' })
           }
@@ -1045,16 +1051,17 @@ function VerdictContent() {
         // Parse address from URL parameter to preserve city/state/zip in fallback
         const parsedFallback = parseAddressString(addressParam)
 
-        // Create fallback property from address param
+        // Address-only fallback. Quota hits must not invent beds/price.
+        const isQuota = err instanceof ApiError && err.status === 403
         const fallbackProperty: IQProperty = {
-          address: parsedFallback.street || 'Unknown Address',
+          address: parsedFallback.street || addressParam || 'Unknown Address',
           city: parsedFallback.city,
           state: parsedFallback.state,
           zip: parsedFallback.zip,
-          beds: FALLBACK_PROPERTY.beds,
-          baths: FALLBACK_PROPERTY.baths,
-          sqft: FALLBACK_PROPERTY.sqft,
-          price: FALLBACK_PROPERTY.price,
+          beds: isQuota ? 0 : FALLBACK_PROPERTY.beds,
+          baths: isQuota ? 0 : FALLBACK_PROPERTY.baths,
+          sqft: isQuota ? 0 : FALLBACK_PROPERTY.sqft,
+          price: isQuota ? 0 : FALLBACK_PROPERTY.price,
           imageUrl: undefined,
         }
         setProperty(fallbackProperty)
@@ -1609,55 +1616,24 @@ function VerdictContent() {
     return <DiscoveryColdLanding />
   }
 
-  // Usage-limit reached — designed conversion moment, not a generic failure
+  // Usage-limit reached — gate sits in the Verdict slot inside the page shell.
+  // AppHeader (logo, tabs, address from the URL) stays mounted in the layout.
   if (limitError && (!property || !analysis)) {
-    const isAnon = limitError === 'anonymous'
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4 text-center px-4 max-w-md">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(8,145,178,0.15)' }}
-          >
-            <svg
-              className="w-8 h-8 text-[var(--accent-sky)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
-            {isAnon ? "You've used today's free analyses" : "You've used this month's free analyses"}
-          </h2>
-          <p style={{ color: 'var(--text-body)' }}>
-            {isAnon
-              ? 'Create a free account to keep analyzing properties — no credit card required.'
-              : 'Upgrade to Pro for unlimited property analyses, the Deal Maker, comps, and exports.'}
-          </p>
-          <button
-            onClick={() =>
-              router.push(isAnon ? '?auth=register&redirect=/discovery' : '/pricing')
-            }
-            className="mt-2 px-6 py-2.5 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
-          >
-            {isAnon ? 'Create Free Account' : 'Upgrade to Pro'}
-          </button>
-          <button
-            onClick={handleBack}
-            className="text-sm underline"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Go Back
-          </button>
+      <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
+        <div
+          id="workflow-tabpanel"
+          role={workflowV1Layout ? 'tabpanel' : undefined}
+          className="px-3 sm:px-6 mt-4 max-w-3xl"
+        >
+          <DiscoveryQuotaGate
+            kind={limitError}
+            onCreateAccount={() => openAuthModal('register')}
+            onSignIn={() => openAuthModal('login')}
+            onUpgrade={() => router.push('/pricing')}
+          />
         </div>
-      </div>
+      </main>
     )
   }
 
@@ -1814,6 +1790,14 @@ function VerdictContent() {
       scenario: prev?.scenario ?? null,
     }))
     router.push(workflowV1TabHref('plan', address))
+  }
+
+  const handleBuildPlan = () => {
+    if (workflowV1Layout && !isAuthenticated) {
+      openAuthModal('register', workflowV1TabHref('plan', addressParam || ''))
+      return
+    }
+    navigateToPlan()
   }
 
   const navigateToSources = () => {
@@ -2239,7 +2223,12 @@ function VerdictContent() {
                 closes={leverCloses}
                 isAuthenticated={isAuthenticated}
                 onShowMath={navigateToSources}
-                onBuildPlan={navigateToPlan}
+                onBuildPlan={handleBuildPlan}
+                buildPlanLabel={
+                  workflowV1Layout && !isAuthenticated
+                    ? ANON_FUNNEL_COPY.buildPlanCta
+                    : undefined
+                }
                 sourceStatus={summarizeSourceStatus(iqSources)}
                 gapSlider={
                   <VerdictGapSlider
@@ -2256,10 +2245,6 @@ function VerdictContent() {
                 <HowThisCloses payload={analysis.dealStructures} />
               </div>
             ) : null}
-            <div className="px-3 sm:px-6 mt-4">
-              <WhyWeThinkSo signals={whySignals} />
-            </div>
-            {photoGallery}
             {!isAuthenticated ? (
               <div className="px-3 sm:px-6">
                 <VerdictEmailCapture
@@ -2272,6 +2257,10 @@ function VerdictContent() {
                 />
               </div>
             ) : null}
+            <div className="px-3 sm:px-6 mt-4">
+              <WhyWeThinkSo signals={whySignals} />
+            </div>
+            {photoGallery}
           </>
           </WorkflowV1ErrorBoundary>
           ) : null}
@@ -2307,10 +2296,15 @@ function VerdictContent() {
                   gap={callGap}
                   signals={signalBreakdown.count}
                   closes={leverCloses}
-                  isAuthenticated={isAuthenticated}
-                  onShowMath={navigateToComps}
-                  onBuildPlan={navigateToPlan}
-                />
+                isAuthenticated={isAuthenticated}
+                onShowMath={navigateToComps}
+                onBuildPlan={handleBuildPlan}
+                buildPlanLabel={
+                  workflowV1Layout && !isAuthenticated
+                    ? ANON_FUNNEL_COPY.buildPlanCta
+                    : undefined
+                }
+              />
               </div>
             ) : null}
 

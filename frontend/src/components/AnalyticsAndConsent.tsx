@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AnalyticsProvider } from '@/components/AnalyticsProvider'
 import { CookieConsentBanner } from '@/components/CookieConsentBanner'
-import { COOKIE_CONSENT_KEY, getStoredConsent, type CookieConsent } from '@/lib/cookieConsent'
+import { getStoredConsent, type CookieConsent } from '@/lib/cookieConsent'
 
 export function AnalyticsAndConsent() {
   const [consent, setConsent] = useState<CookieConsent>(null)

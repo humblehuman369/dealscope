@@ -41,6 +41,8 @@ export interface VerdictCardProps {
   isAuthenticated: boolean
   onShowMath: () => void
   onBuildPlan: () => void
+  /** Override the primary CTA. Signed-out v1 uses the create-account line. */
+  buildPlanLabel?: string
   gapSlider?: ReactNode
   sourceStatus?: SourceStatusSummary
   /** Same listing check as Key Insights. Default listed. */
@@ -90,6 +92,7 @@ export function VerdictCard({
   isAuthenticated,
   onShowMath,
   onBuildPlan,
+  buildPlanLabel = 'Build the plan',
   gapSlider,
   sourceStatus,
   listed = true,
@@ -345,7 +348,7 @@ export function VerdictCard({
             outlineColor: 'var(--accent-sky)',
           }}
         >
-          Build the plan
+          {buildPlanLabel}
         </button>
       </div>
       {whyCall ? (

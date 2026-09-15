@@ -23,6 +23,14 @@ interface AuthGateProps {
   children: React.ReactNode
   /** Short label for the prompt, e.g. "save this property", "view comps" */
   feature?: string
+  /** Override the default "Sign in to …" heading and primary button. */
+  heading?: string
+  /** Primary CTA opens login or register. Default login. */
+  ctaMode?: 'login' | 'register'
+  /** Primary button label. Defaults to heading, then the Sign-in-to feature line. */
+  ctaLabel?: string
+  /** Secondary text link under the primary CTA (usually "Sign in"). */
+  secondaryLabel?: string
   /** "section" = blurred content + overlay CTA. "inline" = replace with sign-in link/button. */
   mode?: 'section' | 'inline'
   /** When true (section mode), child fills the parent height instead of capping at 320px. */
@@ -38,6 +46,10 @@ interface AuthGateProps {
 export function AuthGate({
   children,
   feature,
+  heading,
+  ctaMode = 'login',
+  ctaLabel,
+  secondaryLabel,
   mode = 'inline',
   fullHeight,
   fallback,
@@ -52,8 +64,12 @@ export function AuthGate({
   cleanParams.delete('redirect')
   const cleanQs = cleanParams.toString()
   const fullPath = cleanQs ? `${pathname}?${cleanQs}` : pathname
+  const authParams = new URLSearchParams(cleanQs)
+  authParams.set('auth', ctaMode === 'register' ? 'register' : 'required')
+  authParams.set('redirect', fullPath)
+  const primaryUrl = `${pathname}?${authParams.toString()}`
   const signInParams = new URLSearchParams(cleanQs)
-  signInParams.set('auth', 'required')
+  signInParams.set('auth', 'login')
   signInParams.set('redirect', fullPath)
   const signInUrl = `${pathname}?${signInParams.toString()}`
 
@@ -71,12 +87,13 @@ export function AuthGate({
 
   if (fallback) return <>{fallback}</>
 
-  const label = feature ? `Sign in to ${feature}` : 'Sign in'
+  const label = heading ?? (feature ? `Sign in to ${feature}` : 'Sign in')
+  const primaryLabel = ctaLabel ?? label
 
   if (mode === 'inline') {
     return (
       <Link
-        href={signInUrl}
+        href={primaryUrl}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
         style={{
           background: 'rgba(148,163,184,0.12)',
@@ -111,8 +128,16 @@ export function AuthGate({
       <div className="absolute inset-0 flex flex-col items-center pt-6 sm:pt-8 px-2">
         {overlay ?? (
           <>
+            {heading ? (
+              <p
+                className="mb-3 max-w-md text-center text-base font-semibold"
+                style={{ color: 'var(--text-heading)' }}
+              >
+                {heading}
+              </p>
+            ) : null}
             <Link
-              href={signInUrl}
+              href={primaryUrl}
               className="flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.03]"
               style={{
                 background: 'var(--accent-sky)',
@@ -121,11 +146,21 @@ export function AuthGate({
               }}
             >
               <LogIn size={15} />
-              {label}
+              {primaryLabel}
             </Link>
-            <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>
-              Free account — no credit card required
-            </p>
+            {secondaryLabel ? (
+              <Link
+                href={signInUrl}
+                className="mt-3 text-sm font-semibold underline"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {secondaryLabel}
+              </Link>
+            ) : (
+              <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>
+                Free account — no credit card required
+              </p>
+            )}
           </>
         )}
       </div>

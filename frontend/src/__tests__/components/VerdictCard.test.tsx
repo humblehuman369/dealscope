@@ -229,6 +229,31 @@ describe('VerdictCard', () => {
     ).toBeInTheDocument()
   })
 
+  it('uses the signed-out create-account label when supplied', () => {
+    render(
+      <VerdictCard
+        listPrice={625_999}
+        incomeValue={477_699}
+        targetBuy={453_814}
+        dealGapDisplayPct={-27.5}
+        sentence={WILLOW_SENTENCE}
+        call="worth_pursuing"
+        callFired={[]}
+        gap={27.5}
+        signals={0}
+        closes={false}
+        isAuthenticated={false}
+        onShowMath={vi.fn()}
+        onBuildPlan={vi.fn()}
+        buildPlanLabel="Create a free account to build the plan"
+      />,
+    )
+    expect(
+      screen.getByRole('button', { name: 'Create a free account to build the plan' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Build the plan' })).not.toBeInTheDocument()
+  })
+
   it('routes Show the math and Build the plan through the supplied handlers', () => {
     const onShowMath = vi.fn()
     const onBuildPlan = vi.fn()

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
-import { COOKIE_CONSENT_KEY, getStoredConsent, type CookieConsent } from '@/lib/cookieConsent'
+import { COOKIE_CONSENT_KEY, getStoredConsent, setStoredConsent, type CookieConsent } from '@/lib/cookieConsent'
 
 export { COOKIE_CONSENT_KEY, type CookieConsent }
 
@@ -49,11 +49,7 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
   }, [open])
 
   const setStored = (value: CookieConsent) => {
-    try {
-      if (value) localStorage.setItem(COOKIE_CONSENT_KEY, value)
-    } catch {
-      // ignore
-    }
+    setStoredConsent(value)
     setConsent(value)
     onConsentChange?.(value)
   }

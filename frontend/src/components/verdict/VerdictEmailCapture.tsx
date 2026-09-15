@@ -4,6 +4,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { useState } from 'react'
 import { Mail } from 'lucide-react'
 
+import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
 import { firstTouchEventProps, getFirstTouch, getMetaClickIds } from '@/lib/attribution'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
 import { trackEvent } from '@/lib/eventTracking'
@@ -77,7 +78,9 @@ export function VerdictEmailCapture({
 
   const isSlim = variant === 'slim'
   const label = isSlim ? 'Save this verdict. Email me the numbers.' : 'Email me this Discovery'
-  const note = isSlim ? 'One email. No account.' : 'One email. No account. Unsubscribe in one click.'
+  const note = isSlim
+    ? ANON_FUNNEL_COPY.emailNote
+    : 'One email. No account. Unsubscribe in one click.'
   const buttonLabel = isSlim ? 'Email me' : 'Email me this Discovery'
 
   if (state === 'sent') {
