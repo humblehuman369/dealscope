@@ -1,6 +1,7 @@
 """Rent uplift template — close the gap by verifying or improving rent."""
 
 from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
+from app.services.deal_structures.cashflow import TARGET_MONTHLY_CASH_FLOW
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import fmt_money, fmt_money_precise, fmt_pct_delta
 
@@ -9,9 +10,6 @@ FAMILY_LABEL = "Rent increase"
 ID = "rent-verification"
 
 MAX_REALISTIC_BUMP_PCT = 0.20  # ranking / realism only — not applied to Target Rent math
-
-# Cushion above $0 monthly CF at list price when Option 1 is applied on Strategy.
-_TARGET_MONTHLY_CF_AT_LIST = 25.0
 
 
 def _marginal_noi_per_rent_dollar(ctx: StructureContext) -> float | None:
@@ -47,7 +45,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if haircut is None:
         return None
 
-    required_rent = _required_rent_for_monthly_cf(ctx, _TARGET_MONTHLY_CF_AT_LIST)
+    required_rent = _required_rent_for_monthly_cf(ctx, TARGET_MONTHLY_CASH_FLOW)
     if required_rent is None:
         return None
 
