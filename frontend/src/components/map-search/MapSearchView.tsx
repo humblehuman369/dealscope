@@ -65,7 +65,9 @@ import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLay
 import type { NeighborhoodOverview } from '@/lib/api'
 import { brandMark } from '@/lib/brand'
 import { trackCardOpened } from '@/lib/eventTracking'
+import { cityLabelFromQuery, logMapFirstPinMs, MAP_CARD_COPY } from '@/lib/mapCardCopy'
 import { layoutFromFlag, useWorkflowV1 } from '@/lib/workflowV1'
+import { isMapPathStripArrival, PathStepper } from '@/components/workflow/PathStepper'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -1095,6 +1097,11 @@ export function MapSearchView() {
   }, [searchParams])
 
   const locationLabel = searchParams.get('q') ?? searchParams.get('label') ?? null
+  const fromHomeHero = searchParams.get('source') === 'home_hero'
+  const homeHeroCity = fromHomeHero ? cityLabelFromQuery(locationLabel) : ''
+  const loadingCopy = homeHeroCity
+    ? MAP_CARD_COPY.findingMotivatedSellersIn(homeHeroCity)
+    : 'Analyzing...'
   const needsGeocode = !!locationLabel && !paramCenter
 
   const propertyFocus = useMemo((): PropertyFocusPoint | null => {
@@ -1245,6 +1252,26 @@ export function MapSearchView() {
     updateFilters,
   } = useMapSearch()
 
+  const sawSearchLoadingRef = useRef(false)
+  const [hasSearchResponded, setHasSearchResponded] = useState(false)
+  useEffect(() => {
+    if (isLoading) {
+      sawSearchLoadingRef.current = true
+      return
+    }
+    if (sawSearchLoadingRef.current) setHasSearchResponded(true)
+  }, [isLoading])
+
+  const mapMountedAtRef = useRef(
+    typeof performance !== 'undefined' ? performance.now() : 0,
+  )
+  const firstPinLoggedRef = useRef(false)
+  useEffect(() => {
+    if (!fromHomeHero || firstPinLoggedRef.current || listings.length === 0) return
+    firstPinLoggedRef.current = true
+    logMapFirstPinMs(Math.round(performance.now() - mapMountedAtRef.current))
+  }, [fromHomeHero, listings.length])
+
   // Bulk lead export ships up to 500 rows including owner names and tenure —
   // the same class of data as the paid directories, so it follows the same
   // paid-only rule (trialing users are refused until first payment).
@@ -1257,7 +1284,7 @@ export function MapSearchView() {
 
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [showMyDeals, setShowMyDeals] = useState(false)
-  const [filtersOpen, setFiltersOpen] = useState(true)
+  const [filtersOpen, setFiltersOpen] = useState(() => !fromHomeHero)
   const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autoCloseArmedRef = useRef(true)
 
@@ -2087,6 +2114,7 @@ export function MapSearchView() {
             onChange={updateFilters}
             totalCount={totalCount}
             isLoading={isLoading}
+            hasSearchResponded={hasSearchResponded}
             isOpen={filtersOpen}
             onToggle={toggleFilters}
             canSaveDefaultView={!!user}
@@ -2106,6 +2134,17 @@ export function MapSearchView() {
           missing. Investors think in boundaries — a school district, one side
           of a highway — not in whatever rectangle the screen happens to be. */}
       <div className="absolute top-16 left-3 z-20 flex flex-col items-start gap-2 pointer-events-auto">
+        {workflowV1 && isMapPathStripArrival(searchParams) ? (
+          <div
+            className="rounded-lg shadow-lg max-w-[min(100vw-1.5rem,24rem)]"
+            style={{
+              backgroundColor: overlaySurface.backgroundColor,
+              border: `1px solid ${overlaySurface.borderColor}`,
+            }}
+          >
+            <PathStepper />
+          </div>
+        ) : null}
         {/* Saved areas sit with Draw area because they are the same idea one
             step apart: define a farm boundary, then keep it. */}
         {!!user && (
@@ -2234,7 +2273,7 @@ export function MapSearchView() {
           className="absolute inset-0 z-[70] flex items-center justify-center pointer-events-none"
           role="status"
           aria-live="polite"
-          aria-label="Analyzing"
+          aria-label={homeHeroCity ? loadingCopy : 'Analyzing'}
         >
           <div
             className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl"
@@ -2253,7 +2292,7 @@ export function MapSearchView() {
               className="text-sm font-semibold"
               style={{ color: overlaySurface.primaryText }}
             >
-              Analyzing...
+              {loadingCopy}
             </span>
           </div>
         </div>
@@ -2361,13 +2400,17 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Map / List view toggle — bottom center on all viewports */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto pb-safe">
-        <MapViewModeToggle
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-      </div>
+      {/* Map / List view toggle — bottom center on all viewports. Hidden
+          when a property card is open so it cannot cover the card buttons
+          at short viewports (C2). */}
+      {!selectedListing && !dropPin ? (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto pb-safe">
+          <MapViewModeToggle
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </div>
+      ) : null}
     </div>
   )
 
