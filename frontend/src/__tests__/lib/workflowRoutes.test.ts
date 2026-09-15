@@ -38,10 +38,18 @@ describe('workflowV1RedirectTarget', () => {
     ).toBe('/discovery?address=1+Main&view=math&section=sources')
   })
 
-  it('leaves Discovery and Plan URLs in place', () => {
+  it('leaves Discovery, Plan, and Work URLs in place', () => {
     expect(workflowV1RedirectTarget('/discovery', new URLSearchParams('address=1 Main'))).toBe(null)
     expect(
       workflowV1RedirectTarget('/discovery', new URLSearchParams('address=1 Main&view=workbench')),
+    ).toBe(null)
+    expect(
+      workflowV1RedirectTarget(
+        '/discovery',
+        new URLSearchParams(
+          'address=7026 NW 21st Ave&city=Miami&state=FL&zip_code=33147&view=work&dealId=deal-1&tab=tasks',
+        ),
+      ),
     ).toBe(null)
   })
 

@@ -13,9 +13,10 @@ describe('source-count sentence on Plan', () => {
         missingLabels: ['Zillow'],
         low: '$200,000',
         high: '$240,000',
+        iqEstimate: '$220,000',
       }),
     ).toBe(
-      '4 of 5 sources value this house between $200,000 and $240,000. Zillow did not answer.',
+      '4 of 5 sources value this house between $200,000 and $240,000. Zillow did not answer. The IQ Estimate is $220,000. Tap any number for its source.',
     )
     expect(
       formatPlanSourceCountLine({
@@ -24,14 +25,18 @@ describe('source-count sentence on Plan', () => {
         missingLabels: [],
         low: '$200,000',
         high: '$240,000',
+        iqEstimate: '$220,000',
       }),
-    ).toBe('5 sources value this house between $200,000 and $240,000.')
+    ).toBe(
+      '5 sources value this house between $200,000 and $240,000. The IQ Estimate is $220,000. Tap any number for its source.',
+    )
     expect(formatPlanSourceCountLine({
       answered: 5,
       total: 5,
       missingLabels: [],
       low: '$200,000',
       high: '$240,000',
+      iqEstimate: '$220,000',
     })).not.toContain('Five')
   })
 
@@ -72,8 +77,34 @@ describe('source-count sentence on Plan', () => {
       targets: PLAN_TARGET_DEFAULTS,
     })
     expect(model.sourceLine).toBe(
-      '4 of 5 sources value this house between $200,000 and $240,000. Zillow did not answer.',
+      '4 of 5 sources value this house between $200,000 and $240,000. Zillow did not answer. The IQ Estimate is $220,000. Tap any number for its source.',
     )
     expect(PHASE_15_COPY.seeTheVerdict).toBe('See the verdict')
+    expect(PHASE_15_COPY.couldNotSaveProperty).toBe('Could not save property')
+  })
+
+  it('starts with answered of total when a source is missing but unlabeled', () => {
+    expect(
+      formatPlanSourceCountLine({
+        answered: 4,
+        total: 5,
+        missingLabels: [],
+        low: '$200,000',
+        high: '$240,000',
+        iqEstimate: '$220,000',
+      }),
+    ).toBe(
+      '4 of 5 sources value this house between $200,000 and $240,000. The IQ Estimate is $220,000. Tap any number for its source.',
+    )
+    expect(
+      formatPlanSourceCountLine({
+        answered: 4,
+        total: 5,
+        missingLabels: [],
+        low: '$200,000',
+        high: '$240,000',
+        iqEstimate: '$220,000',
+      }),
+    ).not.toContain('did not answer')
   })
 })

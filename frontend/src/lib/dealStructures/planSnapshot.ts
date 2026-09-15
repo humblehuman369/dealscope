@@ -237,13 +237,15 @@ export function formatPlanSnapshot(input: PlanSnapshotNumbers): PlanViewModel {
       input.sourceAnswered != null &&
       input.sourceTotal != null &&
       input.sourceLow != null &&
-      input.sourceHigh != null
+      input.sourceHigh != null &&
+      input.iqEstimate != null
         ? formatPlanSourceCountLine({
             answered: input.sourceAnswered,
             total: input.sourceTotal,
             missingLabels: input.sourceMissingLabels ?? [],
             low: money(input.sourceLow),
             high: money(input.sourceHigh),
+            iqEstimate: money(input.iqEstimate),
           })
         : formatSourceSpreadLine({
             low: input.sourceLow,

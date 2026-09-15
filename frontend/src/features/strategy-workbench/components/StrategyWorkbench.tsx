@@ -142,8 +142,8 @@ import {
   type PlanOptionKey,
 } from '@/lib/dealStructures/planMetrics'
 import { sourceValueRange, summarizeSourceStatus } from '@/lib/sourceStatus'
-import { seedPlanNextMoveTasks } from '@/lib/seedPlanNextMoveTasks'
-import { workflowV1TabHref } from '@/lib/workflowRoutes'
+import { PHASE_15_COPY } from '@/lib/phase15Copy'
+import { startWorkingThisDeal } from '@/lib/startWorkingThisDeal'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
 import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
@@ -231,7 +231,6 @@ export function StrategyWorkbench({
   const [tuneOpen, setTuneOpen] = useState(false)
   const [planCustomized, setPlanCustomized] = useState(() => initialPlanSession?.planCustomized ?? false)
   const [startingDeal, setStartingDeal] = useState(false)
-  const planNextMovesRef = useRef<readonly string[]>([])
   const [v1PlanFailed, setV1PlanFailed] = useState(false)
   const option3SeededRef = useRef(Boolean(initialPlanSession?.appliedPathId))
   const hydratedSessionIdRef = useRef<string | null>(planSessionId || null)
@@ -1434,39 +1433,46 @@ export function StrategyWorkbench({
     setTuneOpen(false)
   }, [emitPlanBuilt, scoreTargetsMetFromState])
 
-  const handleStartDeal = useCallback(async () => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
-    setStartingDeal(true)
-    try {
-      const dealId = (await save()) ?? savedPropertyId
-      if (!dealId) return
-      await seedPlanNextMoveTasks(dealId, planNextMovesRef.current)
-      emitDealStarted(dealId, true)
-      const workHref = workflowV1TabHref('work', addressParam, {
-        dealId,
-        tab: 'tasks',
-        zpid: searchParams?.get('zpid') || undefined,
-      })
-      router.push(workHref)
-    } catch (err) {
-      console.error('Start working this deal failed:', err)
-      toast.error('Could not save property')
-    } finally {
-      setStartingDeal(false)
-    }
-  }, [
-    isAuthenticated,
-    openAuthModal,
-    save,
-    savedPropertyId,
-    emitDealStarted,
-    searchParams,
-    router,
-    addressParam,
-  ])
+  const handleStartDeal = useCallback(
+    async (titles: readonly string[]) => {
+      if (!isAuthenticated) {
+        openAuthModal('login')
+        return
+      }
+      setStartingDeal(true)
+      try {
+        const result = await startWorkingThisDeal({
+          save,
+          existingDealId: savedPropertyId,
+          titles,
+          emitDealStarted,
+          push: (href) => {
+            router.push(href)
+          },
+          address: addressParam,
+          zpid: searchParams?.get('zpid') || undefined,
+        })
+        if (result === 'no-deal') {
+          toast.error(PHASE_15_COPY.couldNotSaveProperty)
+        }
+      } catch (err) {
+        console.error('Start working this deal failed:', err)
+        toast.error(PHASE_15_COPY.couldNotSaveProperty)
+      } finally {
+        setStartingDeal(false)
+      }
+    },
+    [
+      isAuthenticated,
+      openAuthModal,
+      save,
+      savedPropertyId,
+      emitDealStarted,
+      searchParams,
+      router,
+      addressParam,
+    ],
+  )
 
   /**
    * Strip every key the path mapper might have written from `inlineOverrides`,
@@ -1838,7 +1844,6 @@ export function StrategyWorkbench({
           monthlyCashFlowTarget,
         })
       : null
-  planNextMovesRef.current = planModel?.nextMoves ?? []
   const resetStructure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
   const resetOptionKey: PlanOptionKey = resetStructure
     ? optionKeyFromFamily(resetStructure.family)
@@ -2138,7 +2143,7 @@ export function StrategyWorkbench({
               onTune={() => setTuneOpen(true)}
               onApply={handlePlanApply}
               onStartDeal={() => {
-                void handleStartDeal()
+                void handleStartDeal(planModel.nextMoves)
               }}
               startingDeal={startingDeal}
               onShareFullReport={() => handlePDFDownload('light')}

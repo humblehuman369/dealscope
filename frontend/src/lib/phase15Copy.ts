@@ -7,6 +7,7 @@ export const PHASE_15_COPY = {
   fromThePlan: 'From the plan.',
   openTheDeal: 'Open the deal',
   seeTheVerdict: 'See the verdict',
+  couldNotSaveProperty: 'Could not save property',
 } as const
 
 export function formatPlanSourceCountLine(input: {
@@ -15,15 +16,20 @@ export function formatPlanSourceCountLine(input: {
   missingLabels: readonly string[]
   low: string
   high: string
+  iqEstimate: string
 }): string {
-  if (input.answered < input.total && input.missingLabels.length > 0) {
-    const missing = input.missingLabels.join(', ')
+  const iqSentence = `The IQ Estimate is ${input.iqEstimate}. Tap any number for its source.`
+  if (input.answered < input.total) {
+    const missing =
+      input.missingLabels.length > 0
+        ? ` ${input.missingLabels.join(', ')} did not answer.`
+        : ''
     return (
       `${input.answered} of ${input.total} sources value this house between ` +
-      `${input.low} and ${input.high}. ${missing} did not answer.`
+      `${input.low} and ${input.high}.${missing} ${iqSentence}`
     )
   }
   return (
-    `${input.total} sources value this house between ${input.low} and ${input.high}.`
+    `${input.total} sources value this house between ${input.low} and ${input.high}. ${iqSentence}`
   )
 }
