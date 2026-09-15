@@ -1,3 +1,5 @@
+import { STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
+
 /**
  * Subscription constants — single source of truth for entitlement
  * and product identifiers used across RevenueCat, App Store Connect,
@@ -27,5 +29,5 @@ export const PRO_ENTITLEMENT_ID = 'DealGapIQ Pro'
 export const IOS_MONTHLY_PRODUCT_ID = 'com.monthly.dealgapiq'
 export const IOS_YEARLY_PRODUCT_ID = 'com.yearly.dealgapiq'
 
-// Must match TIER_LIMITS[FREE]["searches_per_month"] in backend/app/models/subscription.py
-export const FREE_ANALYSES_PER_MONTH = 2
+// Re-export of claims.ts — do not type the Starter count here.
+export const FREE_ANALYSES_PER_MONTH = STARTER_VERDICTS_PER_MONTH

@@ -131,7 +131,7 @@ class Settings(BaseSettings):
     # The IP is only a secondary abuse cap so one NAT cannot lock out a household.
     # Repeat views of the same address within the day do not consume quota.
     # Set to 0 to require login.
-    ANON_ANALYSES_PER_DAY: int = 3
+    ANON_ANALYSES_PER_DAY: int = 1
     ANON_IP_CAP_PER_DAY: int = 50
     ANON_VISITOR_COOKIE: str = "ds_anon_vid"
     ANON_VISITOR_COOKIE_MAX_AGE: int = 365 * 24 * 60 * 60

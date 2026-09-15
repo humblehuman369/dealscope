@@ -16,6 +16,7 @@ import {
   PRO_YEARLY_PER_MONTH,
   PRO_YEARLY_PRICE,
   SPEED_CLAIM_SENTENCE,
+  STARTER_VERDICTS_PER_MONTH,
 } from '@/lib/claims'
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
@@ -145,7 +146,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
     name: 'Property Analysis',
     rows: [
       { name: 'Property search', free: true, pro: true },
-      { name: 'Property analyses per month', free: '2', pro: 'Unlimited' },
+      { name: 'Property analyses per month', free: String(STARTER_VERDICTS_PER_MONTH), pro: 'Unlimited' },
       { name: 'Discovery with deal score', free: true, pro: true },
       { name: 'Income Value, Target Buy & Deal Gap', free: true, pro: true },
       {

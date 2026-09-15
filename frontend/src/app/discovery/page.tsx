@@ -62,6 +62,10 @@ import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLandin
 import { DiscoveryQuotaGate } from '@/components/discovery/DiscoveryQuotaGate'
 import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
 import {
+  discoveryQueriesNeedAuthRefetch,
+  invalidateDiscoveryQueriesAfterAuth,
+} from '@/lib/invalidateDiscoveryAfterAuth'
+import {
   buildMotivatedSellerInsights,
   type MotivatedSellerInsight,
 } from '@/lib/motivatedSellerInsights'
@@ -284,7 +288,7 @@ function VerdictContent() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
-  const { isAuthenticated } = useSession()
+  const { isAuthenticated, isLoading: authLoading } = useSession()
   const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
   const workflowV1Layout = workflowV1
   const [v1DiscoveryFailed, setV1DiscoveryFailed] = useState(false)
@@ -456,6 +460,7 @@ function VerdictContent() {
   // Guards against race conditions when rapidly switching between properties.
   // Each address change increments the counter; stale async responses are discarded.
   const fetchGenerationRef = useRef(0)
+  const wasAuthenticatedRef = useRef<boolean | null>(null)
 
   // Reset recording flag when user navigates to a different property (new address or propertyId)
   useEffect(() => {
@@ -1093,6 +1098,24 @@ function VerdictContent() {
     retryNonce,
   ])
 
+  // Signed-out 403s stay in the React Query cache after the modal succeeds.
+  // When auth flips to signed in (or we remount with a stale error), drop
+  // those queries and re-run the fetch as the signed-in user.
+  useEffect(() => {
+    if (authLoading) return
+    const wasAuthenticated = wasAuthenticatedRef.current
+    wasAuthenticatedRef.current = isAuthenticated
+    if (!isAuthenticated || !addressParam) return
+    const justSignedIn = wasAuthenticated === false
+    const stale = discoveryQueriesNeedAuthRefetch(queryClient, addressParam, limitError)
+    if (!justSignedIn && !stale) return
+    invalidateDiscoveryQueriesAfterAuth(queryClient, addressParam)
+    setLimitError(null)
+    setError(null)
+    setRetryNonce((n) => n + 1)
+    void refreshSavedCheck()
+  }, [authLoading, isAuthenticated, addressParam, queryClient, refreshSavedCheck, limitError])
+
   // Watchdog for the loading state: if neither data nor an error arrives
   // within the timeout, show a recovery screen instead of spinning forever.
   const awaitingAnalysis = isLoading || (!analysis && !error)
@@ -1628,6 +1651,7 @@ function VerdictContent() {
         >
           <DiscoveryQuotaGate
             kind={limitError}
+            workflowV1={workflowV1Layout}
             onCreateAccount={() => openAuthModal('register')}
             onSignIn={() => openAuthModal('login')}
             onUpgrade={() => router.push('/pricing')}

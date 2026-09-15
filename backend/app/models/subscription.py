@@ -73,7 +73,7 @@ class Subscription(Base):
 
     # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
     properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
-    searches_per_month: Mapped[int] = mapped_column(Integer, default=2)  # Starter: 2 analyses/mo
+    searches_per_month: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3 analyses/mo
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
 
     # Usage tracking (reset monthly)
@@ -113,7 +113,7 @@ class Subscription(Base):
 
         Pro is always unlimited. Starter uses the row so grandfathered
         accounts that still have ``searches_per_month=10`` keep that cap
-        after the published Starter limit dropped to 2.
+        after the published Starter limit dropped from 10.
         """
         if self.tier == SubscriptionTier.PRO:
             return TIER_LIMITS[self.tier]["searches_per_month"]
@@ -187,12 +187,12 @@ class PaymentHistory(Base):
 # Tier configurations for easy reference
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
-        # First deal + one more analysis, then the wall. Conversion after
-        # Make It Work is depth (packet / trial), not a 10-deal sandbox.
+        # Three verdicts a month, then the wall. Conversion after Make It Work
+        # is depth (packet / trial), not a 10-deal sandbox.
         # Existing FREE rows with searches_per_month=10 are grandfathered
         # (see GRANDFATHERED_FREE_SEARCHES_PER_MONTH).
         "properties_limit": 10,
-        "searches_per_month": 2,
+        "searches_per_month": 3,
         "api_calls_per_month": 50,
         "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],
     },

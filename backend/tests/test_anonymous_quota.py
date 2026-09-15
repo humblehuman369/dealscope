@@ -92,15 +92,9 @@ async def test_two_visitors_on_one_ip_each_get_their_own_quota(cache):
     ip = "198.51.100.7"
     a = "1" * 32
     b = "2" * 32
-    addresses = [
-        "100 Main St, Miami, FL 33101",
-        "200 Main St, Miami, FL 33101",
-        "300 Main St, Miami, FL 33101",
-    ]
-    for addr in addresses:
-        keys = await _check_anonymous_quota(_request(ip=ip, visitor=a), addr)
-        assert keys[3] is False
-        await _record_anonymous_analysis(*keys[:3])
+    first = await _check_anonymous_quota(_request(ip=ip, visitor=a), "100 Main St, Miami, FL 33101")
+    assert first[3] is False
+    await _record_anonymous_analysis(*first[:3])
 
     with pytest.raises(HTTPException) as gated:
         await _check_anonymous_quota(_request(ip=ip, visitor=a), "400 Main St, Miami, FL 33101")
@@ -109,6 +103,10 @@ async def test_two_visitors_on_one_ip_each_get_their_own_quota(cache):
 
     fourth = await _check_anonymous_quota(_request(ip=ip, visitor=b), "500 Main St, Miami, FL 33101")
     assert fourth[3] is False
+
+
+def test_anonymous_daily_cap_default_is_one():
+    assert settings.ANON_ANALYSES_PER_DAY == 1
 
 
 @pytest.mark.asyncio

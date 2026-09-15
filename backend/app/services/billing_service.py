@@ -141,13 +141,13 @@ class BillingService:
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
                 properties_limit=10,
-                searches_per_month=2,
+                searches_per_month=TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"],
                 api_calls_per_month=50,
                 features=[
                     PlanFeature(
-                        name="2 Property Analyses/month",
-                        description="Analyze up to 2 properties per month",
-                        limit="2/month",
+                        name=f"{TIER_LIMITS[SubscriptionTier.FREE]['searches_per_month']} Property Analyses/month",
+                        description=f"Analyze up to {TIER_LIMITS[SubscriptionTier.FREE]['searches_per_month']} properties per month",
+                        limit=f"{TIER_LIMITS[SubscriptionTier.FREE]['searches_per_month']}/month",
                     ),
                     PlanFeature(
                         name="Deal Gap + Income Value + Target Buy",

@@ -29,7 +29,7 @@ class TestTierConfiguration:
     def test_free_tier_limits(self):
         free = TIER_LIMITS[SubscriptionTier.FREE]
         assert free["properties_limit"] > 0
-        assert free["searches_per_month"] == 2
+        assert free["searches_per_month"] == 3
         assert "basic_analysis" in free["features"]
 
     def test_pro_tier_is_unlimited(self):
@@ -123,7 +123,7 @@ class TestGetOrCreateSubscription:
         db_session: AsyncSession,
         created_user,
     ):
-        """Existing Starter rows at the old 10-analysis cap must not be cut to 2."""
+        """Existing Starter rows at the old 10-analysis cap must not be cut to 3."""
         stale = Subscription(
             user_id=created_user.id,
             tier=SubscriptionTier.FREE,

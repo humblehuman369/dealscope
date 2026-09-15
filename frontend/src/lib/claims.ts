@@ -51,3 +51,17 @@ export const SPEED_CLAIM = 'under 60 seconds'
 
 /** SPEED_CLAIM with a leading capital for sentence starts. */
 export const SPEED_CLAIM_SENTENCE = `${SPEED_CLAIM.charAt(0).toUpperCase()}${SPEED_CLAIM.slice(1)}`
+
+/**
+ * Signed-out daily verdict cap. Must match
+ * `ANON_ANALYSES_PER_DAY` in backend/app/core/config.py.
+ */
+export const ANON_VERDICTS_PER_DAY = 1
+
+/**
+ * Starter / free-account monthly verdict cap. Must match
+ * `TIER_LIMITS[FREE]["searches_per_month"]` in
+ * backend/app/models/subscription.py. Copy, the meter, and the Starter
+ * bar all read this number — do not type it elsewhere.
+ */
+export const STARTER_VERDICTS_PER_MONTH = 3

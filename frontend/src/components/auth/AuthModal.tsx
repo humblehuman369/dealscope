@@ -44,6 +44,15 @@ export default function AuthModal() {
   const [view, setView] = useState<View>('login')
   const [isOpen, setIsOpen] = useState(false)
 
+  const stripAuthParams = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (!params.has('auth') && !params.has('redirect')) return
+    params.delete('auth')
+    params.delete('redirect')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }, [router, pathname, searchParams])
+
   // Open modal from URL params (?auth=login|register|required).
   useEffect(() => {
     const authParam = searchParams.get('auth')
@@ -51,21 +60,22 @@ export default function AuthModal() {
       if (!isAuthenticated) {
         setView(authParam === 'register' ? 'register' : 'login')
         setIsOpen(true)
+      } else {
+        // Signed-in reload must not reopen the modal.
+        stripAuthParams()
       }
     }
-  }, [searchParams, isAuthenticated])
+  }, [searchParams, isAuthenticated, stripAuthParams])
 
   // Auto-close when auth state changes while modal is open
   // (e.g. session restored from another tab, or cookie-based auth detected).
-  //
-  // IMPORTANT: We only close the modal here — we do NOT navigate.
-  // Navigation is handled exclusively by onLoginSuccess to avoid
-  // two competing router.replace() calls racing each other.
+  // Strip auth/redirect so a reload does not reopen the modal.
   useEffect(() => {
     if (isAuthenticated && isOpen) {
       setIsOpen(false)
+      stripAuthParams()
     }
-  }, [isAuthenticated, isOpen])
+  }, [isAuthenticated, isOpen, stripAuthParams])
 
   // Dismiss modal (X button, Escape, backdrop click) — stay on current page.
   const close = useCallback(() => {
