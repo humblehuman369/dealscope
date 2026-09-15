@@ -10,8 +10,8 @@ shape. Starlette JSONResponse uses allow_nan=False, so the verdict 500s with
 from __future__ import annotations
 
 import json
-import logging
 import math
+from unittest.mock import patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -64,19 +64,22 @@ class TestCalculateDscrZeroDebt:
 
 
 class TestSanitizeNonFinite:
-    def test_converts_nan_and_inf_to_none_and_logs_path(self, caplog):
+    def test_converts_nan_and_inf_to_none_and_logs_path(self):
         payload = {
             "strategies": [{"dscr": float("nan"), "capRate": 5.0}],
             "nested": [float("inf"), float("-inf"), 1.5],
         }
-        with caplog.at_level(logging.WARNING, logger="app.core.json_safe"):
+        # Patch the module logger — importing app.main replaces root handlers
+        # with a JSON formatter, so pytest caplog is empty in CI.
+        with patch("app.core.json_safe.logger.warning") as warn:
             out = sanitize_non_finite(payload)
         assert out["strategies"][0]["dscr"] is None
         assert out["strategies"][0]["capRate"] == 5.0
         assert out["nested"] == [None, None, 1.5]
-        assert "strategies[0].dscr" in caplog.text
-        assert "nested[0]" in caplog.text
-        assert "nested[1]" in caplog.text
+        logged_paths = [call.args[1] for call in warn.call_args_list]
+        assert "strategies[0].dscr" in logged_paths
+        assert "nested[0]" in logged_paths
+        assert "nested[1]" in logged_paths
         json.dumps(out)
 
     def test_dump_json_safe_strips_inf_on_verdict_shape(self):
