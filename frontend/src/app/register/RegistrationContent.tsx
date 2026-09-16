@@ -1,10 +1,14 @@
 'use client'
 
-import React, { useState, useMemo, Suspense } from 'react'
+import React, { useState, useMemo, useCallback, Suspense } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRegister, useLogin } from '@/hooks/useSession'
+import { useAuthWaiting } from '@/hooks/useAuthWaiting'
+import { VerifyCodeInput } from '@/components/auth/VerifyCodeInput'
+import { applyVerifySession, clearAuthWaiting } from '@/lib/authWaiting'
 import { isCapacitor } from '@/lib/env'
 import { capacitorOauthStartUrl } from '@/lib/capacitorOauth'
 import { authApi } from '@/lib/api-client'
@@ -330,6 +334,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
 function RegistrationInner() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
+  const queryClient = useQueryClient()
   const registerMutation = useRegister()
   const loginMutation = useLogin()
 
@@ -358,6 +363,9 @@ function RegistrationInner() {
   const [requiresVerification, setRequiresVerification] = useState(false)
   const [verificationEmailSent, setVerificationEmailSent] = useState(true)
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [codePending, setCodePending] = useState(false)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [codeFailures, setCodeFailures] = useState(0)
   const [form, setForm] = useState<FormState>({
     email: '',
     password: '',
@@ -444,8 +452,47 @@ function RegistrationInner() {
       await authApi.resendVerification(form.email)
       setResendStatus('sent')
       setVerificationEmailSent(true)
+      setCodeFailures(0)
+      setCodeError(null)
     } catch {
       setResendStatus('error')
+    }
+  }
+
+  const finishVerified = useCallback(() => {
+    clearAuthWaiting()
+    let next = '/search'
+    if (returnToParam) {
+      try {
+        const decoded = decodeURIComponent(returnToParam)
+        if (decoded.startsWith('/') && !decoded.startsWith('//')) next = decoded
+      } catch {
+        /* ignore */
+      }
+    }
+    router.replace(`/onboarding?next=${encodeURIComponent(next)}`)
+  }, [router, returnToParam])
+
+  useAuthWaiting(finishVerified, step === 'success' && requiresVerification && verificationEmailSent)
+
+  const handleVerifyCode = async (code: string) => {
+    setCodePending(true)
+    setCodeError(null)
+    try {
+      const result = await authApi.verifyCode(form.email, code)
+      await applyVerifySession(result, queryClient)
+      trackEvent('email_verified', { method: 'code' })
+      finishVerified()
+    } catch {
+      const next = codeFailures + 1
+      setCodeFailures(next)
+      setCodeError(
+        next >= 5
+          ? 'Too many tries. Request a new link below.'
+          : 'That code did not work. Check the email and try again.',
+      )
+    } finally {
+      setCodePending(false)
     }
   }
 
@@ -833,6 +880,22 @@ function RegistrationInner() {
               : 'Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours.'}
           </p>
 
+          {!failed && (
+            <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto 24px', textAlign: 'left' }}>
+              <VerifyCodeInput
+                key={codeFailures}
+                pending={codePending}
+                error={
+                  codeFailures >= 5
+                    ? 'Too many tries. Request a new link below.'
+                    : codeError
+                }
+                locked={codeFailures >= 5}
+                onComplete={handleVerifyCode}
+              />
+            </div>
+          )}
+
           <div
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}
           >
@@ -888,18 +951,21 @@ function RegistrationInner() {
             {!failed && (
               <button
                 onClick={handleResendVerification}
-                disabled={resendStatus !== 'idle'}
+                disabled={resendStatus === 'sending' || (resendStatus !== 'idle' && codeFailures < 5)}
                 style={{
                   background: 'none',
                   border: 'none',
                   fontSize: '13px',
                   color:
-                    resendStatus === 'sent'
+                    resendStatus === 'sent' && codeFailures < 5
                       ? '#22C55E'
                       : resendStatus === 'error'
                         ? '#F87171'
                         : 'var(--accent-sky)',
-                  cursor: resendStatus === 'idle' ? 'pointer' : 'default',
+                  cursor:
+                    resendStatus === 'sending' || (resendStatus !== 'idle' && codeFailures < 5)
+                      ? 'default'
+                      : 'pointer',
                   fontFamily: 'inherit',
                   fontWeight: 500,
                   opacity: resendStatus === 'sending' ? 0.6 : 1,
@@ -907,7 +973,10 @@ function RegistrationInner() {
               >
                 {resendStatus === 'idle' && 'Didn\u2019t get the email? Resend'}
                 {resendStatus === 'sending' && 'Sending\u2026'}
-                {resendStatus === 'sent' && 'Verification email resent'}
+                {resendStatus === 'sent' &&
+                  (codeFailures >= 5
+                    ? 'Didn\u2019t get the email? Resend'
+                    : 'Verification email resent')}
                 {resendStatus === 'error' && 'Couldn\u2019t resend \u2014 try again'}
               </button>
             )}
