@@ -6,7 +6,12 @@ import { Home, Satellite, Eye } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
-import { buildStreetViewUrl, resolveBestStreetView, type StreetViewParams } from '@/lib/streetView'
+import {
+  buildSatelliteUrl,
+  buildStreetViewUrl,
+  resolveBestStreetView,
+  type StreetViewParams,
+} from '@/lib/streetView'
 import { trackEvent } from '@/lib/eventTracking'
 
 const PROPERTY_MAP_ZOOM = 15
@@ -168,36 +173,31 @@ export function PropertyPhotoGallery({
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
     const hasCoords = latitude != null && longitude != null
     // Tiered fallback when Zillow has no listing photos (typical for
-    // off-market properties): Street View → Satellite tile → text panel.
-    // Investors care about the parcel context (lot size/shape, neighborhood,
-    // pool/roof) even when no real photos exist — a satellite tile is far
-    // more useful than a "Photos not available" message.
+    // off-market properties): satellite first, then Street View only after
+    // the camera is aimed at the parcel. Address-first Street View often
+    // faces the road (hedge, sidewalk) instead of the house.
     let streetViewUrl: string | null = null
     let satelliteUrl: string | null = null
-    if (apiKey && !streetViewFailed) {
-      // Smart URL (pano + computed heading) once the StreetViewService has
-      // resolved the nearest outdoor pano and bearing toward the parcel —
-      // this matches the building-facing framing Zillow uses on their own
-      // off-market Street View placeholder. Until then, fall back to the
-      // address-first quick path (which Google geocodes and orients toward
-      // the building) so first paint isn't blank.
+    if (apiKey && !streetViewFailed && smartStreetView) {
       streetViewUrl = buildStreetViewUrl({
         apiKey,
         size: '600x400',
-        address,
-        latitude: hasCoords ? latitude : undefined,
-        longitude: hasCoords ? longitude : undefined,
         params: smartStreetView,
       })
     }
-    if (apiKey && hasCoords && !satelliteFailed) {
-      // Satellite tile — exists for every lat/lng on Earth, so this
-      // guarantees a useful image. zoom=19 frames the parcel; on urban
-      // lots this shows the house, on rural lots it shows context.
-      satelliteUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=19&size=600x400&maptype=satellite&key=${apiKey}`
+    if (apiKey && hasCoords && latitude != null && longitude != null && !satelliteFailed) {
+      satelliteUrl = buildSatelliteUrl({
+        apiKey,
+        latitude,
+        longitude,
+        size: '600x400',
+      })
     }
 
-    if (streetViewUrl) {
+    // Address-first Street View often faces the road (hedge, sidewalk,
+    // a pedestrian) instead of the house. Only show Street View after
+    // StreetViewService has a pano + heading toward the parcel.
+    if (streetViewUrl && smartStreetView) {
       return (
         <div className="space-y-3">
           <div

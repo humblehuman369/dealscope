@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/services/photoService', () => ({
   fetchPropertyPhotos: vi.fn(),
@@ -83,6 +83,10 @@ describe('WorkflowPropertyHeader', () => {
     fetchPhotos.mockReset()
   })
 
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('renders the thumbnail, facts, and opens the gallery from N photos', async () => {
     fetchPhotos.mockResolvedValue({
       status: 'success',
@@ -155,5 +159,27 @@ describe('WorkflowPropertyHeader', () => {
     await waitFor(() => expect(screen.getByText('No photos')).toBeInTheDocument())
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
+  })
+
+  it('uses a satellite thumbnail when the listing has no photos but has coordinates', () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', 'KEY123')
+    render(
+      <WorkflowPropertyHeader
+        address="43770 Ruth Lane"
+        city="Delray Beach"
+        zip="33446"
+        listingStatus="OFF_MARKET"
+        photos={[]}
+        latitude={26.45}
+        longitude={-80.15}
+      />,
+    )
+    expect(fetchPhotos).not.toHaveBeenCalled()
+    const img = screen.getByRole('img')
+    expect(img).toHaveAttribute('src', expect.stringContaining('maps.googleapis.com/maps/api/staticmap'))
+    expect(img).toHaveAttribute('src', expect.stringContaining('maptype=satellite'))
+    expect(img).toHaveAttribute('alt', 'Satellite view of 43770 Ruth Lane')
+    expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('No photos')).not.toBeInTheDocument()
   })
 })

@@ -217,3 +217,25 @@ export function buildStreetViewUrl({
   base.push(`key=${apiKey}`)
   return base.join('&')
 }
+
+/** Overhead parcel tile. Exists for every lat/lng; used when listing photos and Street View fail. */
+export function buildSatelliteUrl({
+  apiKey,
+  latitude,
+  longitude,
+  size = '600x400',
+  zoom = 19,
+}: {
+  apiKey: string
+  latitude: number
+  longitude: number
+  size?: string
+  zoom?: number
+}): string | null {
+  if (!apiKey) return null
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+  return (
+    `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}` +
+    `&zoom=${zoom}&size=${size}&maptype=satellite&key=${apiKey}`
+  )
+}
