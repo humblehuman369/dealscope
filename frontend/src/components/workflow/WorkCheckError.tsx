@@ -21,7 +21,7 @@ export function WorkCheckError({ onRetry }: { onRetry: () => void }) {
         <button
           type="button"
           onClick={onRetry}
-          className="mt-5 inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="mt-5 inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'var(--accent-sky)',
             color: 'var(--text-inverse)',

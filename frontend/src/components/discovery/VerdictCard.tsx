@@ -23,6 +23,7 @@ import {
   type VerdictCall,
 } from '@/lib/verdictRules'
 import { useDiscoveryTipsSeen } from '@/hooks/useDiscoveryTipsSeen'
+import { V1_NUM } from '@/components/workflow/v1-style'
 
 export interface VerdictCardProps {
   listPrice: number
@@ -165,7 +166,7 @@ export function VerdictCard({
         </h2>
         <button
           type="button"
-          className="min-h-11 text-sm bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="min-h-11 text-[13px] bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           aria-expanded={whyVerdict}
           aria-controls={whyVerdictId}
@@ -191,7 +192,7 @@ export function VerdictCard({
       ) : null}
 
       <p
-        className="m-0 mb-5 font-medium leading-[1.4] text-[19px] sm:text-[22px]"
+        className="m-0 mb-5 font-medium leading-[1.4] text-[18px] sm:text-[21px]"
         style={{ color: 'var(--text-heading)', maxWidth: '34em' }}
       >
         {sentence}
@@ -256,7 +257,7 @@ export function VerdictCard({
         className="text-center tabular-nums text-[15px] font-semibold mt-5 mb-2"
         style={{
           color: 'var(--accent-sky)',
-          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
+          ...V1_NUM,
         }}
       >
         {dealGapLabel}
@@ -287,7 +288,7 @@ export function VerdictCard({
             <button
               type="button"
               onClick={dismissTips}
-              className="inline-flex items-center justify-center min-h-9 px-3.5 rounded-full text-sm font-semibold"
+              className="inline-flex items-center justify-center min-h-9 px-3.5 rounded-full text-[13px] font-semibold"
               style={{
                 background: 'transparent',
                 border: '1px solid var(--border-strong)',
@@ -302,7 +303,7 @@ export function VerdictCard({
 
       <div className="flex items-center gap-3 flex-wrap mt-5">
         <span
-          className="inline-flex items-center gap-2 min-h-11 px-3.5 py-2 text-sm font-semibold"
+          className="inline-flex items-center gap-2 min-h-11 px-3.5 py-2 text-[13px] font-medium"
           style={{
             color: tone.color,
             border: '1px solid var(--border-default)',
@@ -315,7 +316,7 @@ export function VerdictCard({
         </span>
         <button
           type="button"
-          className="min-h-11 text-sm bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="min-h-11 text-[13px] bg-transparent border-0 px-1 underline decoration-dotted underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           aria-expanded={whyCall}
           aria-controls={whyCallId}
@@ -328,7 +329,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onShowMath}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'transparent',
             border: '1px solid var(--border-strong)',
@@ -341,7 +342,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onBuildPlan}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
             background: 'var(--accent-sky)',
             color: 'var(--text-inverse)',
@@ -386,10 +387,10 @@ function NumberTile({
       }}
     >
       <p
-        className="tabular-nums font-bold leading-tight text-[22px] m-0"
+        className="tabular-nums font-semibold leading-tight text-[22px] m-0"
         style={{
           color,
-          fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, monospace',
+          ...V1_NUM,
         }}
       >
         {value}

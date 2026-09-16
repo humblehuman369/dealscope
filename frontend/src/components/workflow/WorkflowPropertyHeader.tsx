@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { PhotoLightbox } from '@/components/property-details/PhotoLightbox'
+import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { countLabel } from '@/lib/pluralize'
 import { fetchPropertyPhotos } from '@/services/photoService'
 
@@ -165,6 +166,7 @@ export function WorkflowPropertyHeader({
       style={{
         background: 'var(--surface-chrome)',
         borderBottom: '1px solid var(--border-subtle)',
+        fontFamily: V1_UI_FONT,
       }}
     >
       <div className="flex items-start gap-3 sm:gap-4">

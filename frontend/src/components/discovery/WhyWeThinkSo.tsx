@@ -18,13 +18,13 @@ function SignalRow({ signal, first }: { signal: WhySignal; first?: boolean }) {
       style={{ borderTop: first ? 'none' : '1px solid var(--border-default)' }}
     >
       <p
-        className="m-0 text-[14px] font-semibold tabular-nums"
+        className="m-0 text-[13px] font-semibold tabular-nums"
         style={{ color: 'var(--text-heading)' }}
       >
         {signal.title}
       </p>
       <p
-        className="m-0 mt-1 text-[14px] leading-relaxed"
+        className="m-0 mt-1 text-[13px] leading-relaxed"
         style={{ color: 'var(--text-secondary)' }}
       >
         {signal.detail}
@@ -70,7 +70,7 @@ export function WhyWeThinkSo({ signals }: WhyWeThinkSoProps) {
             type="button"
             aria-expanded={moreOpen}
             onClick={() => setMoreOpen((open) => !open)}
-            className="mt-1 min-h-11 bg-transparent border-0 px-1 text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="mt-1 min-h-11 bg-transparent border-0 px-1 text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: 'var(--accent-sky)', outlineColor: 'var(--accent-sky)' }}
           >
             {moreOpen ? 'Show less' : seeMoreSignalsLabel(rest.length)}

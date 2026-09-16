@@ -120,9 +120,9 @@ colors to prevent confusion between "what strategy" and "how it performed."
 
 | Font | CSS Variable | Role | Weights |
 |------|-------------|------|---------|
-| **Inter** | `--font-inter` | Primary UI — headings, body, financial data | 100–900 (variable) |
-| **DM Sans** | `--font-dm-sans` | Landing page sections | 400, 500, 600, 700 |
-| **Space Mono** | `--font-space-mono` | Monospace accent — code, data labels | 400, 700 |
+| **Inter** | `--font-inter` | Primary UI — body, labels, financial data (all numbers) | 100–900 (variable) |
+| **DM Sans** | `--font-dm-sans` | Headings (h1–h6) and landing sections | 400, 500, 600, 700 |
+| **Space Mono** | `--font-space-mono` | Reserved. Not used on app pages. | 400, 700 |
 
 *Source Sans 3 (`--font-source-sans`) remains loaded for the Tailwind `font-logo` family and select Verdict wordmark styles — see `layout.tsx`, `tailwind.config.js`, and `frontend/src/app/verdict/page.tsx`.*
 

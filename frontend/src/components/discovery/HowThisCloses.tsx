@@ -66,7 +66,7 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
         How this closes
       </h2>
       <p
-        className="m-0 mb-4 text-[15px] leading-relaxed"
+        className="m-0 mb-4 text-[14px] leading-[1.5]"
         style={{ color: 'var(--text-body)' }}
       >
         {paragraph}
@@ -105,7 +105,7 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
                 }}
               >
                 <span
-                  className="w-[84px] shrink-0 text-[15px] font-semibold"
+                  className="w-[84px] shrink-0 text-[14px] font-semibold"
                   style={{ color: row.startHere ? 'var(--accent-sky)' : 'var(--text-heading)' }}
                 >
                   {row.name}
@@ -130,7 +130,7 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
               {expanded && row.detail ? (
                 <p
                   id={panelId}
-                  className="m-0 pb-3 text-[14px] leading-relaxed"
+                  className="m-0 pb-3 text-[13px] leading-relaxed"
                   style={{ color: 'var(--text-secondary)', paddingLeft: 0 }}
                 >
                   {row.detail}
