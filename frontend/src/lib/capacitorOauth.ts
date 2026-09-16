@@ -24,7 +24,13 @@ export function capacitorAppOrigin(): string {
   return 'https://dealgapiq.com'
 }
 
-export function capacitorOauthStartUrl(provider: CapacitorOauthProvider): string {
-  const redirect = encodeURIComponent(CAPACITOR_OAUTH_REDIRECT)
-  return `${capacitorAppOrigin()}/api/v1/auth/${provider}?mobile_redirect=${redirect}`
+export function capacitorOauthStartUrl(
+  provider: CapacitorOauthProvider,
+  next?: string | null,
+): string {
+  const params = new URLSearchParams({ mobile_redirect: CAPACITOR_OAUTH_REDIRECT })
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    params.set('next', next)
+  }
+  return `${capacitorAppOrigin()}/api/v1/auth/${provider}?${params.toString()}`
 }

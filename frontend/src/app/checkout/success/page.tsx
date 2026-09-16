@@ -2,8 +2,8 @@
 
 /**
  * Checkout success — shown after Stripe redirect with session_id.
- * Polls subscription until Pro is active, then redirects to returnTo (or default).
- * Address-dependent paths (verdict, property, strategy) redirect to /billing to avoid "No address provided".
+ * Polls subscription until Pro is active, then redirects to the property
+ * or /search — never the empty pipeline via `/`.
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -13,30 +13,27 @@ import { CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
 import Link from 'next/link'
+import { markProWelcomePending, resolveCheckoutReturnTo, withProWelcome } from '@/lib/checkoutReturn'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_ATTEMPTS = 20
-
-function isAddressDependentPath(path: string): boolean {
-  const p = path.split('?')[0].toLowerCase()
-  return p === '/discovery' || p === '/property' || p === '/strategy' || p.startsWith('/property/')
-}
 
 export default function CheckoutSuccessPage() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const sessionId = searchParams.get('session_id')
-  const returnTo = searchParams.get('returnTo') || '/'
+  const returnTo = searchParams.get('returnTo')
 
-  const effectiveRedirect = useMemo(() => {
-    if (isAddressDependentPath(returnTo)) return '/billing'
-    return returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/'
-  }, [returnTo])
+  const effectiveRedirect = useMemo(
+    () => withProWelcome(resolveCheckoutReturnTo(returnTo)),
+    [returnTo],
+  )
 
   const [status, setStatus] = useState<'loading' | 'success' | 'timeout'>('loading')
 
   useEffect(() => {
     if (!sessionId) {
+      markProWelcomePending()
       setStatus('success')
       return
     }
@@ -52,6 +49,7 @@ export default function CheckoutSuccessPage() {
           trackEvent('checkout_completed', {
             ...(sub.status ? { subscription_status: sub.status } : {}),
           })
+          markProWelcomePending()
           setStatus('success')
           clearInterval(interval)
           setTimeout(() => router.replace(effectiveRedirect), 1200)
@@ -72,13 +70,13 @@ export default function CheckoutSuccessPage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#0B1120', color: '#E2E8F0' }}
+      style={{ background: 'var(--surface-base)', color: 'var(--text-body)' }}
     >
       <div className="max-w-md w-full text-center">
         {status === 'loading' && (
           <>
             <Loader2 className="w-14 h-14 mx-auto mb-6 text-sky-500 animate-spin" />
-            <h1 className="text-xl font-bold text-white mb-2">Setting up your subscription</h1>
+            <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--text-heading)' }}>Setting up your subscription</h1>
             <p className="text-sm text-slate-400">You’re being redirected in a moment…</p>
           </>
         )}

@@ -9,6 +9,21 @@ describe('parseCapacitorAuthUrl', () => {
     expect(parseCapacitorAuthUrl('dealgapiq://auth/callback?code=abc123token')).toEqual({
       type: 'oauth-code',
       code: 'abc123token',
+      next: null,
+      created: false,
+    })
+  })
+
+  it('forwards next and created from the native OAuth callback', () => {
+    expect(
+      parseCapacitorAuthUrl(
+        'dealgapiq://auth/callback?code=abc123token&next=%2Fdiscovery%3Faddress%3D1&created=1',
+      ),
+    ).toEqual({
+      type: 'oauth-code',
+      code: 'abc123token',
+      next: '/discovery?address=1',
+      created: true,
     })
   })
 

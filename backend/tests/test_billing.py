@@ -28,7 +28,7 @@ class TestTierConfiguration:
 
     def test_free_tier_limits(self):
         free = TIER_LIMITS[SubscriptionTier.FREE]
-        assert free["properties_limit"] > 0
+        assert free["properties_limit"] == 3
         assert free["searches_per_month"] == 3
         assert "basic_analysis" in free["features"]
 

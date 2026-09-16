@@ -8,6 +8,8 @@ import {
   PRO_YEARLY_PER_MONTH,
   PRO_YEARLY_PRICE,
   SPEED_CLAIM,
+  STARTER_SAVED_PROPERTIES,
+  STARTER_VERDICTS_PER_MONTH,
 } from '@/lib/claims'
 import PricingContent from './PricingContent'
 
@@ -59,7 +61,7 @@ const PRICING_JSONLD = {
             '@id': `${SITE_URL}/pricing#starter`,
             name: 'Starter',
             description:
-              'Free plan: property search, 2 property analyses per month, Discovery with deal score, all 6 strategy snapshots, save up to 10 properties.',
+              `Free plan: property search, ${STARTER_VERDICTS_PER_MONTH} property analyses per month, Discovery with deal score, all 6 strategy snapshots, save up to ${STARTER_SAVED_PROPERTIES} properties.`,
             price: '0',
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',

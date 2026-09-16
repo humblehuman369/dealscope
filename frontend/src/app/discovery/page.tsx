@@ -122,6 +122,7 @@ import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
+import { rememberPropertyPath } from '@/lib/checkoutReturn'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
 import {
   formatSellerRead,
@@ -298,6 +299,11 @@ function VerdictContent() {
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')
   const addressParam = searchParams.get('address') || ''
+
+  useEffect(() => {
+    if (!addressParam) return
+    rememberPropertyPath(`/discovery?${searchParams.toString()}`)
+  }, [addressParam, searchParams])
   const cityParam = searchParams.get('city') || undefined
   const stateParam = searchParams.get('state') || undefined
   const zipCodeParam = searchParams.get('zip_code') || undefined

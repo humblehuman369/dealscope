@@ -9,6 +9,7 @@ import ForgotPasswordForm from './ForgotPasswordForm'
 import { useSession } from '@/hooks/useSession'
 import { isCapacitor } from '@/lib/env'
 import { capacitorOauthStartUrl } from '@/lib/capacitorOauth'
+import { oauthWebStartUrl, persistAuthRedirect, readAuthRedirect } from '@/lib/authRedirect'
 import { shouldLandOnDashboard } from '@/lib/dashboardLanding'
 import { Modal } from '@/components/ui/Modal'
 
@@ -60,6 +61,7 @@ export default function AuthModal() {
       if (!isAuthenticated) {
         setView(authParam === 'register' ? 'register' : 'login')
         setIsOpen(true)
+        persistAuthRedirect(searchParams.get('redirect'))
       } else {
         // Signed-in reload must not reopen the modal.
         stripAuthParams()
@@ -136,6 +138,21 @@ export default function AuthModal() {
     }
   }, [searchParams, router, pathname])
 
+  const intendedRedirect = searchParams.get('redirect') || readAuthRedirect()
+
+  const startOauth = useCallback(
+    async (provider: 'google' | 'apple') => {
+      persistAuthRedirect(intendedRedirect)
+      if (isCapacitor()) {
+        const { Browser } = await import('@capacitor/browser')
+        await Browser.open({ url: capacitorOauthStartUrl(provider, intendedRedirect) })
+        return
+      }
+      window.location.href = oauthWebStartUrl(provider, intendedRedirect)
+    },
+    [intendedRedirect],
+  )
+
   return (
     <Modal open={isOpen} onClose={close} size="md" title={VIEW_TITLE[view]}>
       {(view === 'login' || view === 'register') && (
@@ -143,13 +160,8 @@ export default function AuthModal() {
           {/* Sign in with Apple */}
           <button
             type="button"
-            onClick={async () => {
-              if (isCapacitor()) {
-                const { Browser } = await import('@capacitor/browser')
-                await Browser.open({ url: capacitorOauthStartUrl('apple') })
-              } else {
-                window.location.href = '/api/v1/auth/apple'
-              }
+            onClick={() => {
+              void startOauth('apple')
             }}
             style={{
               width: '100%',
@@ -179,13 +191,8 @@ export default function AuthModal() {
           {/* Google OAuth */}
           <button
             type="button"
-            onClick={async () => {
-              if (isCapacitor()) {
-                const { Browser } = await import('@capacitor/browser')
-                await Browser.open({ url: capacitorOauthStartUrl('google') })
-              } else {
-                window.location.href = '/api/v1/auth/google'
-              }
+            onClick={() => {
+              void startOauth('google')
             }}
             style={{
               width: '100%',

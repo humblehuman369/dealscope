@@ -3,6 +3,7 @@
 import { useCallback } from 'react'
 import { useAppPathname } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
+import { defaultAuthRedirect, persistAuthRedirect } from '@/lib/authRedirect'
 
 /**
  * Hook to control the global auth modal via URL search params.
@@ -22,7 +23,8 @@ export function useAuthModal() {
       currentParams.delete('auth')
       currentParams.delete('redirect')
       const cleanSearch = currentParams.toString()
-      const redirectPath = redirectTo ?? (cleanSearch ? `${pathname}?${cleanSearch}` : pathname)
+      const redirectPath = redirectTo ?? defaultAuthRedirect(pathname, window.location.search)
+      persistAuthRedirect(redirectPath)
 
       const params = new URLSearchParams(cleanSearch)
       params.set('auth', mode)

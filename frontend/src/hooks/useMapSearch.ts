@@ -111,6 +111,13 @@ export function isExpensiveSearch(filters: MapSearchFilters): boolean {
   return filters.listing_statuses.some((s) => EXPENSIVE_STATUSES.has(s))
 }
 
+/** ~550 miles of latitude — continental US / zoom-5 default, not a city. */
+export const CONTINENTAL_LAT_SPAN_DEGREES = 8
+
+export function isContinentalViewport(bounds: MapBounds): boolean {
+  return bounds.north - bounds.south >= CONTINENTAL_LAT_SPAN_DEGREES
+}
+
 export function useMapSearch() {
   const [rawListings, setRawListings] = useState<MapListing[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -246,6 +253,14 @@ export function useMapSearch() {
       lastBoundsRef.current = bounds
       if (debounceRef.current) {
         clearTimeout(debounceRef.current)
+      }
+      // The map often fires a continental-US bounds event before FitInitialView
+      // (or GPS) frames a city. Expensive filters on that viewport only produce
+      // the "zoom in to search" lecture — skip until the camera is city-sized.
+      if (isExpensiveSearch(filtersRef.current) && isContinentalViewport(bounds)) {
+        setNotice(null)
+        setAreaSearchPending(false)
+        return
       }
       // Expensive modes never auto-search on a camera move; the user pans to
       // frame an area and then asks for it. The one exception is the first

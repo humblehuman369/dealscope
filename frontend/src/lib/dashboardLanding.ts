@@ -35,6 +35,18 @@ export function shouldLandOnDashboard(): boolean {
   }
 }
 
+/**
+ * First paint on `/` after auth. A pending property URL wins so OAuth
+ * signup does not dump a new user on the empty pipeline.
+ */
+export function resolveHomepageLanding(pendingRedirect: string | null): string | null {
+  if (pendingRedirect && pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//')) {
+    return pendingRedirect
+  }
+  if (shouldLandOnDashboard()) return '/dashboard'
+  return null
+}
+
 /** Mark today as visited so the redirect won't fire again until tomorrow. */
 export function markDashboardVisited(): void {
   if (typeof window === 'undefined') return

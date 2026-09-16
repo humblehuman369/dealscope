@@ -16,6 +16,7 @@ import {
   PRO_YEARLY_PER_MONTH,
   PRO_YEARLY_PRICE,
   SPEED_CLAIM_SENTENCE,
+  STARTER_SAVED_PROPERTIES,
   STARTER_VERDICTS_PER_MONTH,
 } from '@/lib/claims'
 
@@ -201,7 +202,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
   {
     name: 'Portfolio & Deal Management',
     rows: [
-      { name: 'Save properties to DealGapIQ pipeline', free: 'Up to 10', pro: 'Unlimited' },
+      { name: 'Save properties to DealGapIQ pipeline', free: `Up to ${STARTER_SAVED_PROPERTIES}`, pro: 'Unlimited' },
       { name: 'Side-by-side deal comparison', free: false, pro: true },
       { name: 'Search history', free: true, pro: true },
     ],

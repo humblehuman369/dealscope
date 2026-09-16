@@ -19,9 +19,10 @@ vi.mock('@/components/map-search/mapSearchSnapshot', () => ({
   writeMapSnapshot: (...args: unknown[]) => mockWriteSnapshot(...args),
 }))
 
-import { useMapSearch } from '@/hooks/useMapSearch'
+import { isContinentalViewport, useMapSearch } from '@/hooks/useMapSearch'
 
 const BOUNDS = { north: 26.8, south: 26.6, east: -80.0, west: -80.2 }
+const CONTINENTAL_BOUNDS = { north: 49, south: 25, east: -66, west: -125 }
 
 function listing(id: string, price: number): MapListing {
   return {
@@ -69,6 +70,30 @@ describe('useMapSearch', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('does not search expensive inventory on a continental-US viewport', async () => {
+    mockSearchArea.mockResolvedValue(response([]))
+    const { result } = renderHook(() => useMapSearch())
+
+    act(() => {
+      result.current.onBoundsChanged(CONTINENTAL_BOUNDS)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200)
+    })
+
+    expect(isContinentalViewport(CONTINENTAL_BOUNDS)).toBe(true)
+    expect(mockSearchArea).not.toHaveBeenCalled()
+    expect(result.current.notice).toBeNull()
+
+    act(() => {
+      result.current.onBoundsChanged(BOUNDS)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200)
+    })
+    expect(mockSearchArea).toHaveBeenCalledTimes(1)
   })
 
   it('ignores a slower first search so pan/filter races cannot show stale listings', async () => {

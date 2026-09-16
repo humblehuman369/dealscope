@@ -65,3 +65,10 @@ export const ANON_VERDICTS_PER_DAY = 1
  * bar all read this number — do not type it elsewhere.
  */
 export const STARTER_VERDICTS_PER_MONTH = 3
+
+/**
+ * Starter / free-account saved-property cap. Must match
+ * `TIER_LIMITS[FREE]["properties_limit"]` in
+ * backend/app/models/subscription.py.
+ */
+export const STARTER_SAVED_PROPERTIES = 3

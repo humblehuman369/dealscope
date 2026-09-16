@@ -7,7 +7,7 @@
  */
 
 export type MapLatLng = { lat: number; lng: number }
-export type MapLocationSource = 'account_zip' | 'gps' | 'ip'
+export type MapLocationSource = 'account_zip' | 'gps' | 'ip' | 'target_market'
 
 export type MapLocationResult = {
   center: MapLatLng | null
@@ -150,6 +150,18 @@ export async function resolveMapUserLocation(
   if (ip) return { center: ip, source: 'ip' }
 
   return { center: null, source: null }
+}
+
+/** First onboarding/profile market as a geocode query (state name preferred). */
+export function targetMarketGeocodeQuery(
+  markets: unknown,
+  resolveName: (code: string) => string | null,
+): string | null {
+  if (!Array.isArray(markets)) return null
+  const raw = markets.find((m): m is string => typeof m === 'string' && m.trim().length > 0)
+  if (!raw) return null
+  const trimmed = raw.trim()
+  return resolveName(trimmed) ?? trimmed
 }
 
 export type HeroLocation = {
