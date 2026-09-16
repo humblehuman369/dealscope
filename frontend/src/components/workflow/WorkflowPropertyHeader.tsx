@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PhotoLightbox } from '@/components/property-details/PhotoLightbox'
 import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { countLabel } from '@/lib/pluralize'
+import { buildSatelliteUrl } from '@/lib/streetView'
 import { fetchPropertyPhotos } from '@/services/photoService'
 
 export interface WorkflowPropertyHeaderProps {
@@ -24,6 +25,8 @@ export interface WorkflowPropertyHeaderProps {
   /** Same listing-photo array the flag-off gallery reads. */
   photos?: string[]
   propertyId?: string
+  latitude?: number
+  longitude?: number
 }
 
 function firstSentence(text: string): string {
@@ -110,6 +113,8 @@ export function WorkflowPropertyHeader({
   photoUrl,
   photos: photosFromGallery,
   propertyId,
+  latitude,
+  longitude,
 }: WorkflowPropertyHeaderProps) {
   const sharedPhotosKey = photosFromGallery ? photosFromGallery.join('\n') : null
   const [photos, setPhotos] = useState<string[]>(() => {
@@ -118,10 +123,23 @@ export function WorkflowPropertyHeader({
   })
   const [photosReady, setPhotosReady] = useState(!zpid || photosFromGallery != null)
   const [broken, setBroken] = useState(false)
+  const [satelliteBroken, setSatelliteBroken] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+
+  const satelliteSrc = useMemo(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+    if (!apiKey || latitude == null || longitude == null) return null
+    return buildSatelliteUrl({
+      apiKey,
+      latitude,
+      longitude,
+      size: '256x192',
+    })
+  }, [latitude, longitude])
 
   useEffect(() => {
     setBroken(false)
+    setSatelliteBroken(false)
     if (sharedPhotosKey != null) {
       setPhotos(sharedPhotosKey === '' ? [] : sharedPhotosKey.split('\n').filter(Boolean))
       setPhotosReady(true)
@@ -149,8 +167,11 @@ export function WorkflowPropertyHeader({
     }
   }, [zpid, photoUrl, propertyId, sharedPhotosKey])
 
-  const firstPhoto = !broken && photos[0] ? photos[0] : null
+  const listingPhoto = !broken && photos[0] ? photos[0] : null
+  const parcelPhoto = !satelliteBroken ? satelliteSrc : null
+  const firstPhoto = listingPhoto ?? parcelPhoto
   const showPlaceholder = photosReady && !firstPhoto
+  const isListingPhoto = Boolean(listingPhoto)
   const facts = formatFactsLine({ city, zip, beds, baths, sqft, yearBuilt })
   const status = formatStatusPill({ listingStatus, daysOnMarket, pipelineStage })
   const alt = useMemo(
@@ -182,11 +203,14 @@ export function WorkflowPropertyHeader({
             {firstPhoto ? (
               <img
                 src={firstPhoto}
-                alt={alt}
+                alt={isListingPhoto ? alt : `Satellite view of ${address}`}
                 className="w-full h-full"
                 style={{ objectFit: 'cover' }}
                 referrerPolicy="no-referrer"
-                onError={() => setBroken(true)}
+                onError={() => {
+                  if (listingPhoto) setBroken(true)
+                  else setSatelliteBroken(true)
+                }}
               />
             ) : (
               <div
@@ -197,7 +221,7 @@ export function WorkflowPropertyHeader({
               </div>
             )}
           </div>
-          {firstPhoto ? (
+          {isListingPhoto ? (
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}

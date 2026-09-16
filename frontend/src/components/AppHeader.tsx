@@ -1346,6 +1346,8 @@ export function AppHeader({
                   photoUrl={p?.photoUrl}
                   photos={p?.photos}
                   propertyId={p?.propertyId}
+                  latitude={p?.latitude}
+                  longitude={p?.longitude}
                 />
               ) : (
                 <PropertyAddressBar
