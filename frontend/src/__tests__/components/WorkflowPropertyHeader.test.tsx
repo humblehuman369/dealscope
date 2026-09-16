@@ -147,6 +147,7 @@ describe('WorkflowPropertyHeader', () => {
   })
 
   it('shows No photos instead of a broken image when the listing has none', async () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', '')
     fetchPhotos.mockResolvedValue({ status: 'failed', photos: [] })
     render(
       <WorkflowPropertyHeader
@@ -161,7 +162,28 @@ describe('WorkflowPropertyHeader', () => {
     expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
   })
 
-  it('uses a satellite thumbnail when the listing has no photos but has coordinates', () => {
+  it('uses Street View from the address when the listing has no photos', () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', 'KEY123')
+    render(
+      <WorkflowPropertyHeader
+        address="1499 Bandol Street"
+        city="Riviera Beach"
+        state="FL"
+        zip="33404"
+        listingStatus="OFF_MARKET"
+        photos={[]}
+      />,
+    )
+    expect(fetchPhotos).not.toHaveBeenCalled()
+    const img = screen.getByRole('img')
+    expect(img).toHaveAttribute('src', expect.stringContaining('maps.googleapis.com/maps/api/streetview'))
+    expect(img).toHaveAttribute('src', expect.stringContaining('location=1499%20Bandol%20Street'))
+    expect(img).toHaveAttribute('alt', 'Street view of 1499 Bandol Street')
+    expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('No photos')).not.toBeInTheDocument()
+  })
+
+  it('falls through to satellite when Street View errors and coordinates exist', () => {
     vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', 'KEY123')
     render(
       <WorkflowPropertyHeader
@@ -174,12 +196,13 @@ describe('WorkflowPropertyHeader', () => {
         longitude={-80.15}
       />,
     )
-    expect(fetchPhotos).not.toHaveBeenCalled()
     const img = screen.getByRole('img')
-    expect(img).toHaveAttribute('src', expect.stringContaining('maps.googleapis.com/maps/api/staticmap'))
-    expect(img).toHaveAttribute('src', expect.stringContaining('maptype=satellite'))
-    expect(img).toHaveAttribute('alt', 'Satellite view of 4370 Ruth Ln')
-    expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
-    expect(screen.queryByText('No photos')).not.toBeInTheDocument()
+    expect(img).toHaveAttribute('src', expect.stringContaining('streetview'))
+    fireEvent.error(img)
+    expect(screen.getByRole('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('maps.googleapis.com/maps/api/staticmap'),
+    )
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Satellite view of 4370 Ruth Ln')
   })
 })

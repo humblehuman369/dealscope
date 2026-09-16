@@ -5,12 +5,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { PhotoLightbox } from '@/components/property-details/PhotoLightbox'
 import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { countLabel } from '@/lib/pluralize'
-import { buildSatelliteUrl } from '@/lib/streetView'
+import { buildHeroPhotoCandidates } from '@/lib/streetView'
 import { fetchPropertyPhotos } from '@/services/photoService'
 
 export interface WorkflowPropertyHeaderProps {
   address: string
   city?: string
+  state?: string
   zip?: string
   beds?: number
   baths?: number
@@ -100,6 +101,7 @@ export function formatStatusPill(input: {
 export function WorkflowPropertyHeader({
   address,
   city,
+  state,
   zip,
   beds,
   baths,
@@ -122,24 +124,32 @@ export function WorkflowPropertyHeader({
     return photoUrl ? [photoUrl] : []
   })
   const [photosReady, setPhotosReady] = useState(!zpid || photosFromGallery != null)
-  const [broken, setBroken] = useState(false)
-  const [satelliteBroken, setSatelliteBroken] = useState(false)
+  const [photoIndex, setPhotoIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
-  const satelliteSrc = useMemo(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
-    if (!apiKey || latitude == null || longitude == null) return null
-    return buildSatelliteUrl({
-      apiKey,
-      latitude,
-      longitude,
-      size: '256x192',
-    })
-  }, [latitude, longitude])
+  const locationQuery = [address, city, state, zip].filter(Boolean).join(', ')
+  const candidates = useMemo(
+    () =>
+      buildHeroPhotoCandidates({
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+        listingPhoto: photos[0] ?? photoUrl ?? null,
+        address: locationQuery,
+        latitude,
+        longitude,
+        size: '400x300',
+      }),
+    [photos, photoUrl, locationQuery, latitude, longitude],
+  )
+  const primaryCandidate = candidates[0] ?? null
+  const [prevPrimary, setPrevPrimary] = useState<string | null>(primaryCandidate)
+  if (prevPrimary !== primaryCandidate) {
+    setPrevPrimary(primaryCandidate)
+    setPhotoIndex(0)
+  }
+  const firstPhoto = candidates[photoIndex] ?? null
 
   useEffect(() => {
-    setBroken(false)
-    setSatelliteBroken(false)
+    setPhotoIndex(0)
     if (sharedPhotosKey != null) {
       setPhotos(sharedPhotosKey === '' ? [] : sharedPhotosKey.split('\n').filter(Boolean))
       setPhotosReady(true)
@@ -167,11 +177,9 @@ export function WorkflowPropertyHeader({
     }
   }, [zpid, photoUrl, propertyId, sharedPhotosKey])
 
-  const listingPhoto = !broken && photos[0] ? photos[0] : null
-  const parcelPhoto = !satelliteBroken ? satelliteSrc : null
-  const firstPhoto = listingPhoto ?? parcelPhoto
   const showPlaceholder = photosReady && !firstPhoto
-  const isListingPhoto = Boolean(listingPhoto)
+  const isListingPhoto = Boolean(firstPhoto && photos[0] && firstPhoto === photos[0])
+  const isGooglePhoto = Boolean(firstPhoto?.includes('maps.googleapis.com'))
   const facts = formatFactsLine({ city, zip, beds, baths, sqft, yearBuilt })
   const status = formatStatusPill({ listingStatus, daysOnMarket, pipelineStage })
   const alt = useMemo(
@@ -203,14 +211,17 @@ export function WorkflowPropertyHeader({
             {firstPhoto ? (
               <img
                 src={firstPhoto}
-                alt={isListingPhoto ? alt : `Satellite view of ${address}`}
+                alt={
+                  isListingPhoto
+                    ? alt
+                    : firstPhoto.includes('streetview')
+                      ? `Street view of ${address}`
+                      : `Satellite view of ${address}`
+                }
                 className="w-full h-full"
                 style={{ objectFit: 'cover' }}
-                referrerPolicy="no-referrer"
-                onError={() => {
-                  if (listingPhoto) setBroken(true)
-                  else setSatelliteBroken(true)
-                }}
+                referrerPolicy={isGooglePhoto ? undefined : 'no-referrer'}
+                onError={() => setPhotoIndex((index) => index + 1)}
               />
             ) : (
               <div

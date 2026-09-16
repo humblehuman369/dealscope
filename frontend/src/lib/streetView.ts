@@ -218,6 +218,45 @@ export function buildStreetViewUrl({
   return base.join('&')
 }
 
+/**
+ * Thumbnail cascade for redesign pages: listing photo, then Street View
+ * from the street address (works without lat/lng), then satellite.
+ */
+export function buildHeroPhotoCandidates({
+  apiKey,
+  listingPhoto,
+  address,
+  latitude,
+  longitude,
+  size = '400x300',
+}: {
+  apiKey: string
+  listingPhoto?: string | null
+  address?: string
+  latitude?: number
+  longitude?: number
+  size?: string
+}): string[] {
+  const urls: string[] = []
+  const listing = listingPhoto?.trim()
+  if (listing) {
+    urls.push(listing.startsWith('http://') ? listing.replace(/^http:\/\//, 'https://') : listing)
+  }
+  const street = buildStreetViewUrl({
+    apiKey,
+    size,
+    address,
+    latitude,
+    longitude,
+  })
+  if (street) urls.push(street)
+  if (latitude != null && longitude != null) {
+    const satellite = buildSatelliteUrl({ apiKey, latitude, longitude, size })
+    if (satellite) urls.push(satellite)
+  }
+  return urls
+}
+
 /** Overhead parcel tile. Exists for every lat/lng; used when listing photos are missing. */
 export function buildSatelliteUrl({
   apiKey,

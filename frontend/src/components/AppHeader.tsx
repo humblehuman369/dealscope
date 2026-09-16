@@ -1333,6 +1333,7 @@ export function AppHeader({
                 <WorkflowPropertyHeader
                   address={p?.address ?? addrParts.streetAddress}
                   city={barCity}
+                  state={barState}
                   zip={barZip}
                   beds={p?.beds}
                   baths={p?.baths}
