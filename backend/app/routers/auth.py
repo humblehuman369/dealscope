@@ -49,6 +49,8 @@ from app.schemas.auth import (
     UserLogin,
     UserRegister,
     UserResponse,
+    VerifyCodeRequest,
+    VerifyEmailResponse,
 )
 from app.schemas.plans import MagicLinkConsumeRequest, MagicLinkConsumeResponse
 from app.services.auth_service import AuthError, MFARequired, auth_service
@@ -252,7 +254,7 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
 async def register(body: UserRegister, request: Request, response: Response, db: DbSession):
     """Register a new user account. When verification is disabled, creates a session and returns user + tokens for auto-login."""
     try:
-        user, verification_token = await auth_service.register_user(
+        user, issued = await auth_service.register_user(
             db,
             email=body.email,
             password=body.password,
@@ -264,6 +266,8 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    verification_token, verification_code = issued if issued else (None, None)
 
     _ph_identify_and_capture(user, "user_registered", {"signup_method": "email"})
 
@@ -304,6 +308,7 @@ async def register(body: UserRegister, request: Request, response: Response, db:
                 to=user.email,
                 user_name=user.full_name or user.email,
                 verification_token=verification_token,
+                code=verification_code or "",
             )
             verification_email_sent = bool(send_result.get("success"))
             if not verification_email_sent:
@@ -1072,27 +1077,104 @@ async def get_me(user: CurrentUser, db: DbSession):
 # ------------------------------------------------------------------
 
 
-@router.post("/verify-email", response_model=AuthMessage)
-async def verify_email(body: EmailVerification, request: Request, db: DbSession):
+@router.post("/verify-email", response_model=VerifyEmailResponse)
+async def verify_email(
+    body: EmailVerification,
+    request: Request,
+    response: Response,
+    db: DbSession,
+    next: str | None = None,
+):
+    redirect = _safe_next_path(next) or "/onboarding"
     try:
-        user = await auth_service.verify_email(db, body.token, ip_address=_client_ip(request))
+        user, session_obj, jwt_token = await auth_service.verify_email(
+            db,
+            body.token,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
+        )
+        cookie_fields = _snapshot_session_cookies(session_obj) if session_obj is not None else None
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    # Send welcome email
     try:
         await email_service.send_welcome_email(to=user.email, user_name=user.full_name or user.email)
     except Exception:
         pass
-
     if posthog_client is not None:
         try:
             posthog_client.capture(distinct_id=str(user.id), event="email_verified")
         except Exception:
             pass
 
-    return AuthMessage(message="Email verified successfully")
+    if session_obj is None or jwt_token is None or cookie_fields is None:
+        return VerifyEmailResponse(
+            redirect=f"/login?{urlencode({'redirect': redirect, 'reason': 'mfa'})}",
+        )
+
+    session_token, refresh_token, expires_at = cookie_fields
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
+    _ph_identify_and_capture(user, "user_logged_in", {"login_method": "email_link"})
+    return VerifyEmailResponse(
+        redirect=redirect,
+        access_token=jwt_token,
+        refresh_token=refresh_token,
+    )
+
+
+@router.post("/verify-code", response_model=VerifyEmailResponse)
+async def verify_code(
+    body: VerifyCodeRequest,
+    request: Request,
+    response: Response,
+    db: DbSession,
+    next: str | None = None,
+):
+    """Sign in with the 6-digit code from the verification email.
+
+    Same cookies and payload as ``/verify-email``. Never reveals whether
+    the email exists.
+    """
+    redirect = _safe_next_path(next) or "/onboarding"
+    try:
+        user, session_obj, jwt_token = await auth_service.verify_code(
+            db,
+            body.email,
+            body.code,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
+        )
+        cookie_fields = _snapshot_session_cookies(session_obj) if session_obj is not None else None
+        await db.commit()
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    try:
+        await email_service.send_welcome_email(to=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+    if posthog_client is not None:
+        try:
+            posthog_client.capture(distinct_id=str(user.id), event="email_verified")
+        except Exception:
+            pass
+
+    if session_obj is None or jwt_token is None or cookie_fields is None:
+        return VerifyEmailResponse(
+            redirect=f"/login?{urlencode({'redirect': redirect, 'reason': 'mfa'})}",
+        )
+
+    session_token, refresh_token, expires_at = cookie_fields
+    _set_auth_cookies(response, session_token, refresh_token, jwt_token, expires_at)
+    _ph_identify_and_capture(user, "user_logged_in", {"login_method": "email_code"})
+    return VerifyEmailResponse(
+        redirect=redirect,
+        access_token=jwt_token,
+        refresh_token=refresh_token,
+    )
 
 
 def _safe_next_path(candidate: str | None) -> str | None:
@@ -1156,12 +1238,13 @@ async def resend_verification(body: ResendVerificationRequest, db: DbSession):
     result = await auth_service.resend_verification_by_email(db, body.email)
     if result:
         await db.commit()
-        raw_token, user = result
+        raw_token, raw_code, user = result
         try:
             send_result = await email_service.send_verification_email(
                 to=user.email,
                 user_name=user.full_name or user.email,
                 verification_token=raw_token,
+                code=raw_code,
             )
             if not send_result.get("success"):
                 logger.error(

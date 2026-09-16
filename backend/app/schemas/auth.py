@@ -161,6 +161,30 @@ class EmailVerification(BaseModel):
     token: str
 
 
+class VerifyCodeRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=16)
+
+    @field_validator("code")
+    @classmethod
+    def digits_only(cls, v: str) -> str:
+        digits = "".join(c for c in v if c.isdigit())
+        if len(digits) != 6:
+            raise ValueError("Code must be 6 digits")
+        return digits
+
+
+class VerifyEmailResponse(BaseModel):
+    """Link and code verification both sign the user in."""
+
+    message: str = "Email verified successfully"
+    success: bool = True
+    requires_verification: bool = False
+    redirect: str
+    access_token: str | None = None
+    refresh_token: str | None = None
+
+
 class ResendVerificationRequest(BaseModel):
     email: EmailStr
 

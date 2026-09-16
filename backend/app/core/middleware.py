@@ -66,6 +66,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 settings.AUTH_RATE_LIMIT_PERIOD,
             ),
             "/api/v1/auth/reset-password": (settings.AUTH_RATE_LIMIT_REQUESTS, settings.AUTH_RATE_LIMIT_PERIOD),
+            "/api/v1/auth/verify-code": (10, 60),
             "/api/v1/auth/refresh": (settings.AUTH_RATE_LIMIT_REQUESTS * 4, settings.AUTH_RATE_LIMIT_PERIOD),
             "/api/v1/properties/search": (30, 60),
             # Search & Discover pans trigger a fetch per idle. 60/min lets a
@@ -204,6 +205,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         "/api/v1/auth/register",
         "/api/v1/auth/refresh",
         "/api/v1/auth/magic-link/consume",
+        "/api/v1/auth/verify-email",
+        "/api/v1/auth/verify-code",
         "/api/v1/plans/claim",
     )
 

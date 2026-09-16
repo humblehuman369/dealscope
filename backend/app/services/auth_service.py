@@ -93,10 +93,10 @@ class AuthService:
         ip_address: str | None = None,
         user_agent: str | None = None,
         first_touch: dict | None = None,
-    ) -> tuple[User, str | None]:
+    ) -> tuple[User, tuple[str, str] | None]:
         """Register a new user.
 
-        Returns ``(user, raw_verification_token_or_None)``.
+        Returns ``(user, (raw_token, raw_code) | None)``.
         Raises ``AuthError`` on duplicate email.
 
         All mutations (user, profile, role, token, audit) are performed
@@ -131,10 +131,10 @@ class AuthService:
             if member_role:
                 await role_repo.assign_role(db, user.id, member_role.id)
 
-            # Verification token
-            raw_token: str | None = None
+            # Verification token + 6-digit code (same row, same expiry, one use)
+            issued: tuple[str, str] | None = None
             if requires_verification:
-                raw_token = await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
+                issued = await token_service.create_email_verification(db, user.id)
 
             # Audit
             await audit_repo.log(
@@ -147,7 +147,7 @@ class AuthService:
             )
 
         logger.info("User registered: %s", email)
-        return user, raw_token
+        return user, issued
 
     async def get_or_create_user_from_google(
         self,
@@ -405,39 +405,14 @@ class AuthService:
         if not user.is_active:
             raise AuthError("Account is deactivated", status_code=403)
 
-        if not user.is_verified:
-            await user_repo.update(db, user.id, is_verified=True)
-            await audit_repo.log(
-                db,
-                action=AuditAction.EMAIL_VERIFICATION,
-                user_id=user.id,
-                ip_address=ip_address,
-                metadata={"via": "magic_link"},
-            )
-
-        if user.mfa_enabled and user.mfa_secret:
-            logger.info("Magic link verified MFA account without session: %s", user.email)
-            return user, None, None
-
-        await user_repo.reset_failed_logins(db, user.id)
-        await user_repo.update(db, user.id, last_login=datetime.now(UTC))
-        session_obj, jwt_token = await session_service.create_session(
+        return await self._mark_verified_and_sign_in(
             db,
-            user.id,
+            user,
+            via="magic_link",
             ip_address=ip_address,
             user_agent=user_agent,
             client_type=client_type,
         )
-        await audit_repo.log(
-            db,
-            action=AuditAction.LOGIN,
-            user_id=user.id,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            metadata={"session_id": str(session_obj.id), "method": "magic_link"},
-        )
-        logger.info("User signed in via magic link: %s", user.email)
-        return user, session_obj, jwt_token
 
     # ------------------------------------------------------------------
     # MFA
@@ -574,50 +549,154 @@ class AuthService:
         raw_token: str,
         *,
         ip_address: str | None = None,
-    ) -> User:
+        user_agent: str | None = None,
+        client_type: str | None = None,
+    ) -> tuple[User, UserSession | None, str | None]:
+        """Validate the emailed link, mark verified, and sign the user in.
+
+        Same session rules as the 6-digit code path. MFA accounts are
+        verified but not given a session.
+        """
         user_id = await token_service.validate_verification_token(db, raw_token, TokenType.EMAIL_VERIFICATION)
         if user_id is None:
             raise AuthError("Invalid or expired verification token", status_code=400)
+        return await self._complete_email_verification(
+            db,
+            user_id,
+            via="email_link",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            client_type=client_type,
+        )
 
-        await user_repo.update(db, user_id, is_verified=True)
-        user = await user_repo.get_by_id(db, user_id)
+    async def verify_code(
+        self,
+        db: AsyncSession,
+        email: str,
+        raw_code: str,
+        *,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        client_type: str | None = None,
+    ) -> tuple[User, UserSession | None, str | None]:
+        """Validate the 6-digit code for ``email`` and sign the user in.
+
+        Always raises the same error as a bad link — never whether the
+        email exists.
+        """
+        bad = AuthError("Invalid or expired verification token", status_code=400)
+        user = await user_repo.get_by_email(db, email.lower().strip())
+        if user is None:
+            raise bad
+        user_id = await token_service.validate_verification_code(
+            db, user.id, raw_code, TokenType.EMAIL_VERIFICATION
+        )
+        if user_id is None:
+            raise bad
+        return await self._complete_email_verification(
+            db,
+            user_id,
+            via="email_code",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            client_type=client_type,
+        )
+
+    async def _complete_email_verification(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        *,
+        via: str,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        client_type: str | None = None,
+    ) -> tuple[User, UserSession | None, str | None]:
+        user = await user_repo.get_by_id(db, user_id, load_roles=True)
         if user is None:
             raise AuthError("User not found", status_code=404)
+        if not user.is_active:
+            raise AuthError("Account is deactivated", status_code=403)
+        return await self._mark_verified_and_sign_in(
+            db,
+            user,
+            via=via,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            client_type=client_type,
+        )
 
+    async def _mark_verified_and_sign_in(
+        self,
+        db: AsyncSession,
+        user: User,
+        *,
+        via: str,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        client_type: str | None = None,
+    ) -> tuple[User, UserSession | None, str | None]:
+        if not user.is_verified:
+            await user_repo.update(db, user.id, is_verified=True)
+            await audit_repo.log(
+                db,
+                action=AuditAction.EMAIL_VERIFICATION,
+                user_id=user.id,
+                ip_address=ip_address,
+                metadata={"via": via},
+            )
+            user = await user_repo.get_by_id(db, user.id, load_roles=True) or user
+
+        if user.mfa_enabled and user.mfa_secret:
+            logger.info("Email verification for MFA account without session: %s", user.email)
+            return user, None, None
+
+        await user_repo.reset_failed_logins(db, user.id)
+        await user_repo.update(db, user.id, last_login=datetime.now(UTC))
+        session_obj, jwt_token = await session_service.create_session(
+            db,
+            user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            client_type=client_type,
+        )
         await audit_repo.log(
             db,
-            action=AuditAction.EMAIL_VERIFICATION,
-            user_id=user_id,
+            action=AuditAction.LOGIN,
+            user_id=user.id,
             ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"session_id": str(session_obj.id), "method": via},
         )
-        return user
+        logger.info("User signed in via %s: %s", via, user.email)
+        return user, session_obj, jwt_token
 
     async def resend_verification(
         self,
         db: AsyncSession,
         user_id: uuid.UUID,
-    ) -> str | None:
+    ) -> tuple[str, str] | None:
         user = await user_repo.get_by_id(db, user_id)
         if user is None or user.is_verified:
             return None
-        return await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
+        return await token_service.create_email_verification(db, user.id)
 
     async def resend_verification_by_email(
         self,
         db: AsyncSession,
         email: str,
-    ) -> tuple[str, User] | None:
-        """Look up user by email and create a new verification token.
+    ) -> tuple[str, str, User] | None:
+        """Look up user by email and create a new verification token + code.
 
-        Returns ``(raw_token, user)`` or ``None`` if user doesn't exist
-        or is already verified.  Callers should always return a generic
+        Returns ``(raw_token, raw_code, user)`` or ``None`` if user doesn't
+        exist or is already verified.  Callers should always return a generic
         success message to prevent email enumeration.
         """
         user = await user_repo.get_by_email(db, email.lower().strip())
         if user is None or user.is_verified:
             return None
-        raw_token = await token_service.create_verification_token(db, user.id, TokenType.EMAIL_VERIFICATION)
-        return raw_token, user
+        raw_token, raw_code = await token_service.create_email_verification(db, user.id)
+        return raw_token, raw_code, user
 
     # ------------------------------------------------------------------
     # Password reset

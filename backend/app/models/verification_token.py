@@ -11,7 +11,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Index, String
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -58,6 +58,10 @@ class VerificationToken(Base):
         nullable=False,
         index=True,
     )
+    # SHA-256 of the 6-digit email code. Nullable so password-reset / MFA
+    # rows stay unchanged. Looked up per user, never globally (codes collide).
+    code_hash: Mapped[str | None] = mapped_column(String(64))
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     token_type: Mapped[str] = mapped_column(String(30), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
