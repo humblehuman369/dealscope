@@ -264,15 +264,17 @@ Work empty state (new): title "No deal yet"; body "This house is not in your pip
 
 | Element | Size and weight | Font |
 |---|---|---|
-| Page title (address) | 24px, 600 | UI |
-| Verdict and plan sentence | 22px desktop, 19px phone, 500, line-height 1.4 | UI |
-| Three-number strip | 22px, 700 | Space Mono |
-| Four-number strip on Plan | 20px, 700 | Space Mono |
-| Card titles | 16px, 600 | UI |
-| Body | 15px, 400, line-height 1.5 | UI |
-| Secondary lines | 14px | UI |
-| Labels, tags, captions | 13px minimum | UI, tabular numerals |
-| Money and rates anywhere else | inherit size | Space Mono |
+| Page title (address) | 24px, 600 | DM Sans (heading) |
+| Verdict and plan sentence | 21px desktop, 18px phone, 500, line-height 1.4 | Inter |
+| Three-number strip | 22px, 600 | Inter, tabular numerals |
+| Four-number strip on Plan | 20px, 600 | Inter, tabular numerals |
+| Card titles | 16px, 600 | DM Sans (heading) |
+| Body | 14px, 400, line-height 1.5 | Inter |
+| Secondary lines | 13px | Inter |
+| Labels, tags, captions | 13px minimum | Inter, tabular numerals |
+| Money and rates anywhere else | inherit size | Inter, tabular numerals |
+
+Fonts decided Sept 16: Inter for all UI and numbers on v1, DM Sans on headings only, Space Mono not used on v1. Sizes and weights reduced so rendered height matches the DM Sans and Space Mono version.
 
 Shapes: buttons are full pills; tags, status chips, and source chips have 6px corners; path steps and people chips 8px; cards 16px; nested tiles 12px. Colored tags use colored text on the neutral border. One glowing card per screen (the Verdict card on Discovery, Your plan on Plan), nothing else glows.
 

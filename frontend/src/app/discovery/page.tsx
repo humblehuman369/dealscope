@@ -124,6 +124,7 @@ import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
 import { rememberPropertyPath } from '@/lib/checkoutReturn'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
+import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import {
   formatSellerRead,
   formatVerdictSentence,
@@ -2003,7 +2004,7 @@ function VerdictContent() {
           <span
             className={
               workflowV1Layout
-                ? 'text-[13px] sm:text-[14px] font-bold tracking-wide'
+                ? 'text-[13px] font-semibold tracking-wide'
                 : 'text-[12px] sm:text-[14px] font-bold uppercase tracking-wide'
             }
           >
@@ -2097,7 +2098,7 @@ function VerdictContent() {
           }`}
           style={
             workflowV1Layout
-              ? undefined
+              ? { fontFamily: V1_UI_FONT }
               : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
           }
         >

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode 
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
 import { PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
 import { PHASE_15_COPY } from '@/lib/phase15Copy'
+import { V1_NUM } from '@/components/workflow/v1-style'
 
 export interface PlanViewProps {
   model: PlanViewModel
@@ -33,10 +34,7 @@ const HERO: CSSProperties = {
   boxShadow: 'var(--shadow-card)',
 }
 
-const NUM: CSSProperties = {
-  fontFamily: 'var(--font-space-mono), "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontVariantNumeric: 'tabular-nums',
-}
+const NUM = V1_NUM
 
 function WhyToggle({ id, label, text }: { id: string; label: string; text: string }) {
   const [open, setOpen] = useState(false)
@@ -115,14 +113,14 @@ export function PlanView({
           <button
             type="button"
             onClick={onTune}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 px-4 text-[13px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
           >
             Tune the numbers
           </button>
         </div>
         <p
-          className="m-0 mb-5 text-[19px] sm:text-[22px] font-medium leading-[1.4]"
+          className="m-0 mb-5 text-[18px] sm:text-[21px] font-medium leading-[1.4]"
           style={{ color: 'var(--text-heading)' }}
         >
           {model.sentence}
@@ -142,7 +140,7 @@ export function PlanView({
               style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
               <div
-                className="text-[20px] font-bold leading-tight"
+                className="text-[20px] font-semibold leading-tight"
                 style={{
                   ...NUM,
                   color:
@@ -160,7 +158,7 @@ export function PlanView({
           ))}
         </div>
         <div className="mt-4 flex flex-col gap-2">
-          <p className="m-0 text-[14px]" style={{ color: 'var(--text-secondary)' }}>
+          <p className="m-0 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
             {model.gapLine}
           </p>
           <WhyToggle id={whyGapsId} label="Why two gaps?" text={PLAN_WHY_TWO_GAPS} />
@@ -177,13 +175,13 @@ export function PlanView({
           </svg>
           Guide
         </h2>
-        <p className="m-0 mb-4 text-[15px] leading-relaxed" style={{ color: 'var(--text-heading)' }}>
+        <p className="m-0 mb-4 text-[14px] leading-[1.5]" style={{ color: 'var(--text-heading)' }}>
           {model.guideText}
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[13px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
             onClick={() => {
               if (model.guideApplyKind === 'start') onStartDeal()
@@ -223,7 +221,7 @@ export function PlanView({
                 outlineColor: 'var(--accent-sky)',
               }}
             >
-              <div className="text-[14px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--text-heading)' }}>
                 {option.title}
               </div>
               <div className="mt-1 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>
@@ -237,7 +235,7 @@ export function PlanView({
               </div>
               {option.isBest ? (
                 <span
-                  className="inline-block mt-2 text-[13px] font-semibold"
+                  className="inline-block mt-2 text-[13px] font-medium"
                   style={{
                     color: 'var(--accent-sky)',
                     border: '1px solid var(--border-default)',
@@ -262,7 +260,7 @@ export function PlanView({
           Against your targets
         </h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-[14px] border-collapse">
+          <table className="w-full text-[13px] border-collapse">
             <thead>
               <tr style={{ color: 'var(--text-secondary)' }}>
                 <th className="text-left font-medium py-2 pr-3">Measure</th>
@@ -307,7 +305,7 @@ export function PlanView({
               className="rounded-xl px-3 py-3"
               style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
-              <div className="text-[20px] font-bold leading-tight" style={{ ...NUM, color: 'var(--text-heading)' }}>
+              <div className="text-[20px] font-semibold leading-tight" style={{ ...NUM, color: 'var(--text-heading)' }}>
                 {cell.value}
               </div>
               <div className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
@@ -325,7 +323,7 @@ export function PlanView({
         <h2 className="m-0 mb-3 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
           Next moves
         </h2>
-        <ol className="m-0 mb-4 pl-5 text-[15px] leading-relaxed" style={{ color: 'var(--text-body)' }}>
+        <ol className="m-0 mb-4 pl-5 text-[14px] leading-[1.5]" style={{ color: 'var(--text-body)' }}>
           {model.nextMoves.map((line) => (
             <li key={line} className="mb-2">
               {line}
@@ -337,7 +335,7 @@ export function PlanView({
             type="button"
             onClick={onStartDeal}
             disabled={startingDeal}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >
             {startingDeal ? PHASE_15_COPY.startingDeal : 'Start working this deal'}
@@ -350,7 +348,7 @@ export function PlanView({
               aria-expanded={shareOpen}
               aria-controls={shareMenuId}
               onClick={() => setShareOpen((prev) => !prev)}
-              className="inline-flex items-center justify-center min-h-11 px-5 text-[15px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
             >
               Share
@@ -382,7 +380,7 @@ export function PlanView({
                       shareBtnRef.current?.focus()
                       action?.()
                     }}
-                    className="block w-full text-left min-h-11 px-4 text-[14px] bg-transparent border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="block w-full text-left min-h-11 px-4 text-[13px] bg-transparent border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ color: 'var(--text-heading)', outlineColor: 'var(--accent-sky)' }}
                   >
                     {label}

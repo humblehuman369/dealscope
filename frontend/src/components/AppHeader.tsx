@@ -50,6 +50,7 @@ import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor } from '@/lib/env'
 import { PathStepper } from '@/components/workflow/PathStepper'
+import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
 import {
   parseWorkflowV1View,
@@ -1247,10 +1248,12 @@ export function AppHeader({
                       )
                     : null
                 const tabClassName = `flex-1 min-w-0 min-h-11 px-2 sm:px-4 font-medium transition-colors whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                  workflowV1Layout ? 'text-[13px] sm:text-base' : 'text-xs sm:text-base'
+                  workflowV1Layout ? 'text-[13px] sm:text-[15px]' : 'text-xs sm:text-base'
                 }`
                 const tabStyle = {
-                  fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
+                  fontFamily: workflowV1Layout
+                    ? V1_UI_FONT
+                    : "var(--font-dm-sans), 'DM Sans', sans-serif",
                   color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',
                   borderBottom: isActive
                     ? `2px solid ${colors.brand.teal}`

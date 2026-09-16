@@ -85,7 +85,7 @@ export function TuneDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-full border-0 bg-transparent cursor-pointer text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-full border-0 bg-transparent cursor-pointer text-[14px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: 'var(--text-secondary)', outlineColor: 'var(--accent-sky)' }}
             aria-label="Close"
           >
@@ -106,7 +106,7 @@ export function TuneDrawer({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 px-4 text-[13px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
           >
             {resetLabel}
@@ -117,7 +117,7 @@ export function TuneDrawer({
               if (onDone) onDone()
               else onClose()
             }}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center justify-center min-h-11 px-5 text-[13px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
           >
             Done
