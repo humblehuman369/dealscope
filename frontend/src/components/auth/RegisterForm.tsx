@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -13,7 +13,10 @@ import {
   setLastKnownUser,
   setLastTokenRefresh,
 } from '@/hooks/useSession'
-import { setMemoryToken } from '@/lib/api-client'
+import { useAuthWaiting } from '@/hooks/useAuthWaiting'
+import { VerifyCodeInput } from '@/components/auth/VerifyCodeInput'
+import { authApi, setMemoryToken } from '@/lib/api-client'
+import { applyVerifySession, clearAuthWaiting } from '@/lib/authWaiting'
 import { trackEvent } from '@/lib/eventTracking'
 
 interface RegisterFormProps {
@@ -42,6 +45,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [requiresVerification, setRequiresVerification] = useState(true)
+  const [codePending, setCodePending] = useState(false)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [codeFailures, setCodeFailures] = useState(0)
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const registerMutation = useRegister()
   const queryClient = useQueryClient()
   const router = useRouter()
@@ -55,6 +62,20 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
   })
+
+  const watchedEmail = watch('email')
+  const codeLocked = codeFailures >= 5
+
+  const finishVerified = useCallback(() => {
+    clearAuthWaiting()
+    if (onSuccess) {
+      onSuccess()
+    } else {
+      router.replace('/onboarding')
+    }
+  }, [onSuccess, router])
+
+  useAuthWaiting(finishVerified, success && requiresVerification)
 
   const password = watch('password')
   const strength = password ? getPasswordStrength(password) : null
@@ -119,6 +140,73 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             ? "We've sent a verification link to your email address. Please verify your account to sign in."
             : 'Your account has been created successfully. You can now sign in.'}
         </p>
+        {requiresVerification && (
+          <VerifyCodeInput
+            key={codeFailures}
+            pending={codePending}
+            error={
+              codeLocked
+                ? 'Too many tries. Request a new link below.'
+                : codeError
+            }
+            locked={codeLocked}
+            onComplete={async (code) => {
+              setCodePending(true)
+              setCodeError(null)
+              try {
+                const result = await authApi.verifyCode(watchedEmail, code)
+                await applyVerifySession(result, queryClient)
+                trackEvent('email_verified', { method: 'code' })
+                finishVerified()
+              } catch {
+                const next = codeFailures + 1
+                setCodeFailures(next)
+                setCodeError(
+                  next >= 5
+                    ? 'Too many tries. Request a new link below.'
+                    : 'That code did not work. Check the email and try again.',
+                )
+              } finally {
+                setCodePending(false)
+              }
+            }}
+          />
+        )}
+        {requiresVerification && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (resendStatus === 'sending') return
+              setResendStatus('sending')
+              try {
+                await authApi.resendVerification(watchedEmail)
+                setCodeFailures(0)
+                setCodeError(null)
+                setResendStatus('sent')
+              } catch {
+                setResendStatus('error')
+              }
+            }}
+            disabled={resendStatus === 'sending'}
+            className="text-sm font-medium"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: resendStatus === 'sending' ? 'default' : 'pointer',
+              color:
+                resendStatus === 'sent'
+                  ? 'var(--status-positive)'
+                  : resendStatus === 'error'
+                    ? 'var(--status-negative)'
+                    : 'var(--accent-sky)',
+            }}
+          >
+            {resendStatus === 'idle' && "Didn't get the email? Resend"}
+            {resendStatus === 'sending' && 'Sending…'}
+            {resendStatus === 'sent' && 'Verification email resent'}
+            {resendStatus === 'error' && "Couldn't resend — try again"}
+          </button>
+        )}
         {onSwitchToLogin && (
           <button
             onClick={onSwitchToLogin}

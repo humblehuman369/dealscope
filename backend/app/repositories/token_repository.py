@@ -38,6 +38,34 @@ class TokenRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_unused_for_user(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        token_type: str,
+    ) -> VerificationToken | None:
+        """Latest unused, unexpired token of this type for the user."""
+        result = await db.execute(
+            select(VerificationToken)
+            .where(
+                VerificationToken.user_id == user_id,
+                VerificationToken.token_type == token_type,
+                VerificationToken.used_at.is_(None),
+                VerificationToken.expires_at > datetime.now(UTC),
+            )
+            .order_by(VerificationToken.created_at.desc())
+        )
+        return result.scalars().first()
+
+    async def increment_attempts(self, db: AsyncSession, token_id: uuid.UUID) -> int:
+        result = await db.execute(
+            update(VerificationToken)
+            .where(VerificationToken.id == token_id)
+            .values(attempt_count=VerificationToken.attempt_count + 1)
+            .returning(VerificationToken.attempt_count)
+        )
+        return int(result.scalar_one())
+
     async def mark_used(self, db: AsyncSession, token_id: uuid.UUID) -> None:
         await db.execute(
             update(VerificationToken).where(VerificationToken.id == token_id).values(used_at=datetime.now(UTC))

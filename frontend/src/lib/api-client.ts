@@ -606,12 +606,23 @@ export const authApi = {
       body: { current_password: currentPassword, new_password: newPassword },
     }),
 
-  verifyEmail: (token: string) =>
-    apiRequest<{ message: string }>('/api/v1/auth/verify-email', {
+  verifyEmail: (token: string, next?: string | null) => {
+    const query = next ? `?${new URLSearchParams({ next }).toString()}` : ''
+    return apiRequest<VerifyEmailResponse>(`/api/v1/auth/verify-email${query}`, {
       method: 'POST',
       body: { token },
       skipAuth: true,
-    }),
+    })
+  },
+
+  verifyCode: (email: string, code: string, next?: string | null) => {
+    const query = next ? `?${new URLSearchParams({ next }).toString()}` : ''
+    return apiRequest<VerifyEmailResponse>(`/api/v1/auth/verify-code${query}`, {
+      method: 'POST',
+      body: { email, code },
+      skipAuth: true,
+    })
+  },
 
   resendVerification: (email: string) =>
     apiRequest<{ message: string }>('/api/v1/auth/resend-verification', {
@@ -733,6 +744,14 @@ export interface RegisterResponse {
   expires_in?: number
   /** Client-generated Meta event_id shared by the pixel and CAPI. */
   event_id?: string
+}
+
+export interface VerifyEmailResponse {
+  message: string
+  success?: boolean
+  redirect: string
+  access_token?: string | null
+  refresh_token?: string | null
 }
 
 export interface SessionInfo {

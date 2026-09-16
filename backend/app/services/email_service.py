@@ -381,19 +381,46 @@ class EmailService:
     # Transactional Emails
     # ===========================================
 
+    @staticmethod
+    def verification_expiry_phrase() -> str:
+        """Human expiry for the verification email. One source: the setting."""
+        hours = settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS
+        if hours == 1:
+            return "1 hour"
+        if hours < 1:
+            minutes = max(1, int(hours * 60))
+            return f"{minutes} minutes"
+        return f"{hours} hours"
+
+    @staticmethod
+    def format_email_code(code: str) -> str:
+        digits = "".join(c for c in code if c.isdigit())
+        if len(digits) == 6:
+            return f"{digits[:3]} {digits[3:]}"
+        return code
+
     async def send_verification_email(
         self,
         to: str,
         user_name: str,
         verification_token: str,
+        code: str,
     ) -> dict[str, Any]:
         """Send email verification email."""
         verification_url = f"{self.frontend_url}/verify-email?token={verification_token}"
+        expiry = self.verification_expiry_phrase()
+        formatted_code = html_lib.escape(self.format_email_code(code))
 
         content = f'''
 <h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
-    Verify your email address
+    Your sign-in code
 </h1>
+<p style="font-size: 36px; font-weight: 800; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; letter-spacing: 0.16em; color: {self.TXT_HEADING}; margin: 0 0 8px 0; font-variant-numeric: tabular-nums;">
+    {formatted_code}
+</p>
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Type this code in the window where you asked to sign in. It works for {expiry}.
+</p>
 <p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
