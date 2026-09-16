@@ -2,9 +2,16 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { api, ApiError } from '@/lib/api-client'
+import { api, ApiError, type UserResponse } from '@/lib/api-client'
 import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import type { PropertyResponse } from '@dealscope/shared'
+import {
+  BILLING_USAGE_QUERY_KEY,
+  isStarterQuotaExhausted,
+  quotaExceededApiError,
+  type BillingUsage,
+} from '@/lib/analysisQuota'
+import { SESSION_QUERY_KEY } from '@/hooks/useSession'
 
 /**
  * Extended PropertyResponse that allows dynamic field access for backward
@@ -101,6 +108,11 @@ export function usePropertyData() {
       return queryClient.ensureQueryData({
         queryKey: ['property-search', canonicalAddress],
         queryFn: async () => {
+          const usage = queryClient.getQueryData<BillingUsage>(BILLING_USAGE_QUERY_KEY)
+          const user = queryClient.getQueryData<UserResponse | null>(SESSION_QUERY_KEY)
+          if (isStarterQuotaExhausted(usage, user ?? undefined) && usage) {
+            throw quotaExceededApiError(usage)
+          }
           const body: Record<string, string> = { address: canonicalAddress }
           if (opts?.city) body.city = opts.city
           if (opts?.state) body.state = opts.state
@@ -111,7 +123,10 @@ export function usePropertyData() {
         },
         staleTime: PROPERTY_STALE_TIME,
         retry: (failureCount, error) => {
-          if (error instanceof ApiError && (error.status === 403 || error.status === 401)) {
+          if (
+            error instanceof ApiError &&
+            (error.status === 403 || error.status === 401 || error.status === 402)
+          ) {
             return false
           }
           return failureCount < 2

@@ -23,6 +23,7 @@ interface UsageData {
   properties_saved: number
   properties_limit: number
   properties_remaining: number
+  usage_reset_date?: string | null
   days_until_reset?: number
 }
 
@@ -104,8 +105,11 @@ export function UsageBar() {
   const s = STATE_STYLES[state]
 
   const remaining = usage.searches_remaining
-  const ctaText =
-    state === 'critical'
+  const wallShowing =
+    Boolean(pathname?.startsWith('/discovery')) && usage.searches_used >= usage.searches_limit
+  const ctaText = wallShowing
+    ? 'Limit reached'
+    : state === 'critical'
       ? 'Limit reached — Upgrade now'
       : state === 'warning'
         ? `${remaining} analysis${remaining !== 1 ? 'es' : ''} left — Upgrade →`
@@ -203,23 +207,40 @@ export function UsageBar() {
         )}
       </div>
 
-      {/* Upgrade CTA */}
-      <Link
-        href="/billing"
-        className="flex items-center justify-center gap-1.5 w-full md:w-auto flex-shrink-0 md:ml-auto whitespace-nowrap transition-opacity hover:opacity-90"
-        style={{
-          padding: '0.45rem 1rem',
-          background: s.ctaBg,
-          border: `1px solid ${s.ctaBorder}`,
-          borderRadius: 8,
-          fontSize: '0.72rem',
-          fontWeight: state === 'critical' ? 700 : 600,
-          color: s.ctaColor,
-          textDecoration: 'none',
-        }}
-      >
-        {ctaText}
-      </Link>
+      {/* Upgrade CTA — plain label while the Discovery wall already owns the trial button */}
+      {wallShowing ? (
+        <span
+          className="flex items-center justify-center gap-1.5 w-full md:w-auto flex-shrink-0 md:ml-auto whitespace-nowrap"
+          style={{
+            padding: '0.45rem 1rem',
+            background: s.ctaBg,
+            border: `1px solid ${s.ctaBorder}`,
+            borderRadius: 8,
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            color: s.ctaColor,
+          }}
+        >
+          {ctaText}
+        </span>
+      ) : (
+        <Link
+          href="/billing"
+          className="flex items-center justify-center gap-1.5 w-full md:w-auto flex-shrink-0 md:ml-auto whitespace-nowrap transition-opacity hover:opacity-90"
+          style={{
+            padding: '0.45rem 1rem',
+            background: s.ctaBg,
+            border: `1px solid ${s.ctaBorder}`,
+            borderRadius: 8,
+            fontSize: '0.72rem',
+            fontWeight: state === 'critical' ? 700 : 600,
+            color: s.ctaColor,
+            textDecoration: 'none',
+          }}
+        >
+          {ctaText}
+        </Link>
+      )}
     </div>
   )
 }

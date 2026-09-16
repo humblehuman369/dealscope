@@ -122,6 +122,45 @@ describe('API Client', () => {
       await expect(apiRequest('/api/v1/test')).rejects.toThrow('Server error')
     })
 
+    it('surfaces 402 QUOTA_EXCEEDED fields from the canonical error envelope', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 402,
+        text: async () =>
+          JSON.stringify({
+            error: {
+              code: 'QUOTA_EXCEEDED',
+              message: "You've used all 3 free analyses this month. Upgrade to Pro for unlimited.",
+              details: {
+                plan: 'starter',
+                limit: 3,
+                used: 3,
+                resets_at: '2026-10-01T00:00:00+00:00',
+              },
+            },
+            detail: {
+              code: 'QUOTA_EXCEEDED',
+              plan: 'starter',
+              limit: 3,
+              used: 3,
+              resets_at: '2026-10-01T00:00:00+00:00',
+            },
+          }),
+      })
+
+      const { apiRequest, ApiError } = await import('@/lib/api-client')
+      await expect(apiRequest('/api/v1/properties/search')).rejects.toSatisfy((err: unknown) => {
+        expect(err).toBeInstanceOf(ApiError)
+        const e = err as InstanceType<typeof ApiError>
+        expect(e.status).toBe(402)
+        expect(e.code).toBe('QUOTA_EXCEEDED')
+        expect(e.detail?.plan).toBe('starter')
+        expect(e.detail?.used).toBe(3)
+        expect(e.detail?.resets_at).toBe('2026-10-01T00:00:00+00:00')
+        return true
+      })
+    })
+
     it('surfaces anonymous quota fields from the canonical error envelope', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,

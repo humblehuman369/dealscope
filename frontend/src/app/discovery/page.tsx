@@ -55,11 +55,22 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
-import { SPEED_CLAIM } from '@/lib/claims'
+import { SPEED_CLAIM, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 import { VerdictEmailCapture } from '@/components/verdict/VerdictEmailCapture'
 import { newMetaEventId } from '@/lib/metaPixel'
 import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
 import { DiscoveryQuotaGate } from '@/components/discovery/DiscoveryQuotaGate'
+import { UpgradeWall } from '@/components/discovery/UpgradeWall'
+import { useStartProTrial } from '@/hooks/useStartProTrial'
+import {
+  BILLING_USAGE_QUERY_KEY,
+  isQuotaExceededError,
+  isStarterQuotaExhausted,
+  nextResetIso,
+  quotaDetailFromError,
+  type BillingUsage,
+  type QuotaExceededDetail,
+} from '@/lib/analysisQuota'
 import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
 import {
   discoveryQueriesNeedAuthRefetch,
@@ -414,9 +425,17 @@ function VerdictContent() {
   const [loadTimedOut, setLoadTimedOut] = useState(false)
   // Incremented by the timeout screen's "Try Again" to re-run the fetch effect.
   const [retryNonce, setRetryNonce] = useState(0)
-  // Set when the backend rejects the search with a usage-limit 403 —
+  // Set when the backend rejects the search with a usage-limit 402/403 —
   // 'free' = monthly Starter cap, 'anonymous' = signed-out daily IP cap.
   const [limitError, setLimitError] = useState<'free' | 'anonymous' | null>(null)
+  const [quotaWall, setQuotaWall] = useState<QuotaExceededDetail | null>(null)
+  const discoveryReturnTo = addressParam
+    ? `/discovery?${searchParams.toString()}`
+    : '/search'
+  const { startTrial, error: trialError } = useStartProTrial({
+    returnTo: discoveryReturnTo,
+    source: 'upgrade_wall',
+  })
   const tourReady = Boolean(property && analysis && !error && !limitError)
   const {
     phase: tourPhase,
@@ -624,9 +643,35 @@ function VerdictContent() {
       try {
         const canonical = canonicalizeAddressForIdentity(addressParam)
         const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
+        const usage = queryClient.getQueryData<BillingUsage>(BILLING_USAGE_QUERY_KEY)
+        if (!hasCachedProperty && !isPro && usage && isStarterQuotaExhausted(usage)) {
+          const parsedFallback = parseAddressString(addressParam)
+          setQuotaWall({
+            plan: 'starter',
+            used: usage.searches_used,
+            limit: usage.searches_limit,
+            resetsAt: nextResetIso(usage),
+          })
+          setLimitError('free')
+          setProperty({
+            address: parsedFallback.street || addressParam || 'Unknown Address',
+            city: parsedFallback.city,
+            state: parsedFallback.state,
+            zip: parsedFallback.zip,
+            beds: 0,
+            baths: 0,
+            sqft: 0,
+            price: 0,
+            imageUrl: undefined,
+          })
+          setListingSignals(listingSignalsFromListing(null))
+          setIsLoading(false)
+          return
+        }
         if (!hasCachedProperty) setIsLoading(true)
         setError(null)
         setLimitError(null)
+        setQuotaWall(null)
 
         // Fetch property data (React Query cache — shared with Strategy page)
         const data = await fetchProperty(addressParam, {
@@ -1044,13 +1089,15 @@ function VerdictContent() {
       } catch (err) {
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
-        if (err instanceof ApiError && err.status === 403) {
+        if (isQuotaExceededError(err)) {
+          const usage = queryClient.getQueryData<BillingUsage>(BILLING_USAGE_QUERY_KEY)
+          setQuotaWall(quotaDetailFromError(err, usage))
+          setLimitError('free')
+          trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
+        } else if (err instanceof ApiError && err.status === 403) {
           const limitType = err.detail?.limit_type
           const code = err.code ?? err.detail?.code
-          if (limitType === 'analyses') {
-            setLimitError('free')
-            trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
-          } else if (
+          if (
             limitType === 'anonymous_analyses' ||
             limitType === 'anonymous_ip_cap' ||
             code === 'ANONYMOUS_LIMIT_REACHED'
@@ -1064,7 +1111,14 @@ function VerdictContent() {
         const parsedFallback = parseAddressString(addressParam)
 
         // Address-only fallback. Quota hits must not invent beds/price.
-        const isQuota = err instanceof ApiError && err.status === 403
+        const isQuota =
+          isQuotaExceededError(err) ||
+          (err instanceof ApiError &&
+            err.status === 403 &&
+            (err.detail?.limit_type === 'anonymous_analyses' ||
+              err.detail?.limit_type === 'anonymous_ip_cap' ||
+              err.code === 'ANONYMOUS_LIMIT_REACHED' ||
+              err.detail?.code === 'ANONYMOUS_LIMIT_REACHED'))
         const fallbackProperty: IQProperty = {
           address: parsedFallback.street || addressParam || 'Unknown Address',
           city: parsedFallback.city,
@@ -1103,6 +1157,7 @@ function VerdictContent() {
     overrideArv,
     urlMarketValue,
     retryNonce,
+    isPro,
   ])
 
   // Signed-out 403s stay in the React Query cache after the modal succeeds.
@@ -1118,6 +1173,7 @@ function VerdictContent() {
     if (!justSignedIn && !stale) return
     invalidateDiscoveryQueriesAfterAuth(queryClient, addressParam)
     setLimitError(null)
+    setQuotaWall(null)
     setError(null)
     setRetryNonce((n) => n + 1)
     void refreshSavedCheck()
@@ -1125,7 +1181,7 @@ function VerdictContent() {
 
   // Watchdog for the loading state: if neither data nor an error arrives
   // within the timeout, show a recovery screen instead of spinning forever.
-  const awaitingAnalysis = isLoading || (!analysis && !error)
+  const awaitingAnalysis = !limitError && (isLoading || (!analysis && !error))
   useEffect(() => {
     if (!awaitingAnalysis) {
       setLoadTimedOut(false)
@@ -1590,7 +1646,7 @@ function VerdictContent() {
 
   // Loading state — pulsating IQ logo until data arrives.
   // Also covers the case where property loaded from cache but analysis API is still in flight.
-  if (isLoading || (!analysis && !error)) {
+  if (!limitError && (isLoading || (!analysis && !error))) {
     if (loadTimedOut) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
@@ -1646,9 +1702,39 @@ function VerdictContent() {
     return <DiscoveryColdLanding />
   }
 
-  // Usage-limit reached — gate sits in the Verdict slot inside the page shell.
-  // AppHeader (logo, tabs, address from the URL) stays mounted in the layout.
-  if (limitError && (!property || !analysis)) {
+  // Usage-limit reached — wall/gate sits in the Verdict slot inside the page shell.
+  // AppHeader (logo, tabs, address from the URL) and UsageBar stay mounted in the layout.
+  if (limitError === 'free' && (!property || !analysis)) {
+    return (
+      <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
+        <div id="workflow-tabpanel" role={workflowV1Layout ? 'tabpanel' : undefined}>
+          <UpgradeWall
+            resetsAt={quotaWall?.resetsAt ?? nextResetIso(null)}
+            limit={quotaWall?.limit ?? STARTER_VERDICTS_PER_MONTH}
+            used={quotaWall?.used}
+            plan={quotaWall?.plan}
+            onStartTrial={() => {
+              void startTrial()
+            }}
+            onDismiss={() => {
+              trackEvent('upgrade_wall_dismissed')
+              router.push('/search')
+            }}
+          />
+          {trialError ? (
+            <p
+              className="px-4 pb-8 text-center text-sm"
+              style={{ color: 'var(--status-negative)' }}
+            >
+              {trialError}
+            </p>
+          ) : null}
+        </div>
+      </main>
+    )
+  }
+
+  if (limitError === 'anonymous' && (!property || !analysis)) {
     return (
       <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
         <div
@@ -1657,7 +1743,7 @@ function VerdictContent() {
           className="px-3 sm:px-6 mt-4 max-w-3xl"
         >
           <DiscoveryQuotaGate
-            kind={limitError}
+            kind="anonymous"
             workflowV1={workflowV1Layout}
             onCreateAccount={() => openAuthModal('register')}
             onSignIn={() => openAuthModal('login')}

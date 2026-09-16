@@ -18,10 +18,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 const mockApiPost = vi.fn()
 const mockApiRequest = vi.fn()
 
-vi.mock('@/lib/api-client', () => ({
-  api: { post: (...args: unknown[]) => mockApiPost(...args) },
-  apiRequest: (...args: unknown[]) => mockApiRequest(...args),
-}))
+vi.mock('@/lib/api-client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api-client')>('@/lib/api-client')
+  return {
+    ...actual,
+    api: { ...actual.api, post: (...args: unknown[]) => mockApiPost(...args) },
+    apiRequest: (...args: unknown[]) => mockApiRequest(...args),
+  }
+})
 
 vi.mock('sonner', () => ({
   toast: { error: vi.fn() },
@@ -164,5 +168,48 @@ describe('interaction with the deal maker store', () => {
     expect(mockApiPost).toHaveBeenCalledTimes(1)
     expect(after).toBe(before)
     expect(after.valuations.zestimate).toBe(531_832)
+  })
+})
+
+const exhaustedUsage = {
+  tier: 'free',
+  searches_used: 3,
+  searches_limit: 3,
+  searches_remaining: 0,
+}
+
+describe('starter quota preflight', () => {
+  it('does not hit the network when the meter is already exhausted', async () => {
+    queryClient.setQueryData(['billing', 'usage'], exhaustedUsage)
+    queryClient.setQueryData(['session', 'me'], { subscription_tier: 'free' })
+    const consumer = newConsumer()
+
+    await expect(consumer.current.fetchProperty(ADDRESS)).rejects.toMatchObject({
+      status: 402,
+      code: 'QUOTA_EXCEEDED',
+    })
+    expect(mockApiPost).not.toHaveBeenCalled()
+  })
+
+  it('still returns a cached property without a new search', async () => {
+    mockApiPost.mockResolvedValue(propertyResponse())
+    const consumer = newConsumer()
+    await consumer.current.fetchProperty(ADDRESS)
+
+    queryClient.setQueryData(['billing', 'usage'], exhaustedUsage)
+    queryClient.setQueryData(['session', 'me'], { subscription_tier: 'free' })
+    await consumer.current.fetchProperty(ADDRESS)
+
+    expect(mockApiPost).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not block a Pro session even if usage cache still says 3/3', async () => {
+    queryClient.setQueryData(['billing', 'usage'], exhaustedUsage)
+    queryClient.setQueryData(['session', 'me'], { subscription_tier: 'pro' })
+    mockApiPost.mockResolvedValue(propertyResponse())
+    const consumer = newConsumer()
+
+    await consumer.current.fetchProperty(ADDRESS)
+    expect(mockApiPost).toHaveBeenCalledTimes(1)
   })
 })

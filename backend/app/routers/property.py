@@ -8,7 +8,7 @@ import hashlib
 import logging
 import re
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from io import BytesIO
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
@@ -169,15 +169,27 @@ def _address_fingerprint(full_address: str) -> str:
     return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
 
-def _analysis_limit_http_error(e: SubscriptionLimitError) -> HTTPException:
+def _usage_resets_at_iso(usage_reset_date: datetime | None) -> str:
+    """Next monthly reset as ISO-8601. Last reset + 30 days, or now + 30 days."""
+    base = usage_reset_date or datetime.now(UTC)
+    if base.tzinfo is None:
+        base = base.replace(tzinfo=UTC)
+    return (base + timedelta(days=30)).isoformat()
+
+
+def _analysis_limit_http_error(e: SubscriptionLimitError, *, resets_at: str) -> HTTPException:
+    """Authenticated monthly quota — 402, not 429 (rate limit) or 403 (authz)."""
     return HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
+        status_code=status.HTTP_402_PAYMENT_REQUIRED,
         detail={
-            "code": e.code,
+            "code": "QUOTA_EXCEEDED",
+            "plan": "starter",
+            "limit": e.limit,
+            "used": e.current,
+            "resets_at": resets_at,
             "message": f"You've used all {e.limit} free analyses this month. Upgrade to Pro for unlimited.",
             "limit_type": e.limit_type,
             "current": e.current,
-            "limit": e.limit,
             "tier_required": e.tier_required,
         },
     )
@@ -283,8 +295,8 @@ async def search_property(
     Usage limits are enforced server-side: free-tier users get
     ``searches_per_month`` distinct properties per month; anonymous users get
     ``ANON_ANALYSES_PER_DAY`` distinct properties per visitor cookie per day,
-    with ``ANON_IP_CAP_PER_DAY`` as a shared-address abuse cap. Returns 403
-    with a structured detail payload when the limit is reached.
+    with ``ANON_IP_CAP_PER_DAY`` as a shared-address abuse cap. Authenticated
+    quota exhaustion returns 402 ``QUOTA_EXCEEDED``. Anonymous caps return 403.
     """
     full_address = _build_full_address(request)
     search_source = request.search_source or "web"
@@ -309,7 +321,13 @@ async def search_property(
                         )
                     except Exception:
                         pass
-                raise _analysis_limit_http_error(e)
+                subscription = await billing_service.get_subscription(db, current_user.id)
+                raise _analysis_limit_http_error(
+                    e,
+                    resets_at=_usage_resets_at_iso(
+                        subscription.usage_reset_date if subscription else None
+                    ),
+                )
     else:
         anon_counter_key, anon_marker_key, anon_ip_key, is_repeat = await _check_anonymous_quota(
             http_request, full_address
