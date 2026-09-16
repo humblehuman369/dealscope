@@ -14,15 +14,15 @@ describe('resolveWorkflowV1', () => {
     expect(resolveWorkflowV1(false, null)).toBe(false)
   })
 
-  it('is on only when the env flag is on and PostHog is true', () => {
+  it('is on when the env flag is on unless PostHog is explicitly false', () => {
     expect(resolveWorkflowV1(true, true)).toBe(true)
+    expect(resolveWorkflowV1(true, null)).toBe(true)
+    expect(resolveWorkflowV1(true, undefined)).toBe(true)
+    expect(resolveWorkflowV1(true, 'control')).toBe(true)
   })
 
-  it('is off when the env flag is on and PostHog is missing, false, or a string', () => {
-    expect(resolveWorkflowV1(true, null)).toBe(false)
+  it('is off when the env flag is on and PostHog is false', () => {
     expect(resolveWorkflowV1(true, false)).toBe(false)
-    expect(resolveWorkflowV1(true, undefined)).toBe(false)
-    expect(resolveWorkflowV1(true, 'control')).toBe(false)
   })
 })
 

@@ -687,7 +687,7 @@ class PropertyService:
                 (mashvisor_data, mashvisor_ms),
             ) = await asyncio.gather(
                 self._fetch_rentcast_provider(address),
-                self._fetch_zillow_by_zpid(zpid) if zpid else self._fetch_zillow_provider(address),
+                self._fetch_zillow_best(address, zpid),
                 self._fetch_redfin_provider(address),
                 self._fetch_realtor_provider(address),
                 self._fetch_mashvisor_provider(address),
@@ -1172,6 +1172,9 @@ class PropertyService:
             zillow_response = await self.zillow.search_by_address(address)
             if not zillow_response.success or not zillow_response.data:
                 logger.warning("Zillow search failed for: %s - %s", address, zillow_response.error)
+                if attempt < max_attempts - 1:
+                    await asyncio.sleep(1.0 * (attempt + 1))
+                    continue
                 return None, None
 
             raw = zillow_response.data
@@ -1245,6 +1248,22 @@ class PropertyService:
             logger.error("Error fetching Zillow data by zpid %s: %s", zpid_str, e)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return axesso_data, zpid_str, elapsed_ms
+
+    async def _fetch_zillow_best(
+        self, address: str, zpid: str | None
+    ) -> tuple[dict[str, Any] | None, str | None, float]:
+        """Prefer a map-handoff zpid, then fall back to address search.
+
+        Map → Discovery often arrives with a zpid. property-v2 misses more
+        often than search-by-address; without this fallback Pro users who
+        start on the map see Zillow as Unavailable while typed addresses work.
+        """
+        if zpid:
+            data, resolved, ms = await self._fetch_zillow_by_zpid(zpid)
+            if data:
+                return data, resolved, ms
+            logger.info("Zillow zpid %s missed — falling back to address search", zpid)
+        return await self._fetch_zillow_provider(address)
 
     async def _fetch_zillow_enrichment(self, zpid: str) -> tuple[dict[str, Any], float]:
         """Fetch tax history, schools, accessibility scores, and zestimate trend in parallel."""

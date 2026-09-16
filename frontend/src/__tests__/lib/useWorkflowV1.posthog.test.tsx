@@ -66,29 +66,28 @@ describe('useWorkflowV1 with env on', () => {
     expect(initPostHog).toHaveBeenCalled()
   })
 
-  it('stays off when PostHog is missing', async () => {
+  it('stays on when PostHog is missing', async () => {
     initPostHog.mockResolvedValue(null)
     const { result } = renderHook(() => useWorkflowV1())
     await waitFor(() => expect(result.current.ready).toBe(true))
-    expect(result.current.enabled).toBe(false)
+    expect(result.current.enabled).toBe(true)
   })
 
-  it('stays off when PostHog is false, a string, or flags fail to load', async () => {
+  it('turns off only when PostHog is explicitly false', async () => {
     flagValue = false
     const { result } = renderHook(() => useWorkflowV1())
-    await waitFor(() => expect(result.current.ready).toBe(true))
-    expect(result.current.enabled).toBe(false)
+    await waitFor(() => expect(result.current.enabled).toBe(false))
 
     flagValue = 'control'
     await act(async () => {
       listener?.([], {}, { errorsLoading: false })
     })
-    expect(result.current.enabled).toBe(false)
+    expect(result.current.enabled).toBe(true)
 
     errorsLoading = true
     await act(async () => {
       listener?.([], {}, { errorsLoading })
     })
-    expect(result.current.enabled).toBe(false)
+    expect(result.current.enabled).toBe(true)
   })
 })

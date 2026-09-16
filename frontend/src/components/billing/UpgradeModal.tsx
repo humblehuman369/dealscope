@@ -17,6 +17,23 @@ import { isAndroid, usesNativeIap, usesAppleIap } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { PRO_MONTHLY_AMOUNT, PRO_MONTHLY_PRICE, PRO_YEARLY_AMOUNT, PRO_YEARLY_PER_MONTH, PRO_YEARLY_PRICE } from '@/lib/claims'
+import { DIRECTORY_ACCESS_NOTE } from '@/lib/planFeatures'
+import { markProWelcomePending, resolveCheckoutReturnTo, withProWelcome } from '@/lib/checkoutReturn'
+
+const WORKFLOW_STEPS = [
+  { label: 'Discovery', body: 'The verdict — should you pursue this deal?' },
+  { label: 'Plan', body: 'Make the numbers work before you offer.' },
+  { label: 'Math', body: 'Every assumption, editable, with comps behind it.' },
+  { label: 'Work', body: 'The pipeline card for this property.' },
+] as const
+
+const TRIAL_UNLOCKS = [
+  'Unlimited analyses',
+  'Editable assumptions & Deal Maker',
+  'Sale & rental comps',
+  'Excel / PDF exports',
+  'Unlimited pipeline saves',
+] as const
 
 const FALLBACK_PRICE_MONTHLY = PRO_MONTHLY_PRICE
 const FALLBACK_PRICE_ANNUAL = PRO_YEARLY_PRICE
@@ -129,9 +146,8 @@ export function UpgradeModal({
         // Mirror the web post-checkout redirect: when the caller supplies a
         // returnTo (e.g. "/" from /pricing or /billing), navigate there so
         // mobile users don't get stranded on the pricing page after upgrading.
-        if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
-          router.replace(returnTo)
-        }
+        markProWelcomePending()
+        router.replace(withProWelcome(resolveCheckoutReturnTo(returnTo)))
       }
       return
     }
@@ -147,14 +163,15 @@ export function UpgradeModal({
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const successPath = '/checkout/success'
-      const successQuery = returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''
+      const dest = resolveCheckoutReturnTo(returnTo)
+      const successQuery = `?returnTo=${encodeURIComponent(dest)}`
       const successUrl = `${origin}${successPath}${successQuery}`
       const cancelUrl = `${origin}/pricing`
       const { checkout_url } = await billingApi.createCheckoutSession({
         price_id: priceId,
         success_url: successUrl,
         cancel_url: cancelUrl,
-        return_to: returnTo ?? undefined,
+        return_to: dest,
         skip_trial: isPaidOnly,
       })
       trackEvent('checkout_started', {
@@ -184,7 +201,7 @@ export function UpgradeModal({
       aria-label="Upgrade to Pro"
     >
       <div
-        className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
+        className="w-full max-w-lg rounded-2xl shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto"
         style={{
           backgroundColor: 'var(--surface-card)',
           border: '1px solid rgba(15,164,233,0.2)',
@@ -203,11 +220,45 @@ export function UpgradeModal({
             <X size={20} style={{ color: '#94a3b8' }} />
           </button>
         </div>
-        <p className="px-6 pb-4 text-sm" style={{ color: '#94a3b8' }}>
+        <p className="px-6 pb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
           {isPaidOnly
             ? `${paidOnlyFeature} requires a paid Pro subscription. Billing starts today.`
-            : '7-day free trial. Cancel anytime.'}
+            : '7-day free trial. Cancel anytime. Here is the workflow you unlock.'}
         </p>
+
+        {!isPaidOnly && (
+          <div className="px-6 pb-4 space-y-3">
+            <ol className="space-y-2">
+              {WORKFLOW_STEPS.map((step, i) => (
+                <li key={step.label} className="flex gap-3 text-sm">
+                  <span
+                    className="flex-shrink-0 w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center"
+                    style={{
+                      background: 'rgba(15,164,233,0.12)',
+                      color: 'var(--accent-sky)',
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span>
+                    <span className="font-semibold" style={{ color: 'var(--text-heading)' }}>
+                      {step.label}
+                    </span>
+                    <span style={{ color: 'var(--text-secondary)' }}> — {step.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <ul className="text-xs space-y-1 pl-8" style={{ color: 'var(--text-secondary)' }}>
+              {TRIAL_UNLOCKS.map((item) => (
+                <li key={item}>· {item}</li>
+              ))}
+            </ul>
+            <p className="text-[11px] pl-8" style={{ color: 'var(--text-label)' }}>
+              {DIRECTORY_ACCESS_NOTE}
+            </p>
+          </div>
+        )}
 
         {/* Billing toggle */}
         <div className="flex items-center justify-center gap-3 px-6 pb-4">

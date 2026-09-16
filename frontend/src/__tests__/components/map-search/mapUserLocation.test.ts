@@ -3,6 +3,7 @@ import {
   detectHeroLocation,
   fetchIpFallbackLocation,
   resolveMapUserLocation,
+  targetMarketGeocodeQuery,
   type MapLatLng,
 } from '@/components/map-search/mapUserLocation'
 
@@ -139,5 +140,22 @@ describe('detectHeroLocation', () => {
       lng: -80.28,
     })
     expect(fetchFn).toHaveBeenCalledWith('/api/geo')
+  })
+})
+
+describe('targetMarketGeocodeQuery', () => {
+  it('prefers the resolved state name for a USPS code', () => {
+    expect(targetMarketGeocodeQuery(['TX', 'FL'], (code) => (code === 'TX' ? 'Texas' : null))).toBe(
+      'Texas',
+    )
+  })
+
+  it('falls back to the raw market string', () => {
+    expect(targetMarketGeocodeQuery(['Austin'], () => null)).toBe('Austin')
+  })
+
+  it('returns null when no markets are set', () => {
+    expect(targetMarketGeocodeQuery([], () => null)).toBeNull()
+    expect(targetMarketGeocodeQuery(null, () => null)).toBeNull()
   })
 })

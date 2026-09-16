@@ -77,7 +77,13 @@ export function useCapacitorDeepLinks() {
             // Token is stored; session query will retry on next focus
           }
 
-          router.replace('/search')
+          const dest =
+            parsed.next && parsed.next.startsWith('/') && !parsed.next.startsWith('//')
+              ? parsed.next
+              : '/search'
+          router.replace(
+            parsed.created ? `/onboarding?next=${encodeURIComponent(dest)}` : dest,
+          )
         } catch {
           router.replace('/login?error=mobile_exchange_failed')
         }

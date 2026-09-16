@@ -14,6 +14,11 @@ describe('capacitorOauthStartUrl', () => {
     expect(url).toContain('/api/v1/auth/google?mobile_redirect=')
   })
 
+  it('forwards a same-origin next path', () => {
+    const url = capacitorOauthStartUrl('google', '/discovery?address=1+Oak')
+    expect(url).toContain('next=%2Fdiscovery%3Faddress%3D1%2BOak')
+  })
+
   it('falls back to production origin when window is unavailable', () => {
     expect(capacitorAppOrigin()).toMatch(/^https?:\/\//)
   })

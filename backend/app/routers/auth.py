@@ -12,7 +12,7 @@ import logging
 from collections.abc import Coroutine
 from datetime import UTC, datetime
 from typing import Any
-from urllib.parse import urlencode, urlparse
+from urllib.parse import quote, urlencode, urlparse
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response, status
@@ -404,14 +404,17 @@ def _oauth_state_key(state: str) -> str:
     return f"oauth_state:{state}"
 
 
-async def _create_oauth_state(mobile_redirect: str | None) -> str:
+async def _create_oauth_state(mobile_redirect: str | None, next_path: str | None = None) -> str:
     """Create a short-lived, one-time OAuth state value."""
     import secrets
 
     from app.services.cache_service import get_cache_service
 
     state = secrets.token_urlsafe(32)
-    payload = {"mobile_redirect": mobile_redirect}
+    payload: dict[str, Any] = {"mobile_redirect": mobile_redirect}
+    safe_next = _safe_next_path(next_path)
+    if safe_next:
+        payload["next"] = safe_next
     cache = get_cache_service()
     stored = await cache.set(_oauth_state_key(state), payload, ttl_seconds=_OAUTH_STATE_TTL_SECONDS)
     if not stored:
@@ -473,8 +476,40 @@ async def _consume_mobile_auth_code(code: str) -> dict[str, Any] | None:
     return payload
 
 
-def _mobile_success_redirect(mobile_redirect: str, code: str) -> RedirectResponse:
-    return RedirectResponse(url=f"{mobile_redirect}?{urlencode({'code': code})}", status_code=302)
+def _oauth_post_login_path(*, created: bool, next_path: str | None) -> str:
+    """Same-origin path after Google/Apple. New accounts go through onboarding."""
+    safe = _safe_next_path(next_path) or "/search"
+    if created:
+        return f"/onboarding?next={quote(safe, safe='')}"
+    return safe
+
+
+def _oauth_web_success_redirect(*, created: bool, next_path: str | None) -> RedirectResponse:
+    dest = _oauth_post_login_path(created=created, next_path=next_path)
+    return RedirectResponse(url=f"{settings.FRONTEND_URL.rstrip('/')}{dest}", status_code=302)
+
+
+def _next_path_from_state(state_data: dict[str, Any] | None) -> str | None:
+    if not state_data:
+        return None
+    raw = state_data.get("next")
+    return raw if isinstance(raw, str) else None
+
+
+def _mobile_success_redirect(
+    mobile_redirect: str,
+    code: str,
+    *,
+    next_path: str | None = None,
+    created: bool = False,
+) -> RedirectResponse:
+    params: dict[str, str] = {"code": code}
+    safe = _safe_next_path(next_path)
+    if safe:
+        params["next"] = safe
+    if created:
+        params["created"] = "1"
+    return RedirectResponse(url=f"{mobile_redirect}?{urlencode(params)}", status_code=302)
 
 
 @router.get("/google")
@@ -493,8 +528,9 @@ async def google_start(request: Request):
     mobile_redirect = request.query_params.get("mobile_redirect")
     if mobile_redirect and not any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
         mobile_redirect = None
+    next_path = _safe_next_path(request.query_params.get("next"))
     try:
-        state = await _create_oauth_state(mobile_redirect)
+        state = await _create_oauth_state(mobile_redirect, next_path)
     except Exception:
         logger.exception("Failed to create Google OAuth state")
         raise HTTPException(status_code=503, detail="OAuth state storage unavailable")
@@ -553,6 +589,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
     if state_data is None:
         return _google_error_redirect("google_invalid_state", None)
     mobile_redirect = _mobile_redirect_from_state(state_data)
+    next_path = _next_path_from_state(state_data)
 
     code = request.query_params.get("code")
     if not code:
@@ -652,9 +689,11 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         except Exception:
             logger.exception("Failed to create Google mobile OAuth exchange code")
             return _google_error_redirect("mobile_exchange_failed", mobile_redirect)
-        return _mobile_success_redirect(mobile_redirect, mobile_code)
+        return _mobile_success_redirect(
+            mobile_redirect, mobile_code, next_path=next_path, created=_created
+        )
 
-    redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
+    redirect_to = _oauth_web_success_redirect(created=_created, next_path=next_path)
     _set_auth_cookies(redirect_to, session_token, refresh_token, jwt_token, expires_at)
     return redirect_to
 
@@ -703,8 +742,9 @@ async def apple_start(request: Request):
     mobile_redirect = request.query_params.get("mobile_redirect")
     if mobile_redirect and not any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
         mobile_redirect = None
+    next_path = _safe_next_path(request.query_params.get("next"))
     try:
-        state = await _create_oauth_state(mobile_redirect)
+        state = await _create_oauth_state(mobile_redirect, next_path)
     except Exception:
         logger.exception("Failed to create Apple OAuth state")
         raise HTTPException(status_code=503, detail="OAuth state storage unavailable")
@@ -742,6 +782,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
     if state_data is None:
         return _apple_error_redirect("apple_invalid_state", None)
     mobile_redirect = _mobile_redirect_from_state(state_data)
+    next_path = _next_path_from_state(state_data)
 
     code = form.get("code")
     raw_id_token = form.get("id_token")
@@ -859,9 +900,11 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         except Exception:
             logger.exception("Failed to create Apple mobile OAuth exchange code")
             return _apple_error_redirect("mobile_exchange_failed", mobile_redirect)
-        return _mobile_success_redirect(mobile_redirect, mobile_code)
+        return _mobile_success_redirect(
+            mobile_redirect, mobile_code, next_path=next_path, created=_created
+        )
 
-    redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
+    redirect_to = _oauth_web_success_redirect(created=_created, next_path=next_path)
     _set_auth_cookies(redirect_to, session_token, refresh_token, jwt_token, expires_at)
     return redirect_to
 

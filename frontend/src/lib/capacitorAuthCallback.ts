@@ -8,7 +8,7 @@
 export type ParsedCapacitorAuthUrl =
   | { type: 'magic'; token: string | null; next: string | null }
   | { type: 'oauth-error'; error: string }
-  | { type: 'oauth-code'; code: string }
+  | { type: 'oauth-code'; code: string; next: string | null; created: boolean }
   | { type: 'ignored' }
 
 export type OAuthExchangeTokens = {
@@ -48,7 +48,14 @@ export function parseCapacitorAuthUrl(url: string): ParsedCapacitorAuthUrl {
 
   const code = parsed.searchParams.get('code')
   if (code) {
-    return { type: 'oauth-code', code }
+    const next = parsed.searchParams.get('next')
+    const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null
+    return {
+      type: 'oauth-code',
+      code,
+      next: safeNext,
+      created: parsed.searchParams.get('created') === '1',
+    }
   }
 
   return { type: 'ignored' }

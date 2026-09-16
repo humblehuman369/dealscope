@@ -1,4 +1,4 @@
-import { STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
+import { STARTER_SAVED_PROPERTIES, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 /**
  * Single source of truth for plan-feature marketing claims.
@@ -25,7 +25,7 @@ export const STARTER_FEATURES: string[] = [
   'Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor',
   'All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale',
   'Seller Motivation indicator',
-  'Save up to 10 properties to DealGapIQ pipeline',
+  `Save up to ${STARTER_SAVED_PROPERTIES} properties to DealGapIQ pipeline`,
 ]
 
 /** Pro tier — pricing page card ("Everything in Starter, plus"). */
@@ -50,7 +50,7 @@ export const HOMEPAGE_FREE_FEATURES: string[] = [
   `${STARTER_VERDICTS_PER_MONTH} discoveries per month`,
   'Full 4-path analysis',
   'Negotiation scripts',
-  'Save up to 10 properties',
+  `Save up to ${STARTER_SAVED_PROPERTIES} properties`,
 ]
 
 /**

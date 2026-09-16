@@ -6,13 +6,14 @@ export const WORKFLOW_V1_FLAG = 'workflow-v1'
 
 export type WorkflowLayout = 'v1' | 'legacy'
 
-/** Env is the deploy kill switch. Only an explicit PostHog `true` is on. */
+/** Env is the deploy kill switch. PostHog `false` is the runtime kill switch. */
 export function resolveWorkflowV1(
   envEnabled: boolean,
   posthogFlag: unknown,
 ): boolean {
   if (!envEnabled) return false
-  return posthogFlag === true
+  if (posthogFlag === false) return false
+  return true
 }
 
 /** What the user actually saw. */
@@ -25,24 +26,24 @@ export function layoutFromFlag(enabled: boolean, ready: boolean): WorkflowLayout
   return ready && enabled ? 'v1' : 'legacy'
 }
 
-function readFlagValue(getFeatureFlag: (flag: string) => unknown): boolean {
+function readFlagValue(getFeatureFlag: (flag: string) => unknown): unknown {
   try {
-    return getFeatureFlag(WORKFLOW_V1_FLAG) === true
+    return getFeatureFlag(WORKFLOW_V1_FLAG)
   } catch {
-    return false
+    return undefined
   }
 }
 
 /**
- * True when NEXT_PUBLIC_WORKFLOW_V1=true and PostHog `workflow-v1` is true.
- * Missing PostHog, an explicit false, a string, a load error, or env off
- * keeps the old layout.
- * Subscribes via onFeatureFlags so a person-targeted flag that matches
- * after identify is picked up without a remount.
+ * True when NEXT_PUBLIC_WORKFLOW_V1=true unless PostHog `workflow-v1` is
+ * explicitly false. Missing PostHog, a load error, or a non-false value
+ * keeps V1 on so Free/Pro users are not stuck on legacy.
+ * Subscribes via onFeatureFlags so an explicit kill switch is picked up
+ * without a remount.
  */
 export function useWorkflowV1(): { enabled: boolean; ready: boolean } {
-  const [enabled, setEnabled] = useState(false)
-  const [ready, setReady] = useState(!WORKFLOW_V1_ENV_ENABLED)
+  const [enabled, setEnabled] = useState(WORKFLOW_V1_ENV_ENABLED)
+  const [ready, setReady] = useState(true)
 
   useEffect(() => {
     if (!WORKFLOW_V1_ENV_ENABLED) {
@@ -68,13 +69,14 @@ export function useWorkflowV1(): { enabled: boolean; ready: boolean } {
     void initPostHog().then((ph) => {
       if (cancelled) return
       if (!ph) {
-        setEnabled(false)
+        setEnabled(resolveWorkflowV1(true, undefined))
         setReady(true)
         return
       }
       const apply = (errorsLoading?: boolean) => {
         if (cancelled) return
-        setEnabled(!errorsLoading && readFlagValue((flag) => ph.getFeatureFlag(flag)))
+        const flag = errorsLoading ? undefined : readFlagValue((name) => ph.getFeatureFlag(name))
+        setEnabled(resolveWorkflowV1(true, flag))
         setReady(true)
       }
       apply()

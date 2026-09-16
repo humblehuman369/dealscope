@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
-import { PRO_MONTHLY_PRICE, PRO_YEARLY_PRICE, SPEED_CLAIM, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
+import { PRO_MONTHLY_PRICE, PRO_YEARLY_PRICE, SPEED_CLAIM, STARTER_SAVED_PROPERTIES, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 interface FAQItem {
   question: string
@@ -26,13 +26,13 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'Do I need an account to use DealGapIQ?',
     answer:
-      `No — you can run a few analyses without an account. Creating a free Starter account gives you ${STARTER_VERDICTS_PER_MONTH} property analyses per month, lets you save up to 10 properties, track your search history, and customize your default investment assumptions.`,
+      `No — you can run a few analyses without an account. Creating a free Starter account gives you ${STARTER_VERDICTS_PER_MONTH} property analyses per month, lets you save up to ${STARTER_SAVED_PROPERTIES} properties, track your search history, and customize your default investment assumptions.`,
   },
   {
     category: 'Getting Started',
     question: 'Is DealGapIQ free?',
     answer:
-      `The Starter plan is free forever: ${STARTER_VERDICTS_PER_MONTH} property analyses per month, the full Discovery with all 6 strategy snapshots, and up to 10 saved properties. Pro Investor (${PRO_MONTHLY_PRICE}/mo or ${PRO_YEARLY_PRICE}/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.`,
+      `The Starter plan is free forever: ${STARTER_VERDICTS_PER_MONTH} property analyses per month, the full Discovery with all 6 strategy snapshots, and up to ${STARTER_SAVED_PROPERTIES} saved properties. Pro Investor (${PRO_MONTHLY_PRICE}/mo or ${PRO_YEARLY_PRICE}/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.`,
   },
   {
     category: 'Analysis & Scoring',

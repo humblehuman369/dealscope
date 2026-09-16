@@ -14,7 +14,8 @@ import { useEffect, useRef } from 'react'
 import { useAppPathname } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
-import { shouldLandOnDashboard } from '@/lib/dashboardLanding'
+import { consumeAuthRedirect } from '@/lib/authRedirect'
+import { resolveHomepageLanding } from '@/lib/dashboardLanding'
 
 export function DashboardLandingGate() {
   const pathname = useAppPathname()
@@ -26,10 +27,11 @@ export function DashboardLandingGate() {
     if (hasRedirectedRef.current) return
     if (isLoading || !isAuthenticated) return
     if (pathname !== '/') return
-    if (!shouldLandOnDashboard()) return
+    const dest = resolveHomepageLanding(consumeAuthRedirect())
+    if (!dest) return
 
     hasRedirectedRef.current = true
-    router.replace('/dashboard')
+    router.replace(dest)
   }, [pathname, isAuthenticated, isLoading, router])
 
   return null

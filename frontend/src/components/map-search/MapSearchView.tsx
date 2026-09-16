@@ -60,7 +60,8 @@ import {
   navigateToDiscoveryFromMapPath,
 } from './mapDiscoveryNavigation'
 import { getMapOverlaySurface } from './mapOverlayChrome'
-import { resolveMapUserLocation, readZipCache, writeZipCache } from './mapUserLocation'
+import { resolveMapUserLocation, readZipCache, writeZipCache, targetMarketGeocodeQuery } from './mapUserLocation'
+import { getStateByCode, getStateBySlug } from '@/lib/us-states'
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
 import { brandMark } from '@/lib/brand'
@@ -1138,7 +1139,7 @@ export function MapSearchView() {
 
   // Authenticated user — used to prefer the saved business_address_zip as the
   // initial map center, ahead of navigator.geolocation.
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const accountZip = user?.business_address_zip?.trim() || null
 
   const [geoCenter, setGeoCenter] = useState<{ lat: number; lng: number } | null>(null)
@@ -1178,14 +1179,31 @@ export function MapSearchView() {
       },
       isCancelled: () => cancelled,
     })
-      .then((result) => {
+      .then(async (result) => {
         if (cancelled) return
         if (result.source === 'account_zip' && result.center) {
           setAccountZipCenter(result.center)
         } else if (result.center) {
           setGeoCenter(result.center)
+        } else if (isAuthenticated && apiKey) {
+          try {
+            const profile = await apiClient.get<{ target_markets?: string[] }>(
+              '/api/v1/users/me/profile',
+            )
+            const query = targetMarketGeocodeQuery(profile.target_markets, (code) => {
+              return getStateByCode(code)?.name ?? getStateBySlug(code)?.name ?? null
+            })
+            if (query) {
+              const geocoded = await forwardGeocode(query, apiKey)
+              if (!cancelled && geocoded) {
+                setGeoCenter({ lat: geocoded.lat, lng: geocoded.lng })
+              }
+            }
+          } catch {
+            /* profile optional */
+          }
         }
-        setGeoResolved(true)
+        if (!cancelled) setGeoResolved(true)
       })
       .catch(() => {
         if (!cancelled) setGeoResolved(true)
@@ -1198,7 +1216,7 @@ export function MapSearchView() {
       cancelled = true
       window.clearTimeout(safety)
     }
-  }, [hasExplicitLocation, authLoading, accountZip, apiKey])
+  }, [hasExplicitLocation, authLoading, accountZip, apiKey, isAuthenticated])
 
   const initialCenter =
     paramCenter ??

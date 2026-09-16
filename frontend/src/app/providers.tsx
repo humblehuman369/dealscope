@@ -13,6 +13,11 @@ const AuthModal = dynamic(() => import('@/components/auth/AuthModal'), {
   loading: () => null,
 })
 
+const ProWelcomeModal = dynamic(
+  () => import('@/components/billing/ProWelcomeModal').then((m) => m.ProWelcomeModal),
+  { ssr: false, loading: () => null },
+)
+
 function CapacitorBridge() {
   useCapacitorDeepLinks()
   useCapacitorShell()
@@ -47,6 +52,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <FirstTouchCapture />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
         <AuthModal />
+        <ProWelcomeModal />
       </ThemeProvider>
     </QueryClientProvider>
   )

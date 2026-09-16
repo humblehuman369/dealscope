@@ -140,7 +140,7 @@ class BillingService:
                 price_yearly=0,
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
-                properties_limit=10,
+                properties_limit=TIER_LIMITS[SubscriptionTier.FREE]["properties_limit"],
                 searches_per_month=TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"],
                 api_calls_per_month=50,
                 features=[
