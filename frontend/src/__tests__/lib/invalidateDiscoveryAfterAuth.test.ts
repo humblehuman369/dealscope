@@ -24,6 +24,7 @@ describe('invalidateDiscoveryQueriesAfterAuth', () => {
 
     expect(queryClient.getQueryData(propertyKey)).toEqual({ blocked: true })
     expect(discoveryQueriesNeedAuthRefetch(queryClient, ADDRESS, 'anonymous')).toBe(true)
+    expect(discoveryQueriesNeedAuthRefetch(queryClient, ADDRESS, 'free')).toBe(false)
 
     invalidateDiscoveryQueriesAfterAuth(queryClient, ADDRESS)
 

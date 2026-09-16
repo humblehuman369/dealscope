@@ -26,16 +26,41 @@ export function isProUser(user: UserResponse | null | undefined): boolean {
   return user?.subscription_tier === 'pro'
 }
 
+/**
+ * Single quota-exceeded rule. Callers pass the already-resolved plan / used /
+ * limit primitives — do not re-implement `used >= limit` elsewhere.
+ * Missing used/limit is unknown, not "under the cap".
+ */
+export function deriveQuotaExceeded(input: {
+  plan: string | undefined
+  used: number | undefined
+  limit: number | undefined
+}): boolean {
+  const { plan, used, limit } = input
+  if (plan !== 'starter') return false
+  if (typeof used !== 'number' || typeof limit !== 'number') return false
+  if (limit <= 0) return false
+  return used >= limit
+}
+
+export function planFromUsage(
+  usage: BillingUsage | null | undefined,
+  user?: UserResponse | null,
+): 'starter' | 'pro' {
+  if (isProUser(user) || usage?.tier === 'pro') return 'pro'
+  return 'starter'
+}
+
 /** True when a signed-in Starter account has no analyses left this month. */
 export function isStarterQuotaExhausted(
   usage: BillingUsage | null | undefined,
   user?: UserResponse | null,
 ): boolean {
-  if (isProUser(user)) return false
-  if (!usage) return false
-  if (usage.tier === 'pro') return false
-  if (usage.searches_limit <= 0) return false
-  return usage.searches_used >= usage.searches_limit
+  return deriveQuotaExceeded({
+    plan: planFromUsage(usage, user),
+    used: usage?.searches_used,
+    limit: usage?.searches_limit,
+  })
 }
 
 export function nextResetIso(usage: BillingUsage | null | undefined): string {

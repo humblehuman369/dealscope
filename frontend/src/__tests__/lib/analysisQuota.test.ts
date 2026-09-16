@@ -2,12 +2,23 @@ import { describe, expect, it } from 'vitest'
 
 import { ApiError } from '@/lib/api-client'
 import {
+  deriveQuotaExceeded,
   formatResetDate,
   isQuotaExceededError,
   isStarterQuotaExhausted,
   nextResetIso,
   quotaDetailFromError,
 } from '@/lib/analysisQuota'
+
+describe('deriveQuotaExceeded', () => {
+  it('is the single used >= limit rule for starter', () => {
+    expect(deriveQuotaExceeded({ plan: 'starter', used: 3, limit: 3 })).toBe(true)
+    expect(deriveQuotaExceeded({ plan: 'starter', used: 2, limit: 3 })).toBe(false)
+    expect(deriveQuotaExceeded({ plan: 'pro', used: 3, limit: 3 })).toBe(false)
+    expect(deriveQuotaExceeded({ plan: 'starter', used: undefined, limit: 3 })).toBe(false)
+    expect(deriveQuotaExceeded({ plan: 'starter', used: 3, limit: undefined })).toBe(false)
+  })
+})
 
 describe('isStarterQuotaExhausted', () => {
   it('is true at the Starter cap', () => {

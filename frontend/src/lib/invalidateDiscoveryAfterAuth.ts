@@ -17,7 +17,9 @@ export function discoveryQueriesNeedAuthRefetch(
   limitError: 'free' | 'anonymous' | null,
 ): boolean {
   if (!address.trim()) return false
-  if (limitError) return true
+  // Monthly Starter cap is not an auth miss — treating 'free' as stale
+  // retriggers the property fetch and remounts the upgrade wall in a loop.
+  if (limitError === 'anonymous') return true
   const propertyState = queryClient.getQueryState(propertySearchQueryKey(address))
   const verdictState = queryClient.getQueryState(verdictAnalysisQueryKey(address))
   return propertyState?.status === 'error' || verdictState?.status === 'error'

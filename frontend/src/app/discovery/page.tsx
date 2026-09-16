@@ -31,7 +31,7 @@ import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
@@ -64,8 +64,8 @@ import { UpgradeWall } from '@/components/discovery/UpgradeWall'
 import { useStartProTrial } from '@/hooks/useStartProTrial'
 import {
   BILLING_USAGE_QUERY_KEY,
+  deriveQuotaExceeded,
   isQuotaExceededError,
-  isStarterQuotaExhausted,
   nextResetIso,
   quotaDetailFromError,
   type BillingUsage,
@@ -307,10 +307,23 @@ function VerdictContent() {
   const [v1DiscoveryFailed, setV1DiscoveryFailed] = useState(false)
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const { data: usage } = useQuery<BillingUsage>({
+    queryKey: BILLING_USAGE_QUERY_KEY,
+    queryFn: () => api.get<BillingUsage>('/api/v1/billing/usage'),
+    staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated && !isPro,
+  })
+  const used = usage?.searches_used
+  const limit = usage?.searches_limit
+  const plan = isPro || usage?.tier === 'pro' ? 'pro' : 'starter'
+  const quotaExceeded = deriveQuotaExceeded({ plan, used, limit })
 
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')
   const addressParam = searchParams.get('address') || ''
+  const hasCachedProperty = addressParam
+    ? !!queryClient.getQueryData(['property-search', canonicalizeAddressForIdentity(addressParam)])
+    : false
 
   useEffect(() => {
     if (!addressParam) return
@@ -436,7 +449,7 @@ function VerdictContent() {
     returnTo: discoveryReturnTo,
     source: 'upgrade_wall',
   })
-  const tourReady = Boolean(property && analysis && !error && !limitError)
+  const tourReady = Boolean(property && analysis && !error && !limitError && !quotaExceeded)
   const {
     phase: tourPhase,
     joyrideIndex: tourJoyrideIndex,
@@ -601,6 +614,14 @@ function VerdictContent() {
     const generation = ++fetchGenerationRef.current
 
     async function fetchPropertyData() {
+      const canonical = addressParam ? canonicalizeAddressForIdentity(addressParam) : ''
+      const hasCachedProperty = canonical
+        ? !!queryClient.getQueryData(['property-search', canonical])
+        : false
+      if (quotaExceeded && addressParam && !hasCachedProperty) {
+        return
+      }
+
       // For saved property mode, wait for store to load then use that data
       if (isSavedPropertyMode) {
         if (!hasRecord) {
@@ -641,33 +662,6 @@ function VerdictContent() {
       })
 
       try {
-        const canonical = canonicalizeAddressForIdentity(addressParam)
-        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
-        const usage = queryClient.getQueryData<BillingUsage>(BILLING_USAGE_QUERY_KEY)
-        if (!hasCachedProperty && !isPro && usage && isStarterQuotaExhausted(usage)) {
-          const parsedFallback = parseAddressString(addressParam)
-          setQuotaWall({
-            plan: 'starter',
-            used: usage.searches_used,
-            limit: usage.searches_limit,
-            resetsAt: nextResetIso(usage),
-          })
-          setLimitError('free')
-          setProperty({
-            address: parsedFallback.street || addressParam || 'Unknown Address',
-            city: parsedFallback.city,
-            state: parsedFallback.state,
-            zip: parsedFallback.zip,
-            beds: 0,
-            baths: 0,
-            sqft: 0,
-            price: 0,
-            imageUrl: undefined,
-          })
-          setListingSignals(listingSignalsFromListing(null))
-          setIsLoading(false)
-          return
-        }
         if (!hasCachedProperty) setIsLoading(true)
         setError(null)
         setLimitError(null)
@@ -1157,13 +1151,14 @@ function VerdictContent() {
     overrideArv,
     urlMarketValue,
     retryNonce,
-    isPro,
+    quotaExceeded,
   ])
 
   // Signed-out 403s stay in the React Query cache after the modal succeeds.
   // When auth flips to signed in (or we remount with a stale error), drop
   // those queries and re-run the fetch as the signed-in user.
   useEffect(() => {
+    if (quotaExceeded) return
     if (authLoading) return
     const wasAuthenticated = wasAuthenticatedRef.current
     wasAuthenticatedRef.current = isAuthenticated
@@ -1177,11 +1172,11 @@ function VerdictContent() {
     setError(null)
     setRetryNonce((n) => n + 1)
     void refreshSavedCheck()
-  }, [authLoading, isAuthenticated, addressParam, queryClient, refreshSavedCheck, limitError])
+  }, [authLoading, isAuthenticated, addressParam, queryClient, refreshSavedCheck, limitError, quotaExceeded])
 
   // Watchdog for the loading state: if neither data nor an error arrives
   // within the timeout, show a recovery screen instead of spinning forever.
-  const awaitingAnalysis = !limitError && (isLoading || (!analysis && !error))
+  const awaitingAnalysis = !quotaExceeded && !limitError && (isLoading || (!analysis && !error))
   useEffect(() => {
     if (!awaitingAnalysis) {
       setLoadTimedOut(false)
@@ -1646,7 +1641,7 @@ function VerdictContent() {
 
   // Loading state — pulsating IQ logo until data arrives.
   // Also covers the case where property loaded from cache but analysis API is still in flight.
-  if (!limitError && (isLoading || (!analysis && !error))) {
+  if (!quotaExceeded && !limitError && (isLoading || (!analysis && !error))) {
     if (loadTimedOut) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
@@ -1704,15 +1699,18 @@ function VerdictContent() {
 
   // Usage-limit reached — wall/gate sits in the Verdict slot inside the page shell.
   // AppHeader (logo, tabs, address from the URL) and UsageBar stay mounted in the layout.
-  if (limitError === 'free' && (!property || !analysis)) {
+  if (
+    (quotaExceeded && !!addressParam && !hasCachedProperty) ||
+    (limitError === 'free' && (!property || !analysis))
+  ) {
     return (
       <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
         <div id="workflow-tabpanel" role={workflowV1Layout ? 'tabpanel' : undefined}>
           <UpgradeWall
-            resetsAt={quotaWall?.resetsAt ?? nextResetIso(null)}
-            limit={quotaWall?.limit ?? STARTER_VERDICTS_PER_MONTH}
-            used={quotaWall?.used}
-            plan={quotaWall?.plan}
+            resetsAt={quotaWall?.resetsAt ?? nextResetIso(usage)}
+            limit={quotaWall?.limit ?? limit ?? STARTER_VERDICTS_PER_MONTH}
+            used={quotaWall?.used ?? used}
+            plan={quotaWall?.plan ?? plan}
             onStartTrial={() => {
               void startTrial()
             }}
