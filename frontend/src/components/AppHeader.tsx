@@ -401,6 +401,9 @@ export function AppHeader({
   const cityFromUrl = fullyDecode(searchParams?.get('city') || '')
   const stateFromUrl = fullyDecode(searchParams?.get('state') || '')
   const zipFromUrl = fullyDecode(searchParams?.get('zip_code') || '')
+  const zpidFromUrl = (searchParams?.get('zpid') || '').trim()
+  const latFromUrl = Number(searchParams?.get('lat') || '')
+  const lngFromUrl = Number(searchParams?.get('lng') || '')
 
   // Also decode propertyAddress prop in case it's passed encoded
   const decodedPropertyAddress = fullyDecode(propertyAddress || '')
@@ -425,7 +428,9 @@ export function AppHeader({
     if (typeof window === 'undefined') return
     try {
       const parsed = readDealMakerOverrides(displayAddress)
-      if (parsed && (parsed.beds || parsed.baths || parsed.sqft || parsed.price)) {
+      const hasFacts = Boolean(parsed?.beds || parsed?.baths || parsed?.sqft || parsed?.price)
+      const hasPhotoHint = Boolean(parsed?.zpid || parsed?.photoUrl)
+      if (parsed && (hasFacts || hasPhotoHint)) {
         const toNumber = (value: unknown): number | undefined => {
           if (typeof value === 'number' && Number.isFinite(value)) return value
           if (typeof value === 'string') {
@@ -1342,13 +1347,13 @@ export function AppHeader({
                   listingStatus={p?.listingStatus}
                   daysOnMarket={p?.daysOnMarket}
                   pipelineStage={pipelineStage}
-                  zpid={p?.zpid}
+                  zpid={p?.zpid || zpidFromUrl || undefined}
                   description={p?.description}
                   photoUrl={p?.photoUrl}
                   photos={p?.photos}
                   propertyId={p?.propertyId}
-                  latitude={p?.latitude}
-                  longitude={p?.longitude}
+                  latitude={p?.latitude ?? (Number.isFinite(latFromUrl) ? latFromUrl : undefined)}
+                  longitude={p?.longitude ?? (Number.isFinite(lngFromUrl) ? lngFromUrl : undefined)}
                 />
               ) : (
                 <PropertyAddressBar
@@ -1361,9 +1366,9 @@ export function AppHeader({
                   sqft={p?.sqft ?? 0}
                   price={p?.price ?? 0}
                   listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
-                  zpid={p?.zpid}
-                  latitude={p?.latitude}
-                  longitude={p?.longitude}
+                  zpid={p?.zpid || zpidFromUrl || undefined}
+                  latitude={p?.latitude ?? (Number.isFinite(latFromUrl) ? latFromUrl : undefined)}
+                  longitude={p?.longitude ?? (Number.isFinite(lngFromUrl) ? lngFromUrl : undefined)}
                   bookmarked={isSaved}
                   onBookmarkClick={
                     isAuthenticated

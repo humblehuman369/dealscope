@@ -43,8 +43,21 @@ describe('navigateToDiscoveryFromMap', () => {
     expect(href).toContain('/discovery?')
     expect(href).toContain('address=123+Main+St')
     expect(href).toContain('zpid=12345678')
+    expect(href).toContain('lat=30.27')
+    expect(href).toContain('lng=-97.74')
     // A tab per pin is what made working a farm area unusable.
     expect(createElement).not.toHaveBeenCalledWith('a')
+  })
+
+  it('stores the listing photo so Discovery can show it without a property fetch', () => {
+    const router = { push: vi.fn() }
+    navigateToDiscoveryFromMap(router, { ...listing, photo_url: 'https://img.example/house.jpg' })
+
+    const stored = Object.keys(sessionStorage)
+      .map((key) => sessionStorage.getItem(key))
+      .find((raw) => raw?.includes('img.example/house.jpg'))
+    expect(stored).toBeTruthy()
+    expect(stored).toContain('12345678')
   })
 
   it('flags the viewport for restore before leaving, so "Back to map" works', () => {

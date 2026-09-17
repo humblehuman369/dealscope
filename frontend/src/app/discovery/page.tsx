@@ -597,6 +597,23 @@ function VerdictContent() {
     }
   }, [isLoading, property, analysis, addressParam, propertyIdParam, requestReview])
 
+  // Header photo/zpid without a property fetch. The analysis request is gated
+  // on quotaExceeded, so AppHeader would otherwise never get a zpid/photo.
+  useEffect(() => {
+    if (!quotaExceeded || !addressParam) return
+    const parsed = parseAddressString(addressParam)
+    writeDealMakerOverrides(
+      addressParam,
+      {
+        city: cityParam ?? parsed.city,
+        state: stateParam ?? parsed.state,
+        zip: zipCodeParam ?? parsed.zip,
+        zpid: overrideZpid,
+      },
+      { origin: 'verdict_sync' },
+    )
+  }, [quotaExceeded, addressParam, cityParam, stateParam, zipCodeParam, overrideZpid])
+
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
   // This handles navigation between different saved properties

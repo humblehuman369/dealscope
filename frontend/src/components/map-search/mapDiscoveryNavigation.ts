@@ -1,5 +1,6 @@
 import type { MapListing } from '@/lib/api'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { writeDealMakerOverrides } from '@/utils/addressIdentity'
 import { markMapViewportForRestore } from './mapSearchSnapshot'
 import { markPinReviewed } from './mapPinState'
 
@@ -21,6 +22,8 @@ export function buildDiscoverySearchParams(listing: MapListing): URLSearchParams
   if (isZillowZpid(listing.id)) {
     params.set('zpid', listing.id.trim())
   }
+  if (Number.isFinite(listing.latitude)) params.set('lat', String(listing.latitude))
+  if (Number.isFinite(listing.longitude)) params.set('lng', String(listing.longitude))
   return params
 }
 
@@ -73,6 +76,17 @@ export function navigateToDiscoveryFromMap(router: MapDiscoveryRouter, listing: 
   const base = getMapSelectionDestination() === 'deal-maker' ? '/deal-maker' : '/discovery'
   // Opening a pin for analysis is the strongest evidence it has been worked.
   markPinReviewed(listing)
+  if (listing.photo_url || isZillowZpid(listing.id)) {
+    writeDealMakerOverrides(listing.address, {
+      city: listing.city,
+      state: listing.state,
+      zip: listing.zip_code,
+      zpid: isZillowZpid(listing.id) ? listing.id.trim() : undefined,
+      photoUrl: listing.photo_url || undefined,
+      latitude: listing.latitude,
+      longitude: listing.longitude,
+    })
+  }
   navigateFromMap(router, `${base}?${query}`)
 }
 

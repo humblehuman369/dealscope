@@ -162,6 +162,24 @@ describe('WorkflowPropertyHeader', () => {
     expect(screen.queryByRole('button', { name: /photos?/ })).not.toBeInTheDocument()
   })
 
+  it('fetches listing photos from a URL zpid when the analysis fetch was skipped', async () => {
+    fetchPhotos.mockResolvedValue({
+      status: 'success',
+      photos: ['https://img.example/quota-wall.jpg'],
+    })
+    render(
+      <WorkflowPropertyHeader
+        address="2203 Soundings Court"
+        city="Greenacres"
+        zip="33413"
+        zpid="43109841"
+      />,
+    )
+    await waitFor(() => expect(fetchPhotos).toHaveBeenCalledWith('43109841', undefined))
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://img.example/quota-wall.jpg')
+    expect(screen.queryByText('No photos')).not.toBeInTheDocument()
+  })
+
   it('uses Street View from the address when the listing has no photos', () => {
     vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', 'KEY123')
     render(
