@@ -113,7 +113,6 @@ import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
-import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { HowThisCloses } from '@/components/discovery/HowThisCloses'
 import { VerdictGapSlider } from '@/components/discovery/VerdictGapSlider'
 import { VerdictCard } from '@/components/discovery/VerdictCard'
@@ -131,7 +130,6 @@ import {
 } from '@/lib/workflowRoutes'
 import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
-import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
 import { rememberPropertyPath } from '@/lib/checkoutReturn'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
@@ -449,14 +447,6 @@ function VerdictContent() {
     returnTo: discoveryReturnTo,
     source: 'upgrade_wall',
   })
-  const tourReady = Boolean(property && analysis && !error && !limitError && !quotaExceeded)
-  const {
-    phase: tourPhase,
-    joyrideIndex: tourJoyrideIndex,
-    setPhase: setTourPhase,
-    setJoyrideIndex: setTourJoyrideIndex,
-    dismissTour,
-  } = useWorkbenchTour({ ready: tourReady && !workflowV1Layout, isAuthenticated })
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const [listingSignals, setListingSignals] = useState<ListingSignalInput | null>(null)
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
@@ -2442,7 +2432,7 @@ function VerdictContent() {
 
             {/* Investment Overview — 3 price cards. Hidden under workflow v1; the Verdict card owns the numbers. */}
             {!workflowV1 ? (
-            <div data-tour="verdict-prices">
+            <div>
               <div className="w-full flex items-start justify-between gap-3 mb-4">
                 <h2
                   className="font-bold leading-tight"
@@ -3453,19 +3443,6 @@ function VerdictContent() {
           onOpenWorkbench={navigateToStrategy}
         />
       )}
-
-      {tourPhase && !workflowV1Layout ? (
-        <WorkbenchTour
-          phase={tourPhase}
-          joyrideIndex={tourJoyrideIndex}
-          onPhaseChange={setTourPhase}
-          onJoyrideIndexChange={setTourJoyrideIndex}
-          onDismiss={dismissTour}
-          onSaveDeal={() => {
-            void saveProperty()
-          }}
-        />
-      ) : null}
 
       <ActionPlanSlideOver
         open={actionPlanOpen}

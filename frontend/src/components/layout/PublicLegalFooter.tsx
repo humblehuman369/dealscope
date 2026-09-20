@@ -28,6 +28,15 @@ export function PublicLegalFooter() {
         <a className={linkClass} href="tel:+18663888222">
           (866) 388-8222
         </a>
+        {' · '}
+        <a
+          className={linkClass}
+          href="https://wa.me/13074173076"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          WhatsApp chat (307) 417-3076
+        </a>
       </p>
       <p className="mt-2">© {new Date().getFullYear()} {LEGAL_ENTITY_DBA}. All rights reserved.</p>
       <nav className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1" aria-label="Legal">

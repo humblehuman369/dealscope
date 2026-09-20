@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, Palette, Shield, Save, Compass } from 'lucide-react'
+import { Bell, Palette, Shield, Save } from 'lucide-react'
 import { api } from '@/lib/api-client'
-import { requestTourReplay } from '@/lib/workbenchTour'
-import { useWorkflowV1 } from '@/lib/workflowV1'
 
 // ===========================================
 // Preferences Tab — Notifications, Appearance, Security
@@ -68,7 +66,6 @@ function Toggle({
 }
 
 export function PreferencesTab() {
-  const { enabled: workflowV1 } = useWorkflowV1()
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [saving, setSaving] = useState(false)
@@ -221,33 +218,6 @@ export function PreferencesTab() {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Workbench tour */}
-      <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
-        <div className="flex items-center gap-2 mb-3">
-          <Compass className="w-4 h-4 text-[var(--accent-sky)]" />
-          <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">
-            Product Tour
-          </p>
-        </div>
-        <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Replay the 60-second workbench tour on your next analysis —{' '}
-          {workflowV1
-            ? 'Plan, Math, and Map Search'
-            : 'Discovery, Strategy, Comps, DealMaker, Estimator, and Map Search'}
-          .
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            requestTourReplay()
-            window.location.href = '/search'
-          }}
-          className="text-sm font-semibold text-[var(--accent-sky)] hover:underline"
-        >
-          Replay tour →
-        </button>
       </div>
 
       {/* Security */}

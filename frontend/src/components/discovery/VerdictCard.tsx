@@ -145,7 +145,6 @@ export function VerdictCard({
 
   return (
     <article
-      data-tour="verdict-prices"
       className="rounded-2xl px-3 sm:px-5 py-6"
       style={{
         background:

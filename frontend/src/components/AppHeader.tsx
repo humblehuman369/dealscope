@@ -855,7 +855,6 @@ export function AppHeader({
               {!pathname?.startsWith('/map-search') && (
                 <Link
                   href="/map-search"
-                  data-tour="map-search-nav"
                   className="hidden sm:flex min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] items-center gap-1.5 whitespace-nowrap"
                   style={{
                     borderColor: 'var(--border-default)',
@@ -1225,16 +1224,6 @@ export function AppHeader({
             >
               {visibleTabs.map((tab) => {
                 const isActive = tab.id === activeTab
-                const tourAttr =
-                  tab.id === 'strategy'
-                    ? 'tab-strategy'
-                    : tab.id === 'price-checker'
-                      ? 'tab-comps'
-                      : tab.id === 'deal-maker'
-                        ? 'tab-deal-maker'
-                        : tab.id === 'estimator'
-                          ? 'tab-estimator'
-                          : undefined
                 const v1Href =
                   workflowV1Layout &&
                   (tab.id === 'analyze' ||
@@ -1282,7 +1271,6 @@ export function AppHeader({
                       aria-selected={isActive}
                       aria-current={isActive ? 'page' : undefined}
                       aria-controls="workflow-tabpanel"
-                      data-tour={tourAttr}
                       className={tabClassName}
                       style={tabStyle}
                     >
@@ -1298,7 +1286,6 @@ export function AppHeader({
                     id={`workflow-tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
-                    data-tour={tourAttr}
                     onClick={() => handleTabChange(tab.id)}
                     className={tabClassName}
                     style={tabStyle}
@@ -1416,7 +1403,6 @@ export function AppHeader({
       {showMapSearchFab && (
         <Link
           href="/map-search"
-          data-tour="map-search-fab"
           className="sm:hidden fixed z-40 flex items-center justify-center w-12 h-12 rounded-full shadow-lg pb-safe"
           style={{
             right: 'max(12px, env(safe-area-inset-right, 0px))',

@@ -47,7 +47,6 @@ import { buildExportRows, exportListingsCsv, exportListingsExcel } from './mapSe
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
-import { requestTourReplay } from '@/lib/workbenchTour'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { pinKey, useMapPinMarks } from './mapPinState'
 import { clusterListings, type ListingCluster } from './mapClustering'
@@ -2341,25 +2340,6 @@ export function MapSearchView() {
           >
             Zoom in closer to select a property
           </div>
-        </div>
-      )}
-
-      {totalCount === 0 && !isLoading && !zoomHint && (
-        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10 max-w-sm px-4 text-center">
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            New to the workbench?{' '}
-            <button
-              type="button"
-              onClick={() => {
-                requestTourReplay()
-                window.location.href = '/search'
-              }}
-              className="font-semibold underline-offset-2 hover:underline"
-              style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0 }}
-            >
-              Take the 60-sec tour →
-            </button>
-          </p>
         </div>
       )}
 
