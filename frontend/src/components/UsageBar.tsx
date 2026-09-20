@@ -72,7 +72,7 @@ const STATE_STYLES: Record<
 // where free users consume their analysis quota, and the visible countdown
 // ("1 of N analyses left") is the upgrade nudge leading into the server-side
 // limit screen. Only suppress on conversion/marketing surfaces.
-const HIDDEN_ON = ['/pricing', '/register', '/what-is-dealgapiq', '/billing']
+const HIDDEN_ON = ['/pricing', '/register', '/what-is-dealgapiq', '/billing', '/scan']
 
 /* ── UsageBar ────────────────────────────────────────────────── */
 

@@ -75,6 +75,7 @@ if (!isCapacitor) {
       permanent: true,
     },
     { source: '/', has: [{ type: 'query', key: 'action', value: 'analyze' }], destination: '/search', permanent: true },
+    { source: '/', has: [{ type: 'query', key: 'scan', value: 'true' }], destination: '/scan', permanent: false },
     { source: '/landing', destination: '/', permanent: true },
     { source: '/landing2', destination: '/', permanent: true },
     { source: '/verdict', destination: '/discovery', permanent: true },

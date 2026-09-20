@@ -26,7 +26,16 @@ import { getCardinalDirection } from '@/lib/geoCalculations'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 import type { GeocodedProperty } from '@/lib/reverseGeocode'
-export default function HomeScannerIsland({ onSwitchMode }: { onSwitchMode: () => void }) {
+import { SCAN_EVENTS, trackEvent } from '@/lib/eventTracking'
+import { currentScanUtms, type ScanSource } from '@/lib/scanQr'
+
+export default function HomeScannerIsland({
+  onSwitchMode,
+  scanSource = 'header',
+}: {
+  onSwitchMode: () => void
+  scanSource?: ScanSource
+}) {
   const router = useRouter()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
@@ -181,6 +190,15 @@ export default function HomeScannerIsland({ onSwitchMode }: { onSwitchMode: () =
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (!cameraReady) return
+    trackEvent(SCAN_EVENTS.scan_started, {
+      src: scanSource,
+      plan: user?.subscription_tier === 'pro' ? 'pro' : 'starter',
+      ...currentScanUtms(),
+    })
+  }, [cameraReady, scanSource, user?.subscription_tier])
 
   // Request compass permission separately — only when compass becomes available
   useEffect(() => {

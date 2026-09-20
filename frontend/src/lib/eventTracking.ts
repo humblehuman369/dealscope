@@ -64,6 +64,17 @@ import { firstTouchEventProps, getMetaClickIds } from '@/lib/attribution'
 import { API_BASE_URL } from '@/lib/env'
 import type { WorkflowLayout } from '@/lib/workflowV1'
 
+/** Scan v1 funnel. `plan` is the billing tier. Never send a street address. */
+export const SCAN_EVENTS = {
+  scan_started: 'scan_started',
+  scan_matched: 'scan_matched',
+  scan_verdict_viewed: 'scan_verdict_viewed',
+  scan_saved: 'scan_saved',
+  scan_emailed: 'scan_emailed',
+  pro_tour_viewed: 'pro_tour_viewed',
+  field_to_desk: 'field_to_desk',
+} as const
+
 /** Workflow funnel events. `plan` is the billing tier. Never send a street address. */
 export const WORKFLOW_EVENTS = {
   card_opened: 'card_opened',

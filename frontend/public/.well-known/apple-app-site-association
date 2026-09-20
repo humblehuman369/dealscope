@@ -22,7 +22,8 @@
           { "/": "/search*" },
           { "/": "/national-averages*" },
           { "/": "/photos*" },
-          { "/": "/strategies/*" }
+          { "/": "/strategies/*" },
+          { "/": "/scan*" }
         ]
       }
     ]

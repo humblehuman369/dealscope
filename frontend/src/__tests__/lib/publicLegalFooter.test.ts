@@ -21,6 +21,7 @@ describe('shouldShowPublicLegalFooter', () => {
     expect(shouldShowPublicLegalFooter('/dashboard')).toBe(false)
     expect(shouldShowPublicLegalFooter('/directory')).toBe(false)
     expect(shouldShowPublicLegalFooter('/search')).toBe(false)
+    expect(shouldShowPublicLegalFooter('/scan')).toBe(false)
   })
 
   it('hides where a page already prints the legal entity copyright', () => {

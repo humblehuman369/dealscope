@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ScanQR } from '@/components/landing/ScanQR'
 import GetAppClient from './GetAppClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { SPEED_CLAIM } from '@/lib/claims'
@@ -21,5 +22,9 @@ export const metadata: Metadata = {
 }
 
 export default function GetAppPage() {
-  return <GetAppClient />
+  return (
+    <GetAppClient>
+      <ScanQR src="qr_getapp" />
+    </GetAppClient>
+  )
 }

@@ -61,6 +61,7 @@ export function validateNavContextWithWarning(
 export const ROUTES = {
   // Core screens
   search: '/search',
+  scan: '/scan',
 
   property: (ctx: NavContext) =>
     `/property/${ctx.zpid || 'unknown'}?address=${encodeURIComponent(ctx.address || '')}`,

@@ -49,6 +49,7 @@ import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor } from '@/lib/env'
+import { buildScanPath, isMobileScanDevice } from '@/lib/scanQr'
 import { PathStepper } from '@/components/workflow/PathStepper'
 import { V1_UI_FONT } from '@/components/workflow/v1-style'
 import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
@@ -143,6 +144,8 @@ interface AppHeaderProps {
   property?: PropertyInfo
   /** Full address string (alternative to property object) */
   propertyAddress?: string
+  /** Server-rendered QR for the desktop Scan dialog */
+  scanQr?: React.ReactNode
 }
 
 // ===================
@@ -170,7 +173,7 @@ const V1_TABS: { id: AppTab; label: string }[] = [
 
 // Pages where header should be completely hidden
 // Verdict & strategy now use the same AppHeader as the rest of the platform
-const HIDDEN_ROUTES = ['/', '/register', '/what-is-dealgapiq']
+const HIDDEN_ROUTES = ['/', '/register', '/what-is-dealgapiq', '/scan']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
@@ -280,6 +283,7 @@ export function AppHeader({
   showPropertyBar: showPropertyBarProp,
   property,
   propertyAddress,
+  scanQr,
 }: AppHeaderProps) {
   const router = useRouter()
   const pathname = useAppPathname()
@@ -587,18 +591,12 @@ export function AppHeader({
 
   const handleScanProperty = () => {
     if (isCapacitor()) {
-      router.push('/?scan=true')
+      router.push(buildScanPath('app'))
       return
     }
 
-    // Mobile/tablet: open camera scan. Desktop: explain that scan is mobile-only.
-    const isMobile =
-      typeof window !== 'undefined' &&
-      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 1400))
-
-    if (isMobile) {
-      router.push('/?scan=true')
+    if (isMobileScanDevice()) {
+      router.push(buildScanPath('header'))
       return
     }
 
@@ -850,7 +848,7 @@ export function AppHeader({
                 aria-label="Scan Property"
               >
                 <Camera className="w-4 h-4 shrink-0" />
-                <span className="text-sm font-semibold hidden md:inline">Scan</span>
+                <span className="text-sm font-semibold">Scan</span>
               </button>
 
               {/* Map Search — desktop nav entry */}
@@ -1409,8 +1407,10 @@ export function AppHeader({
         open={showScanInfo}
         onClose={() => setShowScanInfo(false)}
         title="Scan is a Mobile Feature"
-        description="Point your phone camera at any property for instant analysis. On desktop, use the address search bar to look up a property by location."
-      />
+        description="On your phone? Point it at any house and get the verdict."
+      >
+        {scanQr ? <div className="flex justify-center">{scanQr}</div> : null}
+      </InfoDialog>
 
       {/* Mobile Map Search FAB */}
       {showMapSearchFab && (

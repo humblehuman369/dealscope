@@ -1,6 +1,20 @@
 Generated from code on Sept 14, 2026. The Sept 7 narrative is to be merged in by hand.
 
-Source of names: `frontend/src/lib/eventTracking.ts` (`trackEvent`, `WORKFLOW_EVENTS`) and every `trackEvent(...)` call site. Fan-out is Vercel Analytics + PostHog; Meta Pixel receives only `verdict_viewed`, `signup_completed`, `checkout_started`, `checkout_completed`. Never send a street address. `plan` is the billing tier (`starter` | `pro`). `verdict_viewed` still maps to `analysis_run` in GA4.
+Source of names: `frontend/src/lib/eventTracking.ts` (`trackEvent`, `SCAN_EVENTS`, `WORKFLOW_EVENTS`) and every `trackEvent(...)` call site. Fan-out is Vercel Analytics + PostHog; Meta Pixel receives only `verdict_viewed`, `signup_completed`, `checkout_started`, `checkout_completed`. Never send a street address. `plan` is the billing tier (`starter` | `pro`). `verdict_viewed` still maps to `analysis_run` in GA4.
+
+## Scan events (`SCAN_EVENTS`)
+
+| Event | Status | Fires when | Properties |
+|---|---|---|---|
+| `scan_started` | Firing | Camera opens on `/scan` (`HomeScannerIsland` when the video stream is ready) | `src` (`home_mobile` \| `header` \| `qr_home` \| `qr_dialog` \| `qr_getapp` \| `app`), `plan`, current-page `utm_*` when present |
+| `scan_matched` | Defined, not firing | A property is matched (S-4) | `confidence`, `distance_m`, `used_map_picker` |
+| `scan_verdict_viewed` | Defined, not firing | Field Card renders (S-4) | `call`, `gap_pct`, `listed_or_offmarket`, `plan` |
+| `scan_saved` | Defined, not firing | Save for later succeeds (S-4) | `plan` |
+| `scan_emailed` | Defined, not firing | Email report sent (S-4) | `plan` |
+| `pro_tour_viewed` | Defined, not firing | Pro Tour starts (S-5) | `panels_seen` (1–4), `skipped`, `trigger` (`scan`) |
+| `field_to_desk` | Defined, not firing | A scanned house is opened on a desktop within 7 days (S-6) | `days_since_scan` |
+
+`src` is accepted on `/scan` (and preserved from `/?scan=true` redirects). QR codes encode `src` plus `utm_source=web&utm_medium=qr&utm_campaign=scan`. Never send a street address. `field_to_desk` per `scan_verdict_viewed` is the bridge metric; `trial_start` with `trigger: scan` is the tour metric.
 
 ## Workflow events (`WORKFLOW_EVENTS`)
 

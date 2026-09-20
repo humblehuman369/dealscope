@@ -23,9 +23,10 @@ import { PublicLegalFooter } from '@/components/layout/PublicLegalFooter'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
+  scanQr?: React.ReactNode
 }
 
-export function LayoutWrapper({ children }: LayoutWrapperProps) {
+export function LayoutWrapper({ children, scanQr }: LayoutWrapperProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Skip to main content — visible on focus for keyboard users */}
@@ -41,7 +42,7 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
         Fallback is null to avoid hydration mismatch on routes where AppHeader returns null.
       */}
       <Suspense fallback={null}>
-        <AppHeader />
+        <AppHeader scanQr={scanQr} />
       </Suspense>
 
       {/* Routes returning users to /dashboard on their first visit per day. */}

@@ -19,11 +19,11 @@ import {
   type AddressComponents,
   type PlaceMetadata,
 } from '@/components/AddressAutocomplete'
-import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { useTheme } from '@/context/ThemeContext'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
 import { webBaseUrl, isCapacitor } from '@/lib/env'
+import { buildScanPath } from '@/lib/scanQr'
 import { brandMark } from '@/lib/brand'
 import {
   canonicalizeAddressForIdentity,
@@ -83,7 +83,6 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
   const dealGapIqIcon = brandMark(theme)
   const [address, setAddress] = useState('')
   const [showAddressInput, setShowAddressInput] = useState(false)
-  const [showScanInfo, setShowScanInfo] = useState(false)
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)
   const [placeComponents, setPlaceComponents] = useState<AddressComponents | null>(null)
@@ -121,28 +120,8 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       return
     }
 
-    if (isCapacitor()) {
-      handleClose()
-      router.push('/?scan=true')
-      return
-    }
-
-    // Mobile/tablet detection — iPadOS reports a Mac user agent, so
-    // we also check for touch + maxTouchPoints (iPads report 5).
-    // A width cap prevents Windows touchscreen laptops (maxTouchPoints 10,
-    // screens ≥1920px) from being misidentified as mobile.
-    const isMobile =
-      typeof window !== 'undefined' &&
-      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 1400))
-
-    if (isMobile) {
-      handleClose()
-      router.push('/?scan=true')
-      return
-    }
-
-    setShowScanInfo(true)
+    handleClose()
+    router.push(buildScanPath(isCapacitor() ? 'app' : 'header'))
   }
 
   const proceedToVerdict = (
@@ -720,13 +699,6 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
           </div>
         </div>
       </div>
-
-      <InfoDialog
-        open={showScanInfo}
-        onClose={() => setShowScanInfo(false)}
-        title="Scan is a Mobile Feature"
-        description="Point your phone camera at any property for instant analysis. On desktop, use 'Enter Address' to search by location."
-      />
     </>
   )
 }

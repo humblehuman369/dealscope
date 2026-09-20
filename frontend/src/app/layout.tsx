@@ -3,6 +3,7 @@ import { Inter, Source_Sans_3, DM_Sans, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
+import { ScanQR } from '@/components/landing/ScanQR'
 import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
 import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
@@ -113,7 +114,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <LayoutWrapper scanQr={<ScanQR src="qr_dialog" />}>{children}</LayoutWrapper>
 
           {/* Toast notifications */}
           <Toaster />

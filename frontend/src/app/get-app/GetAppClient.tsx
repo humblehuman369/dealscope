@@ -9,7 +9,7 @@
  * home — there is nothing to download.
  */
 
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { isCapacitor } from '@/lib/env'
 import { APP_STORE_URL, PLAY_STORE_URL, detectWebPlatform } from '@/lib/appStore'
@@ -23,7 +23,7 @@ const VALUE_PROPS = [
   'Point & Scan: point your phone at any house and get the numbers',
 ]
 
-export default function GetAppClient() {
+export default function GetAppClient({ children }: { children?: ReactNode }) {
   const router = useRouter()
 
   // Mobile visitors are redirected to the right store immediately; desktop
@@ -73,6 +73,15 @@ export default function GetAppClient() {
             </li>
           ))}
         </ul>
+
+        {children ? (
+          <div className="mt-8">
+            <p className="mb-3 text-[14px] text-[var(--text-secondary)]">
+              On your phone? Point it at any house and get the verdict.
+            </p>
+            <div className="flex justify-center">{children}</div>
+          </div>
+        ) : null}
 
         <div className="mt-8 flex flex-col gap-3">
           <a

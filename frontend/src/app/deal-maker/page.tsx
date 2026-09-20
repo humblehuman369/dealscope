@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
 import { webBaseUrl, isCapacitor } from '@/lib/env'
+import { buildScanPath } from '@/lib/scanQr'
 import dynamic from 'next/dynamic'
 import {
   Search,
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react'
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
-import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { ProGate } from '@/components/ProGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -72,7 +72,6 @@ export default function DealMakerIndexPage() {
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)
   const [showAddressInput, setShowAddressInput] = useState(false)
-  const [showScanInfo, setShowScanInfo] = useState(false)
 
   const loadProperty = useCallback(
     async (address: string) => {
@@ -176,25 +175,7 @@ export default function DealMakerIndexPage() {
   }
 
   const handleScanProperty = () => {
-    if (isCapacitor()) {
-      router.push('/?scan=true')
-      return
-    }
-
-    // Mobile/tablet detection — iPadOS reports a Mac user agent, so we also
-    // check for touch + maxTouchPoints. A width cap prevents Windows
-    // touchscreen laptops from being misidentified as mobile.
-    const isMobile =
-      typeof window !== 'undefined' &&
-      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 1400))
-
-    if (isMobile) {
-      router.push('/?scan=true')
-      return
-    }
-
-    setShowScanInfo(true)
+    router.push(buildScanPath(isCapacitor() ? 'app' : 'header'))
   }
 
   const handleAddressSubmit = async (e: React.FormEvent) => {
@@ -556,13 +537,6 @@ export default function DealMakerIndexPage() {
           )}
         </div>
       </div>
-
-      <InfoDialog
-        open={showScanInfo}
-        onClose={() => setShowScanInfo(false)}
-        title="Scan is a Mobile Feature"
-        description="Point your phone camera at any property for instant analysis. On desktop, use 'Enter Address' to search by location."
-      />
     </ProGate>
   )
 }

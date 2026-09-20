@@ -27,6 +27,7 @@ const APP_ROUTE_PREFIXES = [
   '/rehab',
   '/rental-comps',
   '/saved-properties',
+  '/scan',
   '/search-history',
   '/search',
 ] as const
