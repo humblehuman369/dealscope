@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ScanLine } from 'lucide-react'
+import { ScanLine, Smartphone } from 'lucide-react'
 import { buildScanPath } from '@/lib/scanQr'
 import {
   AddressAutocomplete,
@@ -50,11 +50,14 @@ function withAttribution(params: URLSearchParams): URLSearchParams {
   return params
 }
 
+const DESKTOP_SCAN_MQ = '(min-width: 768px)'
+
 export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
   const router = useRouter()
   const [value, setValue] = useState('')
   const [components, setComponents] = useState<AddressComponents | null>(null)
   const [detected, setDetected] = useState<HeroLocation | null>(null)
+  const [isDesktop, setIsDesktop] = useState(Boolean(scanQr))
 
   useEffect(() => {
     let cancelled = false
@@ -71,6 +74,18 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const mq = window.matchMedia(DESKTOP_SCAN_MQ)
+    const apply = () => setIsDesktop(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
+  const showDesktopScan = Boolean(scanQr) && isDesktop
+  const showMobileScan = !isDesktop
 
   const goToDiscovery = (address: string, c: AddressComponents | null) => {
     trackEvent('property_searched', { source: 'home_hero', type: 'address' })
@@ -147,10 +162,12 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             Live in every U.S. market
           </p>
           <h1 id="home-hero-heading" className="home-hero-static__headline">
-            Find a Great Deal <span>& How to Close it.</span>
+            Find a Great Deal <span className="home-hero-static__amp">&amp;</span>
+            <br />
+            How to Close It.
           </h1>
           <p className="home-hero-static__lead">
-            See the foreclosures, expired listings, and absentee owners in your market — then see
+            See the foreclosures, expired listings, and absentee owners in your market. Then see
             the gap before you make an offer.
           </p>
           <form className="home-hero-static__cta" onSubmit={submit}>
@@ -173,23 +190,42 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             />
             <button type="submit">See Now</button>
           </form>
-          <div className="home-hero-static__scan">
-            <Link href={buildScanPath('home_mobile')} className="home-hero-static__scan-btn">
-              <ScanLine aria-hidden className="h-5 w-5" />
-              Scan a house
-            </Link>
-            {scanQr ? (
-              <div className="home-hero-static__scan-qr">
-                {scanQr}
-                <p>On your phone? Point it at any house and get the verdict.</p>
-              </div>
-            ) : null}
-          </div>
+          {showMobileScan ? (
+            <div className="home-hero-static__mobile-scan">
+              <Link href={buildScanPath('home_mobile')} className="home-hero-static__scan-btn">
+                <ScanLine aria-hidden className="home-hero-static__scan-icon" />
+                Scan a house
+              </Link>
+              <p className="home-hero-static__scan-prompt">
+                What&apos;s the deal? Point phone at house and find out.
+              </p>
+            </div>
+          ) : null}
           <ul className="home-hero-static__pills" aria-label="What you can find">
             {PILLS.map((label) => (
               <li key={label}>{label}</li>
             ))}
           </ul>
+          {showDesktopScan ? (
+            <>
+              <div className="home-hero-static__divider" role="separator" />
+              <div className="home-hero-static__scan-module">
+                <div className="home-hero-static__scan-tile">{scanQr}</div>
+                <div className="home-hero-static__scan-copy">
+                  <p className="home-hero-static__scan-label">
+                    <Smartphone aria-hidden className="home-hero-static__scan-phone" />
+                    Point &amp; Scan
+                  </p>
+                  <p className="home-hero-static__scan-headline">
+                    What&apos;s the deal? Point phone at house and find out.
+                  </p>
+                  <p className="home-hero-static__scan-caption">
+                    Scan the code with your phone camera. Works with or without the app.
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
 
         <div className="home-hero-static__visual" aria-hidden="true">

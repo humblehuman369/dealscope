@@ -44,6 +44,18 @@ function pushedUrl(): URL {
   return new URL(push.mock.calls[0][0] as string, 'https://dealgapiq.com')
 }
 
+function stubMatchMedia(matches: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }))
+}
+
 describe('HomeHeroStatic', () => {
   beforeEach(() => {
     push.mockClear()
@@ -52,14 +64,57 @@ describe('HomeHeroStatic', () => {
     detectHeroLocation.mockResolvedValue(null)
     lastPlaceSelect = undefined
     window.location.search = ''
+    stubMatchMedia(false)
   })
 
   it('renders the headline, See Now CTA, and address placeholder', () => {
     render(<HomeHeroStatic />)
-    expect(screen.getByRole('heading', { name: /Find a Great Deal/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /Find a Great Deal.*How to Close It\./i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /See the foreclosures, expired listings, and absentee owners in your market\. Then see/,
+      ),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'See Now' })).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Address, city, or ZIP')).toBeInTheDocument()
     expect(screen.queryByText(/Opens the live map/)).not.toBeInTheDocument()
+  })
+
+  it('keeps the five filter pills on one row in the approved order', () => {
+    render(<HomeHeroStatic />)
+    const pills = screen.getByRole('list', { name: 'What you can find' })
+    expect([...pills.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
+      'Foreclosures',
+      'Pre-foreclosures',
+      'Expired listings',
+      'Absentee owners',
+      'Distressed sellers',
+    ])
+  })
+
+  it('renders the desktop scan module when a QR is provided', () => {
+    stubMatchMedia(true)
+    render(<HomeHeroStatic scanQr={<div data-testid="hero-qr">qr</div>} />)
+    expect(screen.getByTestId('hero-qr')).toBeInTheDocument()
+    expect(screen.getByText(/Point & Scan/i)).toBeInTheDocument()
+    expect(
+      screen.getByText("What's the deal? Point phone at house and find out."),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Scan the code with your phone camera. Works with or without the app.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Scan a house/i })).not.toBeInTheDocument()
+  })
+
+  it('does not keep a provided QR in the DOM on a mobile viewport', async () => {
+    stubMatchMedia(false)
+    render(<HomeHeroStatic scanQr={<div data-testid="hero-qr">qr</div>} />)
+    await waitFor(() => {
+      expect(screen.queryByTestId('hero-qr')).not.toBeInTheDocument()
+    })
+    expect(screen.getByRole('link', { name: /Scan a house/i })).toBeInTheDocument()
   })
 
   it('links Scan a house to /scan?src=home_mobile', () => {
