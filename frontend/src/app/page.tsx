@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
+import { ScanQR } from '@/components/landing/ScanQR'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { LENDER_COUNT, SPEED_CLAIM } from '@/lib/claims'
+import { isMobileUserAgent } from '@/lib/scanQr'
 
 const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
 const defaultDescription =
@@ -66,11 +69,16 @@ const HOME_FAQ = [
   },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const ua = (await headers()).get('user-agent') ?? ''
+  const scanQr = isMobileUserAgent(ua) ? undefined : (
+    <ScanQR src="qr_home" size={72} framed={false} />
+  )
+
   return (
     <>
       <FaqJsonLd items={HOME_FAQ} />
-      <HomePageClient />
+      <HomePageClient scanQr={scanQr} />
     </>
   )
 }
