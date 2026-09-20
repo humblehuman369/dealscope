@@ -141,13 +141,16 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
             DealGap<span className="text-[var(--accent-sky)]">IQ</span>
           </Link>
 
-          <div className="hidden min-[860px]:flex min-w-0 flex-1 items-center justify-center gap-3 text-[13px] min-[1100px]:gap-6 min-[1100px]:text-sm">
+          <div
+            className="hidden min-w-0 flex-1 items-center justify-between gap-x-4 px-4 text-[13px] min-[860px]:flex min-[1100px]:gap-x-6 min-[1100px]:px-8 min-[1100px]:text-sm"
+            aria-label="Primary"
+          >
             {navLinks.map((link) =>
               link.href.startsWith('/') ? (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="whitespace-nowrap font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                  className="whitespace-nowrap rounded-md px-0.5 py-1 font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
                 >
                   {link.label}
                 </Link>
@@ -155,7 +158,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="whitespace-nowrap font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                  className="whitespace-nowrap rounded-md px-0.5 py-1 font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
                 >
                   {link.label}
                 </a>

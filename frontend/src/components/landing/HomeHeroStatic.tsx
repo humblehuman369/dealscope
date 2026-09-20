@@ -201,11 +201,6 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
               </p>
             </div>
           ) : null}
-          <ul className="home-hero-static__pills" aria-label="What you can find">
-            {PILLS.map((label) => (
-              <li key={label}>{label}</li>
-            ))}
-          </ul>
           {showDesktopScan ? (
             <>
               <div className="home-hero-static__divider" role="separator" />
@@ -227,6 +222,12 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             </>
           ) : null}
         </div>
+
+        <ul className="home-hero-static__pills" aria-label="What you can find">
+          {PILLS.map((label) => (
+            <li key={label}>{label}</li>
+          ))}
+        </ul>
 
         <div className="home-hero-static__visual" aria-hidden="true">
           <div className="home-hero-static__card">
