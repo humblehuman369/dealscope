@@ -29,21 +29,22 @@ export function ScanResultSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed top-0 left-0 right-0 z-50 flex h-dvh max-h-dvh items-end justify-center"
       role="dialog"
       aria-modal="true"
       aria-label="Scan result"
     >
-      {/* Backdrop */}
+      {/* Dim only — backdrop-filter creates an iOS compositing layer that
+          intercepts taps meant for the sheet (close / Scan Another / Search Map). */}
       <div
-        className="absolute inset-0 bg-[var(--surface-base)]/60 backdrop-blur-sm"
+        className="absolute inset-0 z-0 bg-[var(--surface-base)]/60"
         onClick={onClose}
       />
 
-      {/* Sheet */}
+      {/* Sheet sits in its own layer above the dimmer so buttons stay tappable. */}
       <div
         ref={sheetRef}
-        className="relative w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up"
+        className="relative z-10 isolate w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up pointer-events-auto"
         style={{
           background: 'var(--surface-card)',
         }}
@@ -55,16 +56,17 @@ export function ScanResultSheet({
 
         {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-          style={{ background: 'var(--surface-elevated)' }}
+          className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center rounded-full transition-colors"
+          style={{ background: 'var(--surface-elevated)', touchAction: 'manipulation' }}
           aria-label="Close"
         >
-          <X className="w-4 h-4" style={{ color: 'var(--text-label)' }} />
+          <X className="w-5 h-5" style={{ color: 'var(--text-label)' }} />
         </button>
 
-        {/* Content */}
-        <div className="px-6 pb-8">
+        {/* Content — extra bottom padding so actions clear Safari chrome / home indicator */}
+        <div className="px-6 pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
           {/* Success indicator */}
           <div className="flex items-center gap-3 mb-4">
             <div
@@ -129,9 +131,10 @@ export function ScanResultSheet({
 
           {/* Primary CTA */}
           <button
+            type="button"
             onClick={onViewDetails}
-            className="w-full py-3.5 px-4 rounded-xl text-white font-semibold transition-colors flex items-center justify-center gap-2 mb-3"
-            style={{ background: '#14B8A6' }}
+            className="w-full min-h-12 py-3.5 px-4 rounded-xl text-white font-semibold transition-colors flex items-center justify-center gap-2 mb-3"
+            style={{ background: '#14B8A6', touchAction: 'manipulation' }}
           >
             Analyze This Property
             <ArrowRight className="w-4 h-4" />
@@ -140,24 +143,28 @@ export function ScanResultSheet({
           {/* Secondary actions */}
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors"
+              className="flex-1 min-h-12 py-3 px-4 rounded-xl font-medium transition-colors"
               style={{
                 border: '1px solid var(--border-default)',
                 color: 'var(--text-body)',
                 background: 'var(--surface-card)',
+                touchAction: 'manipulation',
               }}
             >
               Scan Another
             </button>
             {onPickFromMap && (
               <button
+                type="button"
                 onClick={onPickFromMap}
-                className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                className="flex-1 min-h-12 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                 style={{
                   border: '1px solid var(--border-default)',
                   color: 'var(--text-body)',
                   background: 'var(--surface-card)',
+                  touchAction: 'manipulation',
                 }}
               >
                 <Map className="w-4 h-4" />

@@ -6,6 +6,7 @@ import { X, MapPin, Loader2, Home, ArrowRight, Navigation, LocateFixed } from 'l
 import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode'
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import { useSession } from '@/hooks/useSession'
+import { useFocusTrap } from '@/components/ui/useFocusTrap'
 
 const MAP_ID = 'DEMO_MAP_ID'
 const PARCEL_ZOOM = 18
@@ -37,7 +38,9 @@ export function MapPropertyPicker({
   const [tapPin, setTapPin] = useState<{ lat: number; lng: number } | null>(null)
   const [showMyDeals, setShowMyDeals] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useSession()
+  useFocusTrap(dialogRef, true)
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
@@ -69,25 +72,69 @@ export function MapPropertyPicker({
     mapRef.current?.setZoom(PARCEL_ZOOM)
   }
 
-  if (!apiKey) return null
+  if (!apiKey) {
+    return (
+      <div
+        ref={dialogRef}
+        className="fixed top-0 left-0 right-0 z-[60] flex h-dvh max-h-dvh flex-col"
+        style={{ background: 'var(--surface-base)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Pick property on map"
+      >
+        <div
+          className="relative z-20 flex items-center justify-between px-4 py-3 pt-safe-header"
+          style={{
+            background: 'var(--surface-card)',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--surface-elevated)' }}
+            aria-label="Close map"
+          >
+            <X className="w-5 h-5" style={{ color: 'var(--text-label)' }} />
+          </button>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
+            Map unavailable
+          </h2>
+          <div className="w-11" />
+        </div>
+        <div className="flex flex-1 items-center justify-center px-6">
+          <p className="text-sm text-center" style={{ color: 'var(--text-secondary)' }}>
+            The map could not load. Close this screen and scan again, or search by address.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex flex-col"
+      ref={dialogRef}
+      className="fixed top-0 left-0 right-0 z-[60] flex h-dvh max-h-dvh flex-col"
       style={{ background: 'var(--surface-base)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Pick property on map"
     >
-      {/* Header */}
+      {/* Header lives in its own compositing layer so iOS Google Maps
+          cannot steal taps on the close control. */}
       <div
-        className="relative z-10 flex items-center justify-between px-4 py-3 pt-safe-header shadow-md"
+        className="relative z-20 isolate flex items-center justify-between px-4 py-3 pt-safe-header shadow-md pointer-events-auto"
         style={{
           background: 'var(--surface-card)',
           borderBottom: '1px solid var(--border-subtle)',
         }}
       >
         <button
+          type="button"
           onClick={onClose}
-          className="w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: 'var(--surface-elevated)' }}
+          className="w-11 h-11 rounded-full flex items-center justify-center"
+          style={{ background: 'var(--surface-elevated)', touchAction: 'manipulation' }}
           aria-label="Close map"
         >
           <X className="w-5 h-5" style={{ color: 'var(--text-label)' }} />
@@ -97,11 +144,11 @@ export function MapPropertyPicker({
           Tap the correct property
         </h2>
 
-        <div className="w-9" />
+        <div className="w-11" />
       </div>
 
-      {/* Map */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* Map is contained so its WebGL canvas cannot cover header/footer. */}
+      <div className="relative z-0 min-h-0 flex-1 overflow-hidden isolate">
         <APIProvider apiKey={apiKey} libraries={['marker']}>
           <Map
             defaultCenter={{ lat: userLat, lng: userLng }}
@@ -111,7 +158,7 @@ export function MapPropertyPicker({
             gestureHandling="greedy"
             disableDefaultUI
             zoomControl
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
             clickableIcons={false}
             onClick={handleMapClick}
             onIdle={(e) => {
@@ -136,8 +183,15 @@ export function MapPropertyPicker({
               </div>
             </AdvancedMarker>
 
-            {/* Original scanned property (muted red pin) */}
-            <AdvancedMarker position={{ lat: scannedProperty.lat, lng: scannedProperty.lng }}>
+            {/* Original scanned property (muted red pin) — tap to confirm it */}
+            <AdvancedMarker
+              position={{ lat: scannedProperty.lat, lng: scannedProperty.lng }}
+              onClick={() => {
+                setTapPin({ lat: scannedProperty.lat, lng: scannedProperty.lng })
+                setSelectedProperty(scannedProperty)
+                setIsGeocoding(false)
+              }}
+            >
               <div
                 className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap shadow-md"
                 style={{
@@ -170,7 +224,7 @@ export function MapPropertyPicker({
         </APIProvider>
 
         {isAuthenticated && (
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-4 right-4 z-10 pointer-events-auto">
             <MyDealLayerToggle
               active={showMyDeals}
               onClick={() => setShowMyDeals((v) => !v)}
@@ -180,11 +234,13 @@ export function MapPropertyPicker({
 
         {/* Re-center button */}
         <button
+          type="button"
           onClick={handleRecenter}
-          className="absolute bottom-4 right-4 w-11 h-11 rounded-full shadow-lg flex items-center justify-center"
+          className="absolute bottom-4 right-4 z-10 w-11 h-11 rounded-full shadow-lg flex items-center justify-center pointer-events-auto"
           style={{
             background: 'var(--surface-card)',
             border: '1px solid var(--border-default)',
+            touchAction: 'manipulation',
           }}
           aria-label="Re-center on my location"
         >
@@ -212,7 +268,7 @@ export function MapPropertyPicker({
       {/* Bottom card: geocode result or loading */}
       {(tapPin || isGeocoding) && (
         <div
-          className="relative z-20 px-4 pb-6 pt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
+          className="relative z-20 isolate px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.15)] pointer-events-auto"
           style={{
             background: 'var(--surface-card)',
             borderTop: '1px solid var(--border-subtle)',
@@ -251,23 +307,26 @@ export function MapPropertyPicker({
 
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => {
                     setTapPin(null)
                     setSelectedProperty(null)
                   }}
-                  className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors"
+                  className="flex-1 min-h-12 py-3 px-4 rounded-xl font-medium transition-colors"
                   style={{
                     border: '1px solid var(--border-default)',
                     color: 'var(--text-body)',
                     background: 'var(--surface-card)',
+                    touchAction: 'manipulation',
                   }}
                 >
                   Pick Another
                 </button>
                 <button
+                  type="button"
                   onClick={handleConfirm}
-                  className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-white"
-                  style={{ background: 'var(--accent-sky)' }}
+                  className="flex-1 min-h-12 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-white"
+                  style={{ background: 'var(--accent-sky)', touchAction: 'manipulation' }}
                 >
                   Analyze Property
                   <ArrowRight className="w-4 h-4" />

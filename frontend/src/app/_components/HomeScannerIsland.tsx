@@ -237,6 +237,18 @@ export default function HomeScannerIsland({
     navigateToVerdict(property)
   }
 
+  const handleCloseResult = () => {
+    setShowMapPicker(false)
+    scanner.clearResult()
+  }
+
+  const canShowMap =
+    showMapPicker &&
+    scanner.latitude !== null &&
+    scanner.longitude !== null &&
+    Boolean(scanner.result)
+  const overlayOpen = Boolean(scanner.result) || canShowMap
+
   if (cameraError) {
     return (
       <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-6">
@@ -330,13 +342,13 @@ export default function HomeScannerIsland({
   }
 
   return (
-    <div className="fixed inset-0 bg-[var(--surface-base)]">
+    <div className="fixed top-0 left-0 right-0 h-dvh max-h-dvh bg-[var(--surface-base)]">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
       {/* Address Search Overlay */}
@@ -385,7 +397,9 @@ export default function HomeScannerIsland({
         </div>
       )}
 
-      <div className="absolute inset-0 flex flex-col">
+      <div
+        className={`absolute inset-0 flex flex-col ${overlayOpen ? 'pointer-events-none' : ''}`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 pt-safe bg-gradient-to-b from-black/60 to-transparent">
           <div className="flex items-center gap-2">
@@ -549,19 +563,19 @@ export default function HomeScannerIsland({
         </div>
       </div>
 
-      {scanner.result && (
+      {scanner.result && !canShowMap && (
         <ScanResultSheet
           result={scanner.result}
-          onClose={scanner.clearResult}
+          onClose={handleCloseResult}
           onViewDetails={handleViewDetails}
           onPickFromMap={() => setShowMapPicker(true)}
         />
       )}
 
-      {showMapPicker &&
+      {canShowMap &&
+        scanner.result &&
         scanner.latitude !== null &&
-        scanner.longitude !== null &&
-        scanner.result && (
+        scanner.longitude !== null && (
           <MapPropertyPicker
             userLat={scanner.latitude}
             userLng={scanner.longitude}
