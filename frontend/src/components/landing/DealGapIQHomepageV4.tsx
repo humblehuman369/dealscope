@@ -132,22 +132,22 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
   return (
     <nav className="hero-v5-nav sticky top-0 z-50 bg-[var(--surface-base)]">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="flex h-20 items-center justify-between gap-6">
+        <div className="flex h-16 min-[1100px]:h-20 items-center justify-between gap-3 min-[1100px]:gap-6">
           <Link
             href="/"
-            className="flex items-center text-3xl font-black tracking-[-0.05em] text-[var(--text-heading)]"
+            className="flex shrink-0 items-center text-2xl min-[1100px]:text-3xl font-black tracking-[-0.05em] text-[var(--text-heading)]"
             style={DISPLAY_STYLE}
           >
             DealGap<span className="text-[var(--accent-sky)]">IQ</span>
           </Link>
 
-          <div className="hidden items-center gap-10 text-sm lg:flex">
+          <div className="hidden min-[860px]:flex min-w-0 flex-1 items-center justify-center gap-3 text-[13px] min-[1100px]:gap-6 min-[1100px]:text-sm">
             {navLinks.map((link) =>
               link.href.startsWith('/') ? (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                  className="whitespace-nowrap font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
                 >
                   {link.label}
                 </Link>
@@ -155,7 +155,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                  className="whitespace-nowrap font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
                 >
                   {link.label}
                 </a>
@@ -163,20 +163,20 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
             )}
           </div>
 
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden min-[860px]:flex shrink-0 items-center gap-2 min-[1100px]:gap-4">
             {isAuthenticated ? (
               <MarketingUserMenu />
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
+                  className="px-3 py-2 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)] min-[1100px]:px-5 min-[1100px]:py-2.5"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/register"
-                  className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
+                  className="px-3 py-2 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)] min-[1100px]:px-5 min-[1100px]:py-2.5"
                 >
                   Register
                 </Link>
@@ -185,7 +185,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
           </div>
 
           {isAuthenticated ? (
-            <div className="lg:hidden">
+            <div className="min-[860px]:hidden">
               <MarketingUserMenu />
             </div>
           ) : null}
@@ -193,7 +193,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] ${isAuthenticated ? 'hidden' : 'lg:hidden'}`}
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] ${isAuthenticated ? 'hidden' : 'min-[860px]:hidden'}`}
             aria-label="Toggle navigation"
             aria-expanded={mobileOpen}
           >
@@ -202,7 +202,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-[var(--border-default)] pb-5 pt-4 lg:hidden">
+          <div className="border-t border-[var(--border-default)] pb-5 pt-4 min-[860px]:hidden">
             <div className="flex flex-col gap-3">
               {navLinks.map((link) =>
                 link.href.startsWith('/') ? (
