@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
+import { ScanQR } from '@/components/landing/ScanQR'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { LENDER_COUNT, SPEED_CLAIM } from '@/lib/claims'
@@ -70,7 +71,7 @@ export default function HomePage() {
   return (
     <>
       <FaqJsonLd items={HOME_FAQ} />
-      <HomePageClient />
+      <HomePageClient scanQr={<ScanQR src="qr_home" />} />
     </>
   )
 }

@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ScanLine } from 'lucide-react'
+import { buildScanPath } from '@/lib/scanQr'
 import {
   AddressAutocomplete,
   type AddressComponents,
@@ -47,7 +50,7 @@ function withAttribution(params: URLSearchParams): URLSearchParams {
   return params
 }
 
-export function HomeHeroStatic() {
+export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
   const router = useRouter()
   const [value, setValue] = useState('')
   const [components, setComponents] = useState<AddressComponents | null>(null)
@@ -170,6 +173,18 @@ export function HomeHeroStatic() {
             />
             <button type="submit">See Now</button>
           </form>
+          <div className="home-hero-static__scan">
+            <Link href={buildScanPath('home_mobile')} className="home-hero-static__scan-btn">
+              <ScanLine aria-hidden className="h-5 w-5" />
+              Scan a house
+            </Link>
+            {scanQr ? (
+              <div className="home-hero-static__scan-qr">
+                {scanQr}
+                <p>On your phone? Point it at any house and get the verdict.</p>
+              </div>
+            ) : null}
+          </div>
           <ul className="home-hero-static__pills" aria-label="What you can find">
             {PILLS.map((label) => (
               <li key={label}>{label}</li>

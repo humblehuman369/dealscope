@@ -100,6 +100,52 @@
   color: var(--text-heading);
 }
 
+.home-hero-static__scan {
+  margin-top: 14px;
+  max-width: 520px;
+}
+.home-hero-static__scan-btn {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border-radius: 40px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-elevated);
+  color: var(--text-heading);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.home-hero-static__scan-btn:hover {
+  background: var(--hover-overlay);
+}
+.home-hero-static__scan-qr {
+  display: none;
+  align-items: center;
+  gap: 16px;
+}
+.home-hero-static__scan-qr p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 767px) {
+  .home-hero-static__scan-btn {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-hero-static__scan-qr {
+    display: flex;
+  }
+}
+
 .home-hero-static__pills {
   list-style: none;
   display: flex;

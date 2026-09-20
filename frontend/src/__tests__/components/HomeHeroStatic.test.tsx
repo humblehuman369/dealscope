@@ -62,6 +62,14 @@ describe('HomeHeroStatic', () => {
     expect(screen.queryByText(/Opens the live map/)).not.toBeInTheDocument()
   })
 
+  it('links Scan a house to /scan?src=home_mobile', () => {
+    render(<HomeHeroStatic />)
+    expect(screen.getByRole('link', { name: /Scan a house/i })).toHaveAttribute(
+      'href',
+      '/scan?src=home_mobile',
+    )
+  })
+
   it('submits an empty field to /map-search with no query', () => {
     render(<HomeHeroStatic />)
     fireEvent.submit(screen.getByRole('button', { name: 'See Now' }).closest('form')!)

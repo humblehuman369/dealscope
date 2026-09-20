@@ -42,7 +42,7 @@ import './hero-v5.css'
 import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
 
 interface Props {
-  onPointAndScan?: () => void
+  scanQr?: React.ReactNode
 }
 
 const DISPLAY_STYLE: React.CSSProperties = {
@@ -73,7 +73,7 @@ function AuthParamHandler() {
   return null
 }
 
-export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) {
+export function DealGapIQHomepageV4({ scanQr }: Props) {
   const router = useRouter()
 
   const runDiscovery = () => router.push('/search')
@@ -89,7 +89,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       <MarketingNav onStart={runDiscovery} />
 
       <main>
-        <HomeHeroStatic />
+        <HomeHeroStatic scanQr={scanQr} />
         <SocialProof compact />
         <QuickStatsBar />
         <FounderTrustSection />
@@ -121,6 +121,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
   const closeMobile = () => setMobileOpen(false)
 
   const navLinks = [
+    { href: '/scan?src=header', label: 'Scan' },
     { href: '#how-it-works', label: 'How it Works' },
     { href: '/directory', label: 'Cash Buyers' },
     { href: '/lenders', label: 'Hard Money' },
