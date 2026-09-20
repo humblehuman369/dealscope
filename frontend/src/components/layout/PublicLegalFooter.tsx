@@ -29,13 +29,8 @@ export function PublicLegalFooter() {
           (866) 388-8222
         </a>
         {' · '}
-        <a
-          className={linkClass}
-          href="https://wa.me/13074173076"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          WhatsApp chat (307) 417-3076
+        <a className={linkClass} href="sms:+13074173076">
+          Text (307) 417-3076
         </a>
       </p>
       <p className="mt-2">© {new Date().getFullYear()} {LEGAL_ENTITY_DBA}. All rights reserved.</p>
