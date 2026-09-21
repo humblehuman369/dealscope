@@ -23,7 +23,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.services.zillow_client import create_zillow_client  # noqa: E402
+from app.services.zillow_client import create_zillow_client
 
 # Norfolk, VA tile from the Sept 21 production logs.
 NORTH, SOUTH, EAST, WEST = 36.90625, 36.6875, -76.09375, -76.25
