@@ -16,6 +16,7 @@ try:
 
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.middleware.gzip import GZipMiddleware
     from fastapi.responses import JSONResponse
 except Exception as _e:
     print(f">>> FATAL IMPORT ERROR: {_e}", flush=True)
@@ -247,6 +248,11 @@ app = FastAPI(
     openapi_url=None if settings.is_production else "/openapi.json",
     lifespan=lifespan,
 )
+
+# Compress JSON bodies over 1 KB. A city-sized `search-area` response is a few
+# hundred KB of listings; gzip cuts the wire size by roughly 80%. Added before
+# CORS so it sits inside it and CORS headers are never compressed away.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # CORS middleware
 app.add_middleware(
