@@ -26,7 +26,10 @@ from app.services.zillow_client import ZillowClient, create_zillow_client
 
 logger = logging.getLogger(__name__)
 
-MAP_CACHE_TTL = 600  # 10 minutes
+# 1 hour. A tile is shared by every user browsing it, and listing inventory
+# does not turn over fast enough for a 10-minute window to buy fresher pins —
+# it only re-billed the full provider fan-out on every revisit.
+MAP_CACHE_TTL = 3600
 
 # Average days per year (accounts for leap years) — used to translate an
 # owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
