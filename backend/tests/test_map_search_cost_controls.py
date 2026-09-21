@@ -15,9 +15,9 @@ regressions are guarded here.
    returned the cached non-Airbnb result — and two different cities shared one
    entry.
 
-Plus the zoom gate: the expensive per-property modes (motivated-seller keyword
-scans, expired validation, distressed URL queries) refuse to run at region
-zoom instead of billing for a result set no investor can work.
+Plus the zoom gate: the expensive per-property modes (expired validation,
+distressed URL queries) refuse to run at region zoom instead of billing for a
+result set no investor can work.
 """
 
 from __future__ import annotations
@@ -154,7 +154,9 @@ def test_str_city_casing_is_normalized():
 @pytest.mark.parametrize(
     ("req", "expected"),
     [
-        (_req(motivated_seller_search=True), ["motivated sellers"]),
+        # The keyword pass behind this flag was removed (Sept 21, 2026); the
+        # flag no longer makes a search expensive.
+        (_req(motivated_seller_search=True), []),
         (_req(listing_statuses=["expired"]), ["expired listings"]),
         (_req(listing_statuses=["pre-foreclosure"]), ["distressed listings"]),
         (_req(listing_statuses=["auction", "foreclosure"]), ["distressed listings"]),

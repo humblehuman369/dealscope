@@ -18,7 +18,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
-from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
 from app.services import zip_market_service
 from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
@@ -28,8 +27,6 @@ from app.services.zillow_client import ZillowClient, create_zillow_client
 logger = logging.getLogger(__name__)
 
 MAP_CACHE_TTL = 600  # 10 minutes
-MOTIVATED_SELLER_KEYWORD_CACHE_TTL = 1800  # 30 minutes per keyword + viewport
-MOTIVATED_SELLER_CONCURRENCY = 8
 
 # Average days per year (accounts for leap years) — used to translate an
 # owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
@@ -96,9 +93,8 @@ DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
 )
 
 # Modes whose dispatch cost is far above ordinary active-listing browsing:
-# motivated-seller runs one Zillow keyword scrape per phrase, expired runs a
-# per-candidate current-status lookup, and each distressed bucket is its own
-# URL query. At region zoom that is a large provider bill for a result set no
+# expired runs a per-candidate current-status lookup, and each distressed
+# bucket is its own URL query. At region zoom that is a large provider bill for a result set no
 # investor can work, so these require a zoomed-in viewport. The cap coincides
 # with the grid_size==1 boundary below, so an expensive mode is never also
 # multiplied by grid fan-out.
@@ -321,11 +317,6 @@ def _merge_preserving_loser_fields(winner: MapListing, loser: MapListing) -> Map
     return winner.model_copy(update=updates)
 
 
-def _round_coord(val: float, precision: int = 3) -> float:
-    """Round a coordinate for cache key stability (~111 m at the equator)."""
-    return round(val, precision)
-
-
 # ─── Viewport tile quantization ──────────────────────────────────────────
 # Rounding the raw bounds to 3 decimals made any pan beyond ~111 m a total
 # cache miss, so an ordinary drag re-ran the whole provider fan-out. Instead
@@ -391,7 +382,8 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "istr": req.include_str_listings,
             "strst": (req.str_state or "").upper() or None,
             "strcy": (req.str_city or "").lower() or None,
-            "mss": req.motivated_seller_search,
+            # motivated_seller_search is deliberately absent: it no longer
+            # changes the dispatch, so a request carrying it shares the tile.
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
             "occ": req.owner_occupancy,
@@ -422,8 +414,6 @@ def resolve_owner_availability(req: MapSearchRequest) -> str:
 def _expensive_mode_labels(req: MapSearchRequest, requested_statuses: set[str]) -> list[str]:
     """Names of the requested modes that are too costly to run at wide zoom."""
     labels: list[str] = []
-    if req.motivated_seller_search:
-        labels.append("motivated sellers")
     if "expired" in requested_statuses:
         labels.append("expired listings")
     if requested_statuses & DISTRESSED_ONLY_STATUSES:
@@ -476,23 +466,6 @@ def _join_labels(labels: list[str]) -> str:
     if len(labels) <= 1:
         return labels[0] if labels else ""
     return f"{', '.join(labels[:-1])} and {labels[-1]}"
-
-
-def _build_keyword_cache_key(keyword: str, req: MapSearchRequest) -> str:
-    """Cache key for a single motivated-seller keyword query within a viewport."""
-    raw = json.dumps(
-        {
-            "kw": keyword.lower().strip(),
-            "n": _round_coord(req.north),
-            "s": _round_coord(req.south),
-            "e": _round_coord(req.east),
-            "w": _round_coord(req.west),
-            "pt": req.property_type,
-        },
-        sort_keys=True,
-    )
-    digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
-    return f"mapsearch:kw:{digest}"
 
 
 def _point_in_polygon(lat: float, lng: float, polygon: list[list[float]]) -> bool:
@@ -628,7 +601,6 @@ class MapSearchService:
         # builds.
         requested_statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES} or {"active"}
 
-        motivated_seller_mode = req.motivated_seller_search
         # Owner-records mode: RentCast property-records lead search, driven by
         # tenure, occupancy, and/or availability pills.
         owner_records_mode = owner_records_active(req)
@@ -661,7 +633,7 @@ class MapSearchService:
         tile_radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
         # Decide grid size based on viewport radius
-        if motivated_seller_mode or owner_records_mode:
+        if owner_records_mode:
             grid_size = 1
         elif radius > 100:
             grid_size = 3  # 9 query points for state-level views
@@ -695,17 +667,7 @@ class MapSearchService:
         listings_by_addr: dict[str, MapListing] = {}
         raw_source_totals: int = 0
 
-        if motivated_seller_mode:
-            logger.info(
-                "Map search motivated-seller mode: replacing standard sources with %d Zillow keyword queries",
-                len(MOTIVATED_SELLER_KEYWORDS),
-            )
-            if req.listing_type in ("sale", "both"):
-                motivated_rows = await self._fetch_motivated_seller_listings(req, cache)
-                raw_source_totals = len(motivated_rows)
-                for item in motivated_rows:
-                    self._merge_listing_into(listings_by_addr, item)
-        elif owner_records_mode:
+        if owner_records_mode:
             logger.info(
                 "Map search owner-records mode: RentCast property records, tenure=%s-%s yrs, occupancy=%s",
                 req.owner_tenure_min_years,
@@ -1044,7 +1006,7 @@ class MapSearchService:
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
         estimated_total: int | None = None
-        if not motivated_seller_mode and grid_size > 1:
+        if grid_size > 1:
             full_queries = sum(1 for r in results if not isinstance(r, Exception) and len(r) >= req.limit * 0.8)
             if full_queries > 0:
                 avg_per_query = raw_source_totals / max(len([r for r in results if not isinstance(r, Exception)]), 1)
@@ -1052,10 +1014,9 @@ class MapSearchService:
                 estimated_total = int(avg_per_query * area_multiplier * 1.5)
 
         logger.info(
-            "Map search returned %d listings (statuses=%s, motivated=%s, %d grid points, tile radius=%.1fmi, grid=%dx%d)",
+            "Map search returned %d listings (statuses=%s, %d grid points, tile radius=%.1fmi, grid=%dx%d)",
             len(listings),
             sorted(requested_statuses),
-            motivated_seller_mode,
             len(query_points),
             tile_radius,
             grid_size,
@@ -1279,36 +1240,6 @@ class MapSearchService:
             "nc": {"value": False},
             "cmsn": {"value": False},
         }
-        state = {
-            "pagination": {},
-            "isMapVisible": True,
-            "mapBounds": {
-                "north": round(north, 6),
-                "south": round(south, 6),
-                "east": round(east, 6),
-                "west": round(west, 6),
-            },
-            "filterState": filter_state,
-            "isListVisible": True,
-        }
-        encoded = urllib.parse.quote(json.dumps(state, separators=(",", ":")))
-        return f"https://www.zillow.com/homes/for_sale/?searchQueryState={encoded}"
-
-    @staticmethod
-    def _zillow_keyword_url(
-        north: float,
-        south: float,
-        east: float,
-        west: float,
-        keyword: str,
-    ) -> str:
-        """Build a Zillow ``searchQueryState`` URL for listing-description keyword search.
-
-        Zillow's Keywords filter maps to ``filterState.kw.value`` (comma-separated
-        terms are ANDed; we issue one keyword per URL for OR semantics).
-        Routed through AXESSO ``search-by-url`` like distressed inventory.
-        """
-        filter_state = {"kw": {"value": keyword.strip()}}
         state = {
             "pagination": {},
             "isMapVisible": True,
@@ -2158,88 +2089,6 @@ class MapSearchService:
         except Exception:
             logger.exception("Zillow %s listing fetch failed", status)
             return []
-
-    async def _fetch_zillow_keyword(
-        self,
-        req: MapSearchRequest,
-        keyword: str,
-        cache: Any,
-    ) -> list[MapListing]:
-        """Fetch for-sale listings matching a single Zillow keyword within the viewport."""
-        if not self.zillow:
-            return []
-
-        cache_key = _build_keyword_cache_key(keyword, req)
-        cached = await cache.get(cache_key)
-        if cached:
-            try:
-                return [MapListing(**item) for item in cached]
-            except Exception:
-                logger.warning("Motivated-seller keyword cache parse failed for %r", keyword)
-
-        url = self._zillow_keyword_url(req.north, req.south, req.east, req.west, keyword)
-        try:
-            resp = await self.zillow.search_by_url(url)
-            if not resp.success or not resp.data:
-                await cache.set(cache_key, [], ttl_seconds=MOTIVATED_SELLER_KEYWORD_CACHE_TTL)
-                return []
-
-            raw_props = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
-            if isinstance(resp.data, dict) and not raw_props:
-                for val in resp.data.values():
-                    if isinstance(val, list) and len(val) > 0:
-                        raw_props = val
-                        break
-
-            results: list[MapListing] = []
-            for item in raw_props:
-                if not self._zillow_has_coords(item):
-                    continue
-                listing = self._normalize_zillow_listing(item)
-                results.append(listing.model_copy(update={"motivated_keywords": [keyword]}))
-
-            await cache.set(
-                cache_key,
-                [item.model_dump(mode="json") for item in results],
-                ttl_seconds=MOTIVATED_SELLER_KEYWORD_CACHE_TTL,
-            )
-            if results:
-                logger.info("Zillow keyword %r: %d listings", keyword, len(results))
-            return results
-        except Exception:
-            logger.exception("Zillow keyword %r listing fetch failed", keyword)
-            return []
-
-    async def _fetch_motivated_seller_listings(
-        self,
-        req: MapSearchRequest,
-        cache: Any,
-    ) -> list[MapListing]:
-        """Run parallel Zillow keyword searches for every motivated-seller phrase."""
-        if not self.zillow:
-            return []
-
-        semaphore = asyncio.Semaphore(MOTIVATED_SELLER_CONCURRENCY)
-        listings_by_addr: dict[str, MapListing] = {}
-        hits_by_keyword: dict[str, int] = {}
-
-        async def _run_keyword(keyword: str) -> None:
-            async with semaphore:
-                rows = await self._fetch_zillow_keyword(req, keyword, cache)
-            hits_by_keyword[keyword] = len(rows)
-            for item in rows:
-                self._merge_listing_into(listings_by_addr, item)
-
-        await asyncio.gather(*(_run_keyword(kw) for kw in MOTIVATED_SELLER_KEYWORDS))
-
-        keywords_with_hits = sum(1 for count in hits_by_keyword.values() if count > 0)
-        logger.info(
-            "Motivated seller search: %d unique listings from %d/%d keywords with hits",
-            len(listings_by_addr),
-            keywords_with_hits,
-            len(MOTIVATED_SELLER_KEYWORDS),
-        )
-        return list(listings_by_addr.values())
 
     # ─── Normalization helpers ─────────────────────
 
