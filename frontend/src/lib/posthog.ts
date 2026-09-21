@@ -58,14 +58,13 @@ export function initPostHog(): Promise<PostHog | null> {
     .then(({ default: posthog }) => {
       posthog.init(key, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-        // '2026-05-30' is the current PostHog config snapshot (SPA pageviews,
-        // head script injection for Next.js SSR, plus later flag/replay defaults).
         defaults: '2026-05-30',
         persistence: analyticsOn ? 'localStorage+cookie' : 'memory',
-        autocapture: analyticsOn,
-        capture_pageview: analyticsOn,
+        autocapture: true,
+        capture_pageview: true,
+        capture_pageleave: true,
         disable_session_recording: !analyticsOn,
-        opt_out_capturing_by_default: !analyticsOn,
+        opt_out_capturing_by_default: false,
         advanced_disable_decide: false,
       })
       client = posthog
@@ -77,12 +76,11 @@ export function initPostHog(): Promise<PostHog | null> {
   return initPromise
 }
 
-/** Capture an event. No-op until analytics consent is "all". */
+/** Capture an event. Always sends; cookieless until consent is "all". */
 export function capturePostHog(
   name: string,
   props?: Record<string, string | number | boolean>,
 ): void {
-  if (!hasAnalyticsConsent()) return
   void initPostHog().then((ph) => ph?.capture(name, props))
 }
 
