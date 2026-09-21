@@ -68,8 +68,10 @@ RECENT_RESALE_TIMEOUT_S = 12.0
 
 # Per-property expired validation: each delisted candidate gets a current-status
 # lookup on Zillow. Bounded by concurrency + per-call timeout + a candidate cap
-# so the (many, slow) lookups can't blow the request budget.
-EXPIRED_VALIDATION_CONCURRENCY = 10
+# so the (many, slow) lookups can't blow the request budget. Kept low because
+# this fan-out shares the Axesso per-minute quota with every other Zillow call
+# on the server; at 10 it was a reliable way to start a 429 burst.
+EXPIRED_VALIDATION_CONCURRENCY = 4
 EXPIRED_VALIDATION_TIMEOUT_S = 6.0
 EXPIRED_VALIDATION_MAX_CANDIDATES = 60
 

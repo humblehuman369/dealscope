@@ -247,9 +247,22 @@ class BaseAPIClient(ABC, Generic[T]):
                             attempt + 1,
                             wait_time,
                         )
-                        await asyncio.sleep(wait_time)
-                        t0 = _time.monotonic()  # reset for next attempt
-                        continue
+                        if attempt < self.max_retries - 1:
+                            await asyncio.sleep(wait_time)
+                            t0 = _time.monotonic()  # reset for next attempt
+                            continue
+                        # A rate limit is not an outage. Do not record a
+                        # circuit-breaker failure: with several calls in flight
+                        # the breaker would open on the first 429 burst and
+                        # block every caller of this provider, not just the
+                        # one that fanned out.
+                        return self._create_response(
+                            success=False,
+                            data=None,
+                            error=f"{provider} API rate limited: 429 (after {attempt + 1} attempts)",
+                            status_code=response.status_code,
+                            **response_kwargs,
+                        )
 
                     elif response.status_code in (502, 503):
                         wait_time = 2**attempt
