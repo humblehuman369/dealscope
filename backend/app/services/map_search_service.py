@@ -97,9 +97,17 @@ DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
     {"foreclosure", "pre-foreclosure", "auction"},
 )
 
+# Result pages fetched per vanilla Zillow forSale / forRent query on the plain
+# path. AXESSO returns ~41 rows a page, so one page under-represents Zillow on
+# any city viewport (Norfolk VA: 41 of 1034). Three pages is the agreed budget
+# on the Axesso Business plan (100 calls/min, 300k/month) — do not raise it
+# without asking.
+ZILLOW_ACTIVE_PAGES = 3
+
 # Modes whose dispatch cost is far above ordinary active-listing browsing:
-# expired runs a per-candidate current-status lookup, and each distressed
-# bucket is its own URL query. At region zoom that is a large provider bill for a result set no
+# expired runs a per-candidate current-status lookup. (Distressed buckets no
+# longer dispatch their own URL queries as of Sept 21, 2026, but are still
+# gated here pending a decision on the matching frontend gate.) At region zoom that is a large provider bill for a result set no
 # investor can work, so these require a zoomed-in viewport. The cap coincides
 # with the grid_size==1 boundary below, so an expensive mode is never also
 # multiplied by grid fan-out.
@@ -822,16 +830,15 @@ class MapSearchService:
             tasks: list[asyncio.Task] = []
 
             # Dispatch shape, per grid point:
-            # - 1 vanilla forSale query when active/owner-listed is requested.
+            # - ZILLOW_ACTIVE_PAGES vanilla forSale pages when active is requested.
+            # - 2 owner-listed Zillow calls when owner_listed is requested.
             # - 1 RentCast for-sale query whenever any status RentCast can answer
             #   is requested (active/owner-listed OR a distressed bucket).
-            # - 1 URL-based Zillow query per requested distressed bucket.
             #
-            # Zillow's "Foreclosures" search can return both REO and
-            # pre-foreclosure inventory; their UI splits **Foreclosed** vs
-            # **Pre-foreclosures**. We classify each row with
-            # `_derive_zillow_status` (listingSubType / foreclosureTypes)—no blanket
-            # foreclosure tag—so filters match that split.
+            # Distressed buckets no longer dispatch their own Zillow URL queries
+            # (removed Sept 21, 2026 — see `_fetch_zillow_distressed`). Verified
+            # distress rows come from the RentCast for-sale merge, which exposes
+            # per-row flags.
 
             for pt_lat, pt_lng in query_points:
                 if req.listing_type in ("sale", "both"):
@@ -859,7 +866,15 @@ class MapSearchService:
                         if "active" in requested_statuses:
                             tasks.append(
                                 asyncio.create_task(
-                                    self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req, None),
+                                    self._fetch_zillow(
+                                        pt_lat,
+                                        pt_lng,
+                                        sub_radius,
+                                        "forSale",
+                                        req,
+                                        None,
+                                        pages=ZILLOW_ACTIVE_PAGES,
+                                    ),
                                 )
                             )
                         if "owner_listed" in requested_statuses:
@@ -870,25 +885,6 @@ class MapSearchService:
                                     ),
                                 )
                             )
-                        # All three distressed buckets route through the URL-based
-                        # AXESSO `search-by-url` path. Earlier the dispatch used
-                        # AXESSO's typed `isAuction` / `isForSaleForeclosure` params
-                        # for the first two, but those return 0 rows in practice
-                        # (verified across Detroit, Cleveland, and South Florida).
-                        # Pre-foreclosure already used the URL path; we now use the
-                        # same `_zillow_distressed_url` mechanism for all three.
-                        for distressed_status in ("auction", "foreclosure", "pre-foreclosure"):
-                            if distressed_status in requested_statuses:
-                                tasks.append(
-                                    asyncio.create_task(
-                                        self._fetch_zillow_distressed(
-                                            pt_lat,
-                                            pt_lng,
-                                            sub_radius,
-                                            distressed_status,
-                                        ),
-                                    )
-                                )
 
                 if req.listing_type in ("rental", "both"):
                     # Distressed/pending semantics don't apply to rentals; only
@@ -903,7 +899,15 @@ class MapSearchService:
                         if self.zillow:
                             tasks.append(
                                 asyncio.create_task(
-                                    self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req, None),
+                                    self._fetch_zillow(
+                                        pt_lat,
+                                        pt_lng,
+                                        sub_radius,
+                                        "forRent",
+                                        req,
+                                        None,
+                                        pages=ZILLOW_ACTIVE_PAGES,
+                                    ),
                                 )
                             )
 
@@ -1111,6 +1115,13 @@ class MapSearchService:
         new_pri = _listing_status_priority(item.listing_status)
         if new_pri > existing_pri:
             merged = _merge_preserving_loser_fields(item, existing)
+        elif new_pri == existing_pri and item.source == "zillow" and existing.source == "rentcast":
+            # Tie-break: Zillow over RentCast. RentCast is dispatched first
+            # and used to win every tie by arrival order, masking fresher
+            # Zillow data on the same address. Loser fields still carry
+            # across, so the RentCast photo/price survive when Zillow lacks
+            # them.
+            merged = _merge_preserving_loser_fields(item, existing)
         else:
             # Same-or-lower priority: existing wins, but pick up any
             # display fields it was missing.
@@ -1150,6 +1161,12 @@ class MapSearchService:
         requested_statuses: set[str],
     ) -> str | None:
         """Build a Zillow ``searchQueryState`` URL for distressed-only inventory.
+
+        **Not dispatched since Sept 21, 2026.** AXESSO's ``search-by-url`` does
+        not honor the ``filterState`` toggles this builds: every bucket came
+        back as the plain for-sale page and the verifier dropped 33 of 33 rows
+        on every call. Kept, with ``_fetch_zillow_distressed``, so it can be
+        re-wired if the upstream scrape ever respects the filter.
 
         Used for pre-foreclosure searches because AXESSO's
         ``/zil/search-by-coordinates`` endpoint exposes typed booleans for
@@ -1858,6 +1875,7 @@ class MapSearchService:
         req: MapSearchRequest,
         extra_params: dict[str, Any] | None = None,
         tag_status: str | None = None,
+        pages: int = 1,
     ) -> list[MapListing]:
         """Fetch Zillow listings via AXESSO's typed `search-by-coordinates`.
 
@@ -1873,6 +1891,12 @@ class MapSearchService:
         normalization (rare). Auction and foreclosure-scoped searches omit it so
         ``_derive_zillow_status`` can classify **Foreclosed** (REO / bank-owned)
         vs **Pre-foreclosure** separately, consistent with Zillow's split filters.
+
+        ``pages`` > 1 fetches that many result pages concurrently (AXESSO
+        returns ~41 rows per page and accepts ``page``; verified live Sept 21,
+        2026 on Norfolk VA: pages 1–3 were disjoint, 41 rows each, of 1034).
+        Pages after the first short page are discarded, and rows are deduped
+        by zpid.
         """
         if not self.zillow:
             return []
@@ -1883,27 +1907,60 @@ class MapSearchService:
             if extra_params:
                 kwargs.update(extra_params)
 
-            resp = await self.zillow.search_by_coordinates(
-                lat=center_lat,
-                lng=center_lng,
-                radius_miles=max(radius_miles, 0.5),
-                status=status,
-                **kwargs,
-            )
-
             # Compact label so logs stay greppable when params change
             label = f"{status}+{','.join(f'{k}={v}' for k, v in extra_params.items())}" if extra_params else status
 
-            if not resp.success or not resp.data:
-                logger.info("Zillow %s returned no data", label)
+            async def _page(page_no: int) -> Any:
+                page_kwargs = dict(kwargs) if page_no == 1 else {**kwargs, "page": page_no}
+                return await self.zillow.search_by_coordinates(
+                    lat=center_lat,
+                    lng=center_lng,
+                    radius_miles=max(radius_miles, 0.5),
+                    status=status,
+                    **page_kwargs,
+                )
+
+            responses = await asyncio.gather(
+                *(_page(n) for n in range(1, max(pages, 1) + 1)), return_exceptions=True
+            )
+
+            raw_props: list[dict] = []
+            first_page_rows: int | None = None
+            for page_no, resp in enumerate(responses, start=1):
+                if isinstance(resp, Exception):
+                    logger.warning("Zillow %s page %d failed: %s", label, page_no, resp)
+                    break
+                if not resp.success or not resp.data:
+                    if page_no == 1:
+                        logger.info("Zillow %s returned no data", label)
+                    break
+                rows = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
+                if isinstance(resp.data, dict) and not rows:
+                    for val in resp.data.values():
+                        if isinstance(val, list) and len(val) > 0:
+                            rows = val
+                            break
+                raw_props.extend(rows)
+                if first_page_rows is None:
+                    first_page_rows = len(rows)
+                # A short page is the last page; anything after it is empty.
+                if len(rows) < first_page_rows:
+                    break
+
+            if not raw_props:
                 return []
 
-            raw_props = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
-            if isinstance(resp.data, dict) and not raw_props:
-                for val in resp.data.values():
-                    if isinstance(val, list) and len(val) > 0:
-                        raw_props = val
-                        break
+            if len(responses) > 1:
+                seen_zpids: set[str] = set()
+                deduped: list[dict] = []
+                for item in raw_props:
+                    zpid = item.get("zpid") if isinstance(item, dict) else None
+                    if zpid is not None:
+                        if str(zpid) in seen_zpids:
+                            continue
+                        seen_zpids.add(str(zpid))
+                    deduped.append(item)
+                raw_props = deduped
 
             # Diagnostic: log distress-bearing fields on the first listing so
             # we can verify in prod whether AXESSO honored the filter. Search
@@ -2026,6 +2083,13 @@ class MapSearchService:
         """Fetch distressed listings (auction / foreclosure / pre-foreclosure)
         via AXESSO's ``search-by-url``, keeping only rows whose own fields prove
         the distress status.
+
+        **No longer dispatched (removed from ``_search_tile`` on Sept 21,
+        2026).** Production logs showed each of the three calls returning the
+        plain for-sale set and this verifier dropping 33 of 33 rows, every
+        time — three paid calls per tile for zero rows. Verified distress still
+        arrives through the RentCast for-sale merge. The method stays so it can
+        be re-wired if AXESSO starts honoring ``filterState``.
 
         **Rows are never blanket-tagged with the requested bucket.** That was the
         previous behavior, on the assumption that Zillow's

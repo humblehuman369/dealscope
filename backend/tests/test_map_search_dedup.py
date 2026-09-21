@@ -213,6 +213,67 @@ class TestMergeListingInto:
         )
         assert next(iter(bucket.values())).listing_status == "Foreclosure"
 
+    def test_same_priority_prefers_zillow_over_rentcast(self) -> None:
+        # RentCast is dispatched first, so its Active row lands first. On a
+        # status tie the Zillow row must win, while RentCast's photo/price
+        # still fill anything Zillow left blank.
+        bucket: dict[str, MapListing] = {}
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(
+                address="4 Elm St",
+                listing_status="Active",
+                source="rentcast",
+                photo_url="https://rentcast.example/p.jpg",
+                price=300_000,
+                days_on_market=45,
+            ),
+        )
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(
+                address="4 Elm St",
+                listing_status="FOR_SALE",
+                source="zillow",
+                price=299_000,
+                listing_id="zillow-123",
+            ),
+        )
+        winner = next(iter(bucket.values()))
+        assert winner.source == "zillow"
+        assert winner.id == "zillow-123"
+        assert winner.price == 299_000
+        assert winner.photo_url == "https://rentcast.example/p.jpg"
+        assert winner.days_on_market == 45
+
+    def test_same_priority_keeps_zillow_when_rentcast_arrives_later(self) -> None:
+        bucket: dict[str, MapListing] = {}
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(address="5 Elm St", listing_status="Active", source="zillow"),
+        )
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(address="5 Elm St", listing_status="Active", source="rentcast"),
+        )
+        assert next(iter(bucket.values())).source == "zillow"
+
+    def test_zillow_tie_break_does_not_beat_a_stronger_rentcast_status(self) -> None:
+        # Verified distress comes from RentCast; a plain Zillow row must not
+        # displace it just because it is Zillow.
+        bucket: dict[str, MapListing] = {}
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(address="6 Elm St", listing_status="Foreclosure", source="rentcast"),
+        )
+        MapSearchService._merge_listing_into(
+            bucket,
+            _make_listing(address="6 Elm St", listing_status="Active", source="zillow"),
+        )
+        winner = next(iter(bucket.values()))
+        assert winner.source == "rentcast"
+        assert winner.listing_status == "Foreclosure"
+
     def test_address_is_case_and_whitespace_insensitive(self) -> None:
         bucket: dict[str, MapListing] = {}
         MapSearchService._merge_listing_into(
