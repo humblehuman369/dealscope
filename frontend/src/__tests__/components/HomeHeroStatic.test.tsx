@@ -66,7 +66,7 @@ describe('HomeHeroStatic', () => {
       /^DealGapIQ is a real estate investment analysis tool that shows the gap between a property's asking price/,
     )
     expect(lede).toHaveTextContent(/starts free, and Pro costs \$34\.99 a month\.$/)
-    expect(screen.getByText(/^Updated/)).toHaveTextContent('Updated September 21, 2026')
+    expect(screen.getByText(/Updated/)).toHaveTextContent('Updated September 22, 2026')
     expect(screen.getByRole('button', { name: 'See Now' })).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Address, city, or ZIP')).toBeInTheDocument()
     expect(screen.queryByText(/Opens the live map/)).not.toBeInTheDocument()
