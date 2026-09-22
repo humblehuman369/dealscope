@@ -6,6 +6,7 @@ import { blogPageHref } from '@/lib/blog-index'
 import { fetchStateMarkets } from '@/lib/markets'
 import { PERSONA_PAGES } from '@/lib/seo/persona-pages'
 import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
+import { COMPARISON_PAGES } from '@/lib/seo/comparison-pages'
 import { HOME_UPDATED_AT } from '@/config/site'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
@@ -40,9 +41,14 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/legal', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/legal/find-attorney', priority: 0.5, changeFrequency: 'monthly' },
-  { path: '/comparisons/dealgapiq-vs-dealcheck', priority: 0.6, changeFrequency: 'monthly' },
-  { path: '/comparisons/dealgapiq-vs-mashvisor', priority: 0.6, changeFrequency: 'monthly' },
-  { path: '/comparisons/dealgapiq-vs-propstream', priority: 0.6, changeFrequency: 'monthly' },
+  ...Object.values(COMPARISON_PAGES).map(
+    (page): StaticEntry => ({
+      path: `/comparisons/${page.slug}`,
+      priority: 0.6,
+      changeFrequency: 'monthly',
+      lastModified: page.dateModified,
+    }),
+  ),
   { path: '/strategies/long-term-rental', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/strategies/short-term-rental', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/strategies/brrrr', priority: 0.6, changeFrequency: 'monthly' },
