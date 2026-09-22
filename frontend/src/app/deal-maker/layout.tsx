@@ -3,12 +3,12 @@ import { PageExplainer } from '@/components/seo/PageExplainer'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
-  title: 'DealMaker — Editable Assumptions & Offer Scripts | DealGapIQ',
+  title: 'Deal Maker — Editable Assumptions & Offer Scripts | DealGapIQ',
   description:
-    'DealMaker lets you stress-test any property: edit assumptions, model creative-finance structures (Subject-To, seller carrybacks, 0% seconds), and generate ready-to-send offer scripts and negotiation language.',
+    'Deal Maker lets you stress-test any property: edit assumptions, model creative-finance structures (Subject-To, seller carrybacks, 0% seconds), and generate ready-to-send offer scripts and negotiation language.',
   alternates: { canonical: '/deal-maker' },
   openGraph: {
-    title: 'DealMaker — Editable Assumptions & Offer Scripts',
+    title: 'Deal Maker — Editable Assumptions & Offer Scripts',
     description:
       'Stress-test assumptions, model creative finance, and generate offer scripts for any property.',
     url: '/deal-maker',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DealMaker — Editable Assumptions & Offer Scripts',
+    title: 'Deal Maker — Editable Assumptions & Offer Scripts',
     description:
       'Stress-test assumptions, model creative finance, and generate offer scripts for any property.',
   },
@@ -28,7 +28,7 @@ const DEALMAKER_JSONLD = {
   '@type': 'WebPage',
   '@id': 'https://dealgapiq.com/deal-maker',
   url: 'https://dealgapiq.com/deal-maker',
-  name: 'DealMaker — Editable Assumptions & Offer Scripts',
+  name: 'Deal Maker — Editable Assumptions & Offer Scripts',
   description:
     'Edit assumptions, model creative finance, and generate offer scripts for any property.',
   isPartOf: { '@id': 'https://dealgapiq.com/#website' },
@@ -44,16 +44,16 @@ export default function DealMakerLayout({ children }: { children: React.ReactNod
       />
       {children}
       <PageExplainer
-        title="What is DealMaker?"
-        intro="DealMaker is where Discovery turns into a real offer. Every assumption that drives the score — purchase price, rent, vacancy, rehab, financing, exit — is editable, so you can stress-test the deal and structure an offer that actually closes."
+        title="What is Deal Maker?"
+        intro="Deal Maker is where Discovery turns into a real offer. Every assumption that drives the score — purchase price, rent, vacancy, rehab, financing, exit — is editable, so you can stress-test the deal and structure an offer that actually closes."
         sections={[
           {
             heading: 'Four pre-built offer structures',
-            body: 'For every property, DealMaker generates four offer paths: an income-uplift play, a price-negotiation offer, a capital-heavy down-payment scenario, and a blended structure. Each path is sized to the property and ranked by expected return, so you can pick the one that matches the seller you are talking to.',
+            body: 'For every property, Deal Maker generates four offer paths: an income-uplift play, a price-negotiation offer, a capital-heavy down-payment scenario, and a blended structure. Each path is sized to the property and ranked by expected return, so you can pick the one that matches the seller you are talking to.',
           },
           {
             heading: 'Creative-finance modeling',
-            body: "Subject-To, seller carrybacks, 0% seconds, and the Morby Method are first-class structures in DealMaker — not footnotes. Plug in the seller's loan balance and rate and we model the full P&L, the cash-to-close difference, and the risk profile.",
+            body: "Subject-To, seller carrybacks, 0% seconds, and the Morby Method are first-class structures in Deal Maker — not footnotes. Plug in the seller's loan balance and rate and we model the full P&L, the cash-to-close difference, and the risk profile.",
           },
           {
             heading: 'Negotiation scripts',

@@ -2012,7 +2012,7 @@ export function DiscoveryClient() {
       title: 'Repairs not included in initial analysis',
       detail: workflowV1Layout
         ? 'Use Plan to add a rehab budget and see the impact on returns.'
-        : 'Use DealMaker to add a rehab budget and see the impact on returns.',
+        : 'Use Deal Maker to add a rehab budget and see the impact on returns.',
     })
     items.push({
       id: 'assumptions',
@@ -2020,7 +2020,7 @@ export function DiscoveryClient() {
       title: 'Assumes 20% down · 6.0% · 30yr',
       detail: workflowV1Layout
         ? 'Edit financing terms in Plan to match your actual loan scenario.'
-        : 'Edit financing terms in DealMaker to match your actual loan scenario.',
+        : 'Edit financing terms in Deal Maker to match your actual loan scenario.',
     })
     if (
       strMarketData?.str_regulatory?.rating &&
@@ -3134,7 +3134,7 @@ export function DiscoveryClient() {
                             initial analysis
                           </span>
                         }
-                        detail="Use DealMaker to add a rehab budget and see the impact on returns."
+                        detail="Use Deal Maker to add a rehab budget and see the impact on returns."
                       />
                       <InsightItem
                         delay={0}
@@ -3146,7 +3146,7 @@ export function DiscoveryClient() {
                             </strong>
                           </span>
                         }
-                        detail="Edit financing terms in DealMaker to match your actual loan scenario."
+                        detail="Edit financing terms in Deal Maker to match your actual loan scenario."
                       />
                       {strMarketData?.str_regulatory?.rating &&
                         (strMarketData.str_regulatory.rating === 'Negative' ||

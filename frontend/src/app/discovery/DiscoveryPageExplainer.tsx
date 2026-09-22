@@ -18,7 +18,7 @@ export function DiscoveryPageExplainer() {
         },
         {
           heading: 'How it works',
-          body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and AirROI with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in DealMaker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
+          body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and AirROI with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in Deal Maker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
         },
         {
           heading: 'Who it is for',
@@ -26,7 +26,7 @@ export function DiscoveryPageExplainer() {
         },
       ]}
       relatedLinks={[
-        { href: '/deal-maker', label: 'Open DealMaker for offer scripts' },
+        { href: '/deal-maker', label: 'Open Deal Maker for offer scripts' },
         { href: '/pricing', label: 'Pricing & free trial' },
         { href: '/glossary/subject-to-financing', label: 'Glossary: Subject-To financing' },
       ]}

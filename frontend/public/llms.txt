@@ -15,7 +15,7 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 ## Product
 
 - [Discovery](https://dealgapiq.com/discovery): instant deal score (0–95) for any address with ranked strategy recommendations, plus the embedded Strategy Workbench — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
-- [DealMaker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
+- [Deal Maker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
 
 ## Strategy guides
 
