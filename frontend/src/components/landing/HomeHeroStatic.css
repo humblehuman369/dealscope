@@ -64,6 +64,13 @@
   max-width: 540px;
 }
 
+.home-hero-static__updated {
+  margin: -12px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-label);
+}
+
 .home-hero-static__cta {
   position: relative;
   z-index: 2;

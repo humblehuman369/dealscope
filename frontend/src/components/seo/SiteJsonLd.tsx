@@ -6,13 +6,18 @@ import {
   PRO_YEARLY_PER_MONTH,
   PRO_YEARLY_PRICE,
 } from '@/lib/claims'
-
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
-
-const ORG_ID = `${SITE_URL}/#organization`
-const WEBSITE_ID = `${SITE_URL}/#website`
-const PERSON_ID = `${SITE_URL}/about#brad-geisen`
-const SOFTWARE_ID = `${SITE_URL}/#software`
+import {
+  FOUNDER_LINKEDIN_URL,
+  HQ_CITY,
+  HQ_COUNTRY,
+  HQ_REGION,
+  IOS_APP_STORE_URL,
+  PUBLIC_LAUNCH,
+  SITE_URL,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_E164,
+} from '@/config/site'
+import { FOUNDER_IMAGE_PATH, ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
 
 /** Spoken/typed variants of the brand SERP term (see DIRECT_RESPONSE_PLAYBOOK.md §2). */
 const BRAND_ALTERNATE_NAMES = ['Deal Gap IQ', 'DealGap IQ', 'Deal Gap']
@@ -35,6 +40,25 @@ const graph = {
       },
       description:
         'Residential real estate deal analysis platform that scores investment properties across six acquisition strategies and surfaces the Deal Gap.',
+      foundingDate: PUBLIC_LAUNCH,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: HQ_CITY,
+        addressRegion: HQ_REGION,
+        addressCountry: HQ_COUNTRY,
+      },
+      telephone: SUPPORT_PHONE_E164,
+      email: SUPPORT_EMAIL,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        telephone: SUPPORT_PHONE_E164,
+        email: SUPPORT_EMAIL,
+        areaServed: 'US',
+        availableLanguage: 'en',
+      },
+      // LinkedIn company page and Crunchbase are added once Brad supplies the URLs.
+      sameAs: [IOS_APP_STORE_URL],
       founder: { '@id': PERSON_ID },
     },
     {
@@ -51,10 +75,10 @@ const graph = {
       '@id': PERSON_ID,
       name: 'Brad Geisen',
       url: `${SITE_URL}/about`,
-      image: `${SITE_URL}/brad-geisen.png`,
-      jobTitle: 'Founder',
+      image: `${SITE_URL}${FOUNDER_IMAGE_PATH}`,
+      jobTitle: 'Founder and CEO',
       worksFor: { '@id': ORG_ID },
-      sameAs: ['https://www.linkedin.com/in/bradgeisen', 'https://www.foreclosure.com'],
+      sameAs: [FOUNDER_LINKEDIN_URL, 'https://www.foreclosure.com'],
       knowsAbout: [
         'Residential real estate investing',
         'Foreclosure markets',
@@ -74,7 +98,7 @@ const graph = {
       url: SITE_URL,
       applicationCategory: 'BusinessApplication',
       applicationSubCategory: 'Real Estate Investment Analysis',
-      operatingSystem: 'Web, iOS, Android',
+      operatingSystem: 'Web, iOS',
       description:
         'Analyzes residential investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap so investors know what to offer.',
       publisher: { '@id': ORG_ID },

@@ -72,11 +72,14 @@ describe('HomeHeroStatic', () => {
     expect(
       screen.getByRole('heading', { name: /Find a Great Deal.*How to Close It\./i }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        /See the foreclosures, expired listings, and absentee owners in your market\. Then see/,
-      ),
-    ).toBeInTheDocument()
+    const heading = screen.getByRole('heading', { name: /Find a Great Deal.*How to Close It\./i })
+    const lede = heading.nextElementSibling
+    expect(lede?.tagName).toBe('P')
+    expect(lede).toHaveTextContent(
+      /^DealGapIQ is a real estate investment analysis tool that shows the gap between a property's asking price/,
+    )
+    expect(lede).toHaveTextContent(/starts free, and Pro costs \$34\.99 a month\.$/)
+    expect(screen.getByText(/^Updated/)).toHaveTextContent('Updated September 21, 2026')
     expect(screen.getByRole('button', { name: 'See Now' })).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Address, city, or ZIP')).toBeInTheDocument()
     expect(screen.queryByText(/Opens the live map/)).not.toBeInTheDocument()

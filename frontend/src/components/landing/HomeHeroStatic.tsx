@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ScanLine, Smartphone } from 'lucide-react'
 import { buildScanPath } from '@/lib/scanQr'
+import { HOME_UPDATED_AT } from '@/config/site'
+import { PRO_MONTHLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
+import { formatContentDate } from '@/lib/content-dates'
 import {
   AddressAutocomplete,
   type AddressComponents,
@@ -167,8 +170,13 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             How to Close It.
           </h1>
           <p className="home-hero-static__lead">
-            See the foreclosures, expired listings, and absentee owners in your market. Then see
-            the gap before you make an offer.
+            DealGapIQ is a real estate investment analysis tool that shows the gap between a
+            property&apos;s asking price and the price at which it works for an investor, then gives
+            four offer structures to close that gap. It analyzes six strategies across every U.S.
+            market in {SPEED_CLAIM}, starts free, and Pro costs {PRO_MONTHLY_PRICE} a month.
+          </p>
+          <p className="home-hero-static__updated">
+            Updated <time dateTime={HOME_UPDATED_AT}>{formatContentDate(HOME_UPDATED_AT)}</time>
           </p>
           <form className="home-hero-static__cta" onSubmit={submit}>
             <label className="sr-only" htmlFor="home-hero-address">
