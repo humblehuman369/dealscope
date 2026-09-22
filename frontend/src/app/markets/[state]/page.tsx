@@ -6,6 +6,8 @@ import { US_STATES, getStateBySlug } from '@/lib/us-states'
 import {
   EXAMPLE_PRICE,
   assumptionsInDollars,
+  assumptionsSectionCopy,
+  directoryCountPhrases,
   fetchStateMarket,
   formatDollars,
   formatPercent,
@@ -32,11 +34,10 @@ function pageTitle(name: string) {
 }
 
 function pageDescription(name: string, market: StateMarketDetail | null) {
-  const counts =
-    market && market.indexable
-      ? ` ${market.lender_count} hard money lenders and ${market.buyer_count} verified cash buyers work in ${name}.`
-      : ''
-  return `Search ${name} investment properties on a live map, then run the numbers with the property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies to ${name}.${counts}`
+  const phrases = market && market.indexable ? directoryCountPhrases(name, market) : []
+  const counts = phrases.length > 0 ? ` The DealGapIQ directories list ${phrases.join(' and ')}.` : ''
+  const assumptionsScope = market && !market.has_state_specific_assumptions ? 'national baseline ' : ''
+  return `Search ${name} investment properties on a live map, then run the numbers with the ${assumptionsScope}property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies to ${name}.${counts}`
 }
 
 function buildFaq(state: { name: string; code: string }, market: StateMarketDetail): FaqItem[] {
@@ -55,18 +56,16 @@ function buildFaq(state: { name: string; code: string }, market: StateMarketDeta
       answer: `${formatPercent(a.vacancy_rate)}, or about ${(a.vacancy_rate * 52).toFixed(1)} weeks empty per year. Vacancy comes off gross rent before debt service, so it directly lowers the cash flow a ${state.name} listing has to clear.`,
     },
   ]
-  if (market.lender_count > 0 || market.buyer_count > 0) {
-    const parts: string[] = []
-    if (market.lender_count > 0) parts.push(`${market.lender_count} active hard money lenders`)
-    if (market.buyer_count > 0) parts.push(`${market.buyer_count} verified cash buyers`)
+  const directoryPhrases = directoryCountPhrases(state.name, market)
+  if (directoryPhrases.length > 0) {
     items.push({
       question: `Who funds and buys investment properties in ${state.name}?`,
-      answer: `The DealGapIQ directories list ${parts.join(' and ')} working in ${state.name}. Both directories can be filtered to ${state.code} and refresh daily.`,
+      answer: `The DealGapIQ directories list ${directoryPhrases.join(' and ')}. Both directories can be filtered to ${state.code} and refresh daily.`,
     })
   }
   items.push({
     question: `Is a ${state.name} listing a good investment?`,
-    answer: `It depends on the gap between the asking price and what the property is worth as a rental. Run a free Discovery on the address: DealGapIQ pulls live rent and value estimates, applies the ${state.name} assumptions above, and shows the Deal Gap between list price and your target buy.`,
+    answer: `It depends on the gap between the asking price and what the property is worth as a rental. Run a free Discovery on the address: DealGapIQ pulls live rent and value estimates, applies the assumptions above, and shows the Deal Gap between list price and your target buy.`,
   })
   return items
 }
@@ -99,10 +98,39 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
   const mapSearchHref = stateMapSearchHref(state)
   const assumptions = market?.assumptions ?? null
   const example = assumptions ? assumptionsInDollars(assumptions) : null
+  const assumptionsCopy = assumptions ? assumptionsSectionCopy(state.name, assumptions.is_state_specific) : null
   const showLenders = (market?.lender_count ?? 0) > 0
   const showBuyers = (market?.buyer_count ?? 0) > 0
   const faq = market ? buildFaq(state, market) : []
   const title = pageTitle(state.name)
+
+  // A Dataset node claims state-scoped variables, so it is emitted only when
+  // the backend says the page has them (own assumptions row + in-state
+  // directory data). Baseline states describe themselves in prose instead.
+  const dataset =
+    market && market.indexable
+      ? {
+          '@type': 'Dataset',
+          '@id': `${url}#dataset`,
+          name: `${state.name} investor market assumptions and directory counts`,
+          description: pageDescription(state.name, market),
+          url,
+          spatialCoverage: { '@id': `${url}#place` },
+          creator: { '@id': `${SITE_URL}/#organization` },
+          publisher: { '@id': `${SITE_URL}/#organization` },
+          license: `${SITE_URL}/terms`,
+          isAccessibleForFree: true,
+          dateModified: market.generated_at,
+          variableMeasured: [
+            'Effective property tax rate',
+            'Vacancy rate',
+            'Appreciation rate',
+            'Rent-to-price ratio',
+            ...(market.state_lender_count > 0 ? [`Hard money lenders licensed in ${state.name}`] : []),
+            ...(market.buyer_count > 0 ? [`Cash buyers based in ${state.name}`] : []),
+          ],
+        }
+      : null
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -127,27 +155,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
         name: state.name,
         address: { '@type': 'PostalAddress', addressRegion: state.code, addressCountry: 'US' },
       },
-      {
-        '@type': 'Dataset',
-        '@id': `${url}#dataset`,
-        name: `${state.name} investor market assumptions and directory counts`,
-        description: pageDescription(state.name, market),
-        url,
-        spatialCoverage: { '@id': `${url}#place` },
-        creator: { '@id': `${SITE_URL}/#organization` },
-        publisher: { '@id': `${SITE_URL}/#organization` },
-        license: `${SITE_URL}/terms`,
-        isAccessibleForFree: true,
-        ...(market ? { dateModified: market.generated_at } : {}),
-        variableMeasured: [
-          'Effective property tax rate',
-          'Vacancy rate',
-          'Appreciation rate',
-          'Rent-to-price ratio',
-          'Hard money lender count',
-          'Cash buyer count',
-        ],
-      },
+      ...(dataset ? [dataset] : []),
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
@@ -207,15 +215,13 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
           <StateOutlineMap state={state} href={mapSearchHref} />
         </header>
 
-        {assumptions && example ? (
+        {assumptions && example && assumptionsCopy ? (
           <section aria-labelledby="assumptions-heading" className="mb-12">
             <h2 id="assumptions-heading" className="text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>
-              What DealGapIQ assumes for {state.name} properties
+              {assumptionsCopy.heading}
             </h2>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-              {assumptions.is_state_specific
-                ? `${state.name} has its own row in the DealGapIQ market table. Every input can be overridden per deal.`
-                : `${state.name} currently uses the national baseline; DealGapIQ has not set state-specific overrides here. Every input can be overridden per deal.`}
+              {assumptionsCopy.intro}
             </p>
             <div className="mt-5 overflow-x-auto rounded-xl border" style={{ borderColor: 'var(--border-default)', background: 'var(--surface-card)' }}>
               <table className="w-full text-left text-sm">
@@ -286,15 +292,28 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
               Who funds and buys deals in {state.name}
             </h2>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {showLenders && (
-                <DirectoryStat
-                  value={market.lender_count}
-                  label={market.lender_count === 1 ? 'hard money lender' : 'hard money lenders'}
-                  detail={`Active directory lenders licensed in ${state.name}, including nationwide lenders.`}
-                  href={`/lenders?state=${state.code}`}
-                  cta={`Browse ${state.name} lenders`}
-                />
-              )}
+              {showLenders &&
+                (market.state_lender_count > 0 ? (
+                  <DirectoryStat
+                    value={market.state_lender_count}
+                    label={`${market.state_lender_count === 1 ? 'hard money lender' : 'hard money lenders'} licensed in ${state.name}`}
+                    detail={
+                      market.nationwide_lender_count > 0
+                        ? `Plus ${market.nationwide_lender_count.toLocaleString('en-US')} nationwide lenders that also lend in ${state.name}.`
+                        : `Active directory lenders licensed in ${state.name}.`
+                    }
+                    href={`/lenders?state=${state.code}`}
+                    cta={`Browse ${state.name} lenders`}
+                  />
+                ) : (
+                  <DirectoryStat
+                    value={market.nationwide_lender_count}
+                    label={`nationwide ${market.nationwide_lender_count === 1 ? 'hard money lender' : 'hard money lenders'}`}
+                    detail={`No directory lender is licensed specifically in ${state.name} yet; these lend in every state.`}
+                    href={`/lenders?state=${state.code}`}
+                    cta={`Browse lenders serving ${state.name}`}
+                  />
+                ))}
               {showBuyers && (
                 <DirectoryStat
                   value={market.buyer_count}
@@ -333,8 +352,9 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
 
         {market && !market.indexable && (
           <p className="mb-12 text-sm" style={{ color: 'var(--text-muted)' }}>
-            DealGapIQ does not yet have enough {state.name}-specific directory data to publish a full market profile.
-            This page shows what exists and will expand as lenders and buyers are verified.
+            DealGapIQ does not yet have enough {state.name}-specific data (state-level assumptions plus in-state
+            lenders or buyers) to publish a full market profile. This page shows what exists and will expand as{' '}
+            {state.name} adjustments are added and lenders and buyers are verified.
           </p>
         )}
 
@@ -366,8 +386,8 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
             Analyze a {state.name} address with these inputs.
           </h2>
           <p className="mt-3 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            Paste a listing and Discovery applies the {state.name} assumptions, pulls live rent and value estimates,
-            and shows the Deal Gap between the asking price and your target buy.
+            Paste a listing and Discovery applies the assumptions above, pulls live rent and value estimates, and
+            shows the Deal Gap between the asking price and your target buy.
           </p>
           <Link
             href={discoveryHref}
