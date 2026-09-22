@@ -1,12 +1,28 @@
 /* Static homepage hero. Tokens only outside the SVG artwork. */
 
 .home-hero-static {
+  position: relative;
   background: var(--surface-base);
   font-family: var(--font-dm-sans), var(--font-inter), system-ui, sans-serif;
   padding: 44px 48px 40px;
 }
 
+[data-theme='dark'] .home-hero-static::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 78% 72% at 72% 38%,
+    color-mix(in srgb, var(--accent-sky-light) 16%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 5%, transparent) 48%,
+    rgb(from var(--accent-sky-light) r g b / 0) 100%
+  );
+}
+
 .home-hero-static__grid {
+  position: relative;
+  z-index: 1;
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
@@ -261,6 +277,12 @@
   transform: rotateY(-8deg) rotateX(4deg);
   transform-style: preserve-3d;
 }
+[data-theme='dark'] .home-hero-static__card {
+  border-color: color-mix(in srgb, var(--accent-sky) 42%, var(--border-default));
+  box-shadow:
+    0 0 40px color-mix(in srgb, var(--accent-sky-light) 22%, transparent),
+    var(--shadow-card);
+}
 .home-hero-static__svg {
   display: block;
   width: 100%;
@@ -277,7 +299,7 @@
 }
 .home-hero-static__pin span {
   background: var(--surface-elevated);
-  border: 1px solid var(--border-default);
+  border: 1px solid color-mix(in srgb, var(--accent-sky) 28%, var(--border-default));
   color: var(--text-heading);
   font-weight: 600;
   font-size: 12px;
@@ -292,12 +314,12 @@
   border-radius: 50%;
   background: var(--accent-sky);
   margin-top: 4px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-sky) 25%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-sky) 35%, transparent);
   position: relative;
 }
 .home-hero-static__pin--glow span {
   border-color: var(--accent-sky);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-sky) 50%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent-sky-light) 62%, transparent);
 }
 .home-hero-static__pin--glow i::after {
   content: '';
@@ -316,8 +338,10 @@
   padding: 12px 14px;
   border-radius: 14px;
   background: var(--surface-card);
-  border: 1px solid var(--border-default);
-  box-shadow: var(--shadow-card);
+  border: 1px solid color-mix(in srgb, var(--accent-sky) 45%, var(--border-default));
+  box-shadow:
+    0 0 28px color-mix(in srgb, var(--accent-sky-light) 30%, transparent),
+    var(--shadow-card);
 }
 .home-hero-static__callout-k {
   display: block;
