@@ -7,11 +7,11 @@ import {
   PRO_YEARLY_PRICE,
 } from '@/lib/claims'
 import {
-  FOUNDER_LINKEDIN_URL,
+  FOUNDER_SAME_AS,
   HQ_CITY,
   HQ_COUNTRY,
   HQ_REGION,
-  IOS_APP_STORE_URL,
+  ORGANIZATION_SAME_AS,
   PUBLIC_LAUNCH,
   SITE_URL,
   SUPPORT_EMAIL,
@@ -57,8 +57,7 @@ const graph = {
         areaServed: 'US',
         availableLanguage: 'en',
       },
-      // LinkedIn company page and Crunchbase are added once Brad supplies the URLs.
-      sameAs: [IOS_APP_STORE_URL],
+      sameAs: ORGANIZATION_SAME_AS,
       founder: { '@id': PERSON_ID },
     },
     {
@@ -78,7 +77,7 @@ const graph = {
       image: `${SITE_URL}${FOUNDER_IMAGE_PATH}`,
       jobTitle: 'Founder and CEO',
       worksFor: { '@id': ORG_ID },
-      sameAs: [FOUNDER_LINKEDIN_URL, 'https://www.foreclosure.com'],
+      sameAs: [...FOUNDER_SAME_AS, 'https://www.foreclosure.com'],
       knowsAbout: [
         'Residential real estate investing',
         'Foreclosure markets',

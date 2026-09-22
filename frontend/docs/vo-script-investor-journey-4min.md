@@ -169,7 +169,7 @@ over authority.
 > with off-market opportunities most people never see. //
 > Your next deal is out there. /
 > DealGapIQ helps you recognize it. //
-> Start free — ten analyses a month, no credit card. //
+> Start free — three discoveries a month, no credit card. //
 > Because **the price tag isn't the deal.** /
 > **The structure is.** //
 > We analyze. / You decide. //

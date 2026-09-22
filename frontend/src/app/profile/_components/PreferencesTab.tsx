@@ -235,7 +235,7 @@ export function PreferencesTab() {
           Replay the 60-second workbench tour on your next analysis —{' '}
           {workflowV1
             ? 'Plan, Math, and Map Search'
-            : 'Discovery, Strategy, Comps, DealMaker, Estimator, and Map Search'}
+            : 'Discovery, Strategy, Comps, Deal Maker, Estimator, and Map Search'}
           .
         </p>
         <button

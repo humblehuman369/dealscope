@@ -44,18 +44,6 @@ function pushedUrl(): URL {
   return new URL(push.mock.calls[0][0] as string, 'https://dealgapiq.com')
 }
 
-function stubMatchMedia(matches: boolean) {
-  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches,
-    media: query,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }))
-}
-
 describe('HomeHeroStatic', () => {
   beforeEach(() => {
     push.mockClear()
@@ -64,7 +52,6 @@ describe('HomeHeroStatic', () => {
     detectHeroLocation.mockResolvedValue(null)
     lastPlaceSelect = undefined
     window.location.search = ''
-    stubMatchMedia(false)
   })
 
   it('renders the headline, See Now CTA, and address placeholder', () => {
@@ -98,25 +85,26 @@ describe('HomeHeroStatic', () => {
   })
 
   it('renders the desktop scan module when a QR is provided', () => {
-    stubMatchMedia(true)
     render(<HomeHeroStatic scanQr={<div data-testid="hero-qr">qr</div>} />)
     expect(screen.getByTestId('hero-qr')).toBeInTheDocument()
     expect(screen.getByText(/Point & Scan/i)).toBeInTheDocument()
     expect(
-      screen.getByText("What's the deal? Point phone at house and find out."),
-    ).toBeInTheDocument()
-    expect(
       screen.getByText('Scan the code with your phone camera. Works with or without the app.'),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Scan a house/i })).not.toBeInTheDocument()
   })
 
-  it('does not keep a provided QR in the DOM on a mobile viewport', async () => {
-    stubMatchMedia(false)
+  // The page is prerendered without a user-agent sniff, so both scan blocks
+  // are in the HTML and the 768px CSS breakpoint decides which one shows.
+  it('renders the mobile scan button alongside the QR module for CSS to pick', () => {
     render(<HomeHeroStatic scanQr={<div data-testid="hero-qr">qr</div>} />)
-    await waitFor(() => {
-      expect(screen.queryByTestId('hero-qr')).not.toBeInTheDocument()
-    })
+    const mobile = screen.getByRole('link', { name: /Scan a house/i }).closest('div')
+    expect(mobile).toHaveClass('home-hero-static__mobile-scan')
+    expect(screen.getByTestId('hero-qr').closest('.home-hero-static__scan-module')).not.toBeNull()
+  })
+
+  it('omits the QR module when no QR is provided', () => {
+    render(<HomeHeroStatic />)
+    expect(screen.queryByText(/Point & Scan/i)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Scan a house/i })).toBeInTheDocument()
   })
 

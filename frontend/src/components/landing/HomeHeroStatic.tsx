@@ -53,14 +53,11 @@ function withAttribution(params: URLSearchParams): URLSearchParams {
   return params
 }
 
-const DESKTOP_SCAN_MQ = '(min-width: 768px)'
-
 export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
   const router = useRouter()
   const [value, setValue] = useState('')
   const [components, setComponents] = useState<AddressComponents | null>(null)
   const [detected, setDetected] = useState<HeroLocation | null>(null)
-  const [isDesktop, setIsDesktop] = useState(Boolean(scanQr))
 
   useEffect(() => {
     let cancelled = false
@@ -77,18 +74,6 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
       cancelled = true
     }
   }, [])
-
-  useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return
-    const mq = window.matchMedia(DESKTOP_SCAN_MQ)
-    const apply = () => setIsDesktop(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [])
-
-  const showDesktopScan = Boolean(scanQr) && isDesktop
-  const showMobileScan = !isDesktop
 
   const goToDiscovery = (address: string, c: AddressComponents | null) => {
     trackEvent('property_searched', { source: 'home_hero', type: 'address' })
@@ -198,23 +183,23 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             />
             <button type="submit">See Now</button>
           </form>
-          {showMobileScan ? (
-            <div className="home-hero-static__mobile-scan">
-              <Link href={buildScanPath('home_mobile')} className="home-hero-static__scan-btn">
-                <ScanLine aria-hidden className="home-hero-static__scan-icon" />
-                Scan a house
-              </Link>
-              <p className="home-hero-static__scan-prompt">
-                What&apos;s the deal? Point phone at house and find out.
-              </p>
-            </div>
-          ) : null}
+          {/* Phone/tablet (<768px): open the camera. Hidden by CSS on wider viewports. */}
+          <div className="home-hero-static__mobile-scan">
+            <Link href={buildScanPath('home_mobile')} className="home-hero-static__scan-btn">
+              <ScanLine aria-hidden className="home-hero-static__scan-icon" />
+              Scan a house
+            </Link>
+            <p className="home-hero-static__scan-prompt">
+              What&apos;s the deal? Point phone at house and find out.
+            </p>
+          </div>
           <ul className="home-hero-static__pills" aria-label="What you can find">
             {PILLS.map((label) => (
               <li key={label}>{label}</li>
             ))}
           </ul>
-          {showDesktopScan ? (
+          {/* Desktop (≥768px): QR to hand off to the phone. Hidden by CSS below that. */}
+          {scanQr ? (
             <>
               <div className="home-hero-static__divider" role="separator" />
               <div className="home-hero-static__scan-module">

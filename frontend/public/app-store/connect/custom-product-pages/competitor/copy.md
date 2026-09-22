@@ -24,7 +24,7 @@
 | 4 | `04-verdict-three-cards.png` | Verdict cards |
 | 5 | `05-search-color-coded.png` | Color-coded map |
 | 6 | `06-comps-no-spreadsheet.png` | Comps |
-| 7 | `07-dealmaker-scenarios.png` | DealMaker |
+| 7 | `07-dealmaker-scenarios.png` | Deal Maker |
 | 8 | `08-neighborhoods-heatmap.png` | Heatmap |
 
 ---

@@ -889,7 +889,7 @@ function SiteFooter() {
           links={[
             { href: '#how-it-works', label: 'How it Works' },
             { href: '/discovery', label: 'Discovery' },
-            { href: '/deal-maker', label: 'DealMaker' },
+            { href: '/deal-maker', label: 'Deal Maker' },
             { href: '/directory', label: 'Cash Buyer Directory' },
             { href: '/lenders', label: 'Hard Money Lenders' },
             { href: '/pricing', label: 'Pricing' },

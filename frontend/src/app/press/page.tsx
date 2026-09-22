@@ -13,8 +13,11 @@ import {
   SPEED_CLAIM,
 } from '@/lib/claims'
 import {
+  COMPANY_LINKEDIN_URL,
+  FOUNDER_AMAZON_URL,
   FOUNDER_BOOK,
   FOUNDER_CREDENTIAL_LINE,
+  FOUNDER_LINKEDIN_URL,
   FOUNDER_NAME,
   FOUNDER_TITLE,
   HQ_CITY,
@@ -28,7 +31,7 @@ import {
   SUPPORT_PHONE_E164,
 } from '@/config/site'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
-import { FOUNDER_IMAGE_PATH, ORG_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
+import { FOUNDER_IMAGE_PATH, FOUNDER_IMAGE_SQUARE_PATH, ORG_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
 
 const TITLE = 'DealGapIQ press kit and company facts'
 const DESCRIPTION =
@@ -99,6 +102,24 @@ const FACT_SHEET: Array<{ label: string; value: React.ReactNode }> = [
     ),
   },
   {
+    label: 'Profiles',
+    value: (
+      <>
+        <a href={COMPANY_LINKEDIN_URL} className="text-[var(--accent-sky)] underline">
+          DealGapIQ on LinkedIn
+        </a>
+        {' · '}
+        <a href={FOUNDER_LINKEDIN_URL} className="text-[var(--accent-sky)] underline">
+          Brad Geisen on LinkedIn
+        </a>
+        {' · '}
+        <a href={FOUNDER_AMAZON_URL} className="text-[var(--accent-sky)] underline">
+          {FOUNDER_BOOK} on Amazon
+        </a>
+      </>
+    ),
+  },
+  {
     label: 'Contact',
     value: (
       <>
@@ -112,6 +133,17 @@ const FACT_SHEET: Array<{ label: string; value: React.ReactNode }> = [
       </>
     ),
   },
+]
+
+/** Founder headshots under `public/press/` (sources: Brad's press-assets pack). */
+const HEADSHOT_PACK: Array<{ label: string; href: string; note: string }> = [
+  { label: 'Headshot, white background', href: FOUNDER_IMAGE_PATH, note: 'JPG, 1600×1289' },
+  { label: 'Headshot, white background, square', href: FOUNDER_IMAGE_SQUARE_PATH, note: 'JPG, 512×512' },
+  { label: 'Headshot, blue background', href: '/press/brad-geisen-blue.jpg', note: 'JPG, 1600×1289' },
+  { label: 'Headshot, blue background, square', href: '/press/brad-geisen-blue-512.jpg', note: 'JPG, 512×512' },
+  { label: 'Headshot, black background', href: '/press/brad-geisen-black.png', note: 'PNG, 1024×1024' },
+  { label: 'Headshot, transparent (navy suit)', href: '/press/brad-geisen-transparent-navy.png', note: 'PNG, 1024×1024, transparent' },
+  { label: 'Headshot, transparent (gray suit)', href: '/press/brad-geisen-transparent-gray.png', note: 'PNG, 1024×1024, transparent' },
 ]
 
 const LOGO_PACK: Array<{ label: string; href: string; note: string }> = [
@@ -191,11 +223,12 @@ export default function PressPage() {
             <SectionHeading id="press-founder">Founder bio</SectionHeading>
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
               <Image
-                src={FOUNDER_IMAGE_PATH}
+                src={FOUNDER_IMAGE_SQUARE_PATH}
                 alt={`${FOUNDER_NAME}, ${FOUNDER_TITLE} of DealGapIQ`}
-                width={160}
-                height={160}
-                className="h-40 w-40 shrink-0 rounded-2xl border border-[var(--border-default)] object-cover object-top"
+                width={512}
+                height={512}
+                sizes="160px"
+                className="h-40 w-40 shrink-0 rounded-2xl border border-[var(--border-default)] object-cover"
               />
               <div>
                 <p>
@@ -214,18 +247,28 @@ export default function PressPage() {
                   billed annually with a 7-day trial, and adds directories of {BUYER_COUNT} verified
                   cash buyers and {LENDER_COUNT} hard money lenders.
                 </p>
-                <p className="mt-4">
-                  <a
-                    href={FOUNDER_IMAGE_PATH}
-                    download="brad-geisen-dealgapiq.png"
-                    className="font-semibold text-[var(--accent-sky)] underline"
-                  >
-                    Download headshot
-                  </a>{' '}
-                  <span className="text-[var(--text-muted)]">(PNG, 1024×1024)</span>
-                </p>
               </div>
             </div>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              {HEADSHOT_PACK.map((asset) => (
+                <li
+                  key={asset.href}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4"
+                >
+                  <div>
+                    <div className="font-semibold text-[var(--text-heading)]">{asset.label}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{asset.note}</div>
+                  </div>
+                  <a
+                    href={asset.href}
+                    download
+                    className="shrink-0 text-sm font-semibold text-[var(--accent-sky)] underline"
+                  >
+                    Download
+                  </a>
+                </li>
+              ))}
+            </ul>
           </section>
 
           <section aria-labelledby="press-logos">

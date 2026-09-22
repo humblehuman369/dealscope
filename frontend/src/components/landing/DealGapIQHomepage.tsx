@@ -10,7 +10,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { brandLogo, BRAND_LOGO_SIZE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 import './dealgapiq-homepage.css'
 import { DataSourcesSection } from './DataSourcesSection'
-import { SOURCE_COUNT } from '@/lib/claims'
+import { SOURCE_COUNT, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 function AuthParamHandler() {
   const { openAuthModal } = useAuthModal()
@@ -523,7 +523,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               <span>BG</span>
             ) : (
               <img
-                src="/brad-geisen.png"
+                src="/press/brad-geisen-512.jpg"
                 alt="Brad Geisen"
                 onError={() => setFounderImgError(true)}
               />
@@ -572,7 +572,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             <span className="check">✓</span> No credit card
           </span>
           <span>
-            <span className="check">✓</span> 2 free analyses/month
+            <span className="check">✓</span> {STARTER_VERDICTS_PER_MONTH} free discoveries/month
           </span>
           <span>
             <span className="check">✓</span> Every assumption editable

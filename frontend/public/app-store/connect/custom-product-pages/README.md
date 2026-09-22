@@ -68,8 +68,8 @@ All outputs are **1290 × 2796** (iPhone 6.9" Display).
 |---|---|---|---|
 | Deal Gap | Deal Gap hero | Verdict three cards | DEAL / MAYBE / PASS |
 | Foreclosure | Beyond the MLS | Color-coded search | Deal Gap hero |
-| Rental | Cash-flow verdict | DealMaker scenarios | DEAL / MAYBE / PASS |
-| Flip | Comps | DealMaker (ARV) | Verdict |
+| Rental | Cash-flow verdict | Deal Maker scenarios | DEAL / MAYBE / PASS |
+| Flip | Comps | Deal Maker (ARV) | Verdict |
 | Competitor | Decision-framed hero | DEAL / MAYBE / PASS | Beyond the MLS |
 
-Slots 4–8 deepen with the remaining default frames (coverage, comps, DealMaker, heatmap, search) so each page still shows the full product story.
+Slots 4–8 deepen with the remaining default frames (coverage, comps, Deal Maker, heatmap, search) so each page still shows the full product story.

@@ -142,7 +142,7 @@
 > Beyond the MLS. //
 > DealGapIQ isn’t a listing site. /
 > It’s a **deal decision engine**. //
-> Start free — ten analyses a month, no credit card. /
+> Start free — three discoveries a month, no credit card. /
 > Go Pro when you want the full workbench. //
 > **The price tag isn’t the deal.** /
 > **The structure is.** //
@@ -194,7 +194,7 @@ Deal Maker is the interactive worksheet. <break time="0.35s" /> Change purchase 
 
 ### 08-close
 ```
-Don't have an address yet? <break time="0.35s" /> Hunt the whole market. <break time="0.5s" /> Map Search pre-grades parcels — with foreclosure, pre-foreclosure, and auction filters. Beyond the MLS. <break time="0.55s" /> DealGapIQ isn't a listing site. <break time="0.35s" /> It's a deal decision engine. <break time="0.5s" /> Start free — ten analyses a month, no credit card. <break time="0.35s" /> Go Pro when you want the full workbench. <break time="0.55s" /> The price tag isn't the deal. <break time="0.35s" /> The structure is. <break time="0.45s" /> We analyze. You decide. <break time="0.45s" /> DealGapIQ.com
+Don't have an address yet? <break time="0.35s" /> Hunt the whole market. <break time="0.5s" /> Map Search pre-grades parcels — with foreclosure, pre-foreclosure, and auction filters. Beyond the MLS. <break time="0.55s" /> DealGapIQ isn't a listing site. <break time="0.35s" /> It's a deal decision engine. <break time="0.5s" /> Start free — three discoveries a month, no credit card. <break time="0.35s" /> Go Pro when you want the full workbench. <break time="0.55s" /> The price tag isn't the deal. <break time="0.35s" /> The structure is. <break time="0.45s" /> We analyze. You decide. <break time="0.45s" /> DealGapIQ.com
 ```
 
 ---
