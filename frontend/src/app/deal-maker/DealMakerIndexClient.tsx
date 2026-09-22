@@ -305,9 +305,9 @@ export function DealMakerIndexClient() {
       <div className="min-h-screen bg-[var(--surface-base)] px-4 sm:px-6 pt-6 sm:pt-10">
         <div className="w-full max-w-lg mx-auto">
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">
               Deal Maker IQ
-            </h1>
+            </h2>
             <p className="text-[var(--text-secondary)] text-sm sm:text-base">
               Search for a property to start building your deal
             </p>

@@ -28,12 +28,12 @@ export function DiscoveryColdLanding() {
         >
           <Compass size={28} style={{ color: 'var(--accent-sky)' }} />
         </div>
-        <h1
+        <h2
           className="text-2xl sm:text-3xl font-bold mb-3"
           style={{ color: 'var(--text-heading)' }}
         >
           First time here?
-        </h1>
+        </h2>
         <p className="text-sm sm:text-base mb-8" style={{ color: 'var(--text-secondary)' }}>
           DealGapIQ analyzes any property {SPEED_CLAIM} — then shows Target Buy, six strategies,
           comps, and more.
