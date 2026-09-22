@@ -49,7 +49,13 @@ const canonicalBase =
     ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
     : 'https://dealgapiq.com'
 
-const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+// TODO(brad): the production value of NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION is a
+// Search Console URL, not the verification token. Replace it with the token
+// from Search Console → Settings → Ownership verification → HTML tag.
+// Until then a URL-shaped value is dropped rather than emitted as a bogus tag.
+const rawGoogleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+const googleVerification =
+  rawGoogleVerification && !/^https?:\/\//i.test(rawGoogleVerification) ? rawGoogleVerification : undefined
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
 
 // Apple Smart App Banner: renders <meta name="apple-itunes-app"> so iOS Safari

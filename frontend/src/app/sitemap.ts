@@ -6,6 +6,7 @@ import { blogPageHref } from '@/lib/blog-index'
 import { fetchStateMarkets } from '@/lib/markets'
 import { PERSONA_PAGES } from '@/lib/seo/persona-pages'
 import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
+import { HOME_UPDATED_AT } from '@/config/site'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -13,10 +14,13 @@ type StaticEntry = {
   path: string
   priority: number
   changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']
+  /** Fixed `lastmod` (YYYY-MM-DD); defaults to the build date. */
+  lastModified?: string
 }
 
 const STATIC_ROUTES: StaticEntry[] = [
-  { path: '/', priority: 1.0, changeFrequency: 'weekly' },
+  { path: '/', priority: 1.0, changeFrequency: 'weekly', lastModified: HOME_UPDATED_AT },
+  { path: '/press', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/learn', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/discovery', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/deal-maker', priority: 0.9, changeFrequency: 'weekly' },
@@ -67,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
     url: `${SITE_URL}${r.path}`,
-    lastModified: buildDate,
+    lastModified: r.lastModified ? new Date(`${r.lastModified}T12:00:00Z`) : buildDate,
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }))
