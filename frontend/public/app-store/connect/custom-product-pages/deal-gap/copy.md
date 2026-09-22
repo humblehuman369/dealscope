@@ -22,7 +22,7 @@
 | 4 | `04-search-color-coded.png` | Color-coded map |
 | 5 | `05-coverage-beyond-mls.png` | Off-MLS coverage |
 | 6 | `06-comps-no-spreadsheet.png` | Comps |
-| 7 | `07-dealmaker-scenarios.png` | DealMaker |
+| 7 | `07-dealmaker-scenarios.png` | Deal Maker |
 | 8 | `08-neighborhoods-heatmap.png` | Heatmap |
 
 ---

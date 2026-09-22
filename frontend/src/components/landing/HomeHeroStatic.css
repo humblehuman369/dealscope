@@ -21,6 +21,8 @@
   align-items: flex-start;
   gap: 22px;
   max-width: 620px;
+  /* Let the single-column track shrink below the nowrap pill row (clipped by the mask). */
+  min-width: 0;
 }
 
 .home-hero-static__eyebrow {
@@ -62,6 +64,13 @@
   line-height: 1.5;
   color: var(--text-body);
   max-width: 540px;
+}
+
+.home-hero-static__updated {
+  margin: -12px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-label);
 }
 
 .home-hero-static__cta {
@@ -387,7 +396,19 @@
   }
 }
 
+/* Scan hand-off: the phone gets the camera button, the desktop gets the QR.
+   Decided in CSS so the page can prerender without a user-agent sniff. */
+@media (min-width: 768px) {
+  .home-hero-static__mobile-scan {
+    display: none;
+  }
+}
+
 @media (max-width: 767px) {
+  .home-hero-static__divider,
+  .home-hero-static__scan-module {
+    display: none;
+  }
   .home-hero-static__headline {
     font-size: 36px;
     letter-spacing: -0.9px;

@@ -49,7 +49,8 @@ const canonicalBase =
     ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
     : 'https://dealgapiq.com'
 
-const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+// Google Search Console ownership is verified at the DNS level (TXT record at
+// the domain provider), so no google-site-verification meta tag is emitted.
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
 
 // Apple Smart App Banner: renders <meta name="apple-itunes-app"> so iOS Safari
@@ -85,10 +86,7 @@ export const metadata: Metadata = {
     title: defaultTitle,
     description: defaultDescription,
   },
-  verification: {
-    ...(googleVerification ? { google: googleVerification } : {}),
-    ...(bingVerification ? { other: { 'msvalidate.01': bingVerification } } : {}),
-  },
+  ...(bingVerification ? { verification: { other: { 'msvalidate.01': bingVerification } } } : {}),
   ...(appleAppId ? { itunes: { appId: appleAppId } } : {}),
 }
 

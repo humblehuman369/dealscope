@@ -101,11 +101,11 @@ export function DirectoriesPromoSection() {
           className="mx-auto max-w-4xl text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] text-[var(--text-heading)] md:text-6xl"
           style={DISPLAY_STYLE}
         >
-          Get Funding
+          Can DealGapIQ find cash buyers and hard money lenders?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
-          When your analysis pencils, reach verified investors and lenders in minutes — not weeks of
-          cold outreach.
+          Yes. Pro includes a directory of {BUYER_COUNT} verified cash buyers and {lenderTotalLabel}{' '}
+          hard money lenders, searchable by city, county, ZIP, state, strategy, and loan product.
         </p>
         <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--text-muted)]">
           Search by market · filter by strategy · save contacts to your dashboard

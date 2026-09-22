@@ -12,7 +12,7 @@
  */
 
 import type { FaqItem } from '@/lib/seo/metadata'
-import { SPEED_CLAIM, SPEED_CLAIM_SENTENCE } from '@/lib/claims'
+import { SPEED_CLAIM, SPEED_CLAIM_SENTENCE, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 export type ProblemPersona =
   | 'first-time'
@@ -91,7 +91,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Do I need an account to check a property?',
         answer:
-          'No. Discovery runs without signup or a card. A free account adds saved properties and ten analyses a month; Pro unlocks editable assumptions, comps and exports.',
+          `No. Discovery runs without signup or a card. A free account adds saved properties and ${STARTER_VERDICTS_PER_MONTH} discoveries a month; Pro unlocks editable assumptions, comps and exports.`,
       },
       {
         question: 'Does Discovery work on off-market or unlisted properties?',

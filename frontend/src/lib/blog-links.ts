@@ -8,6 +8,8 @@ const GUIDE_LABELS: Record<string, string> = {
   '/lenders': 'Hard money lender directory',
   '/directory': 'Cash buyer directory',
   '/markets': 'Investment properties by state',
+  '/press': 'DealGapIQ press kit and company facts',
+  '/what-is-dealgapiq': 'What is DealGapIQ?',
   '/strategies/long-term-rental': 'Long-term rental strategy guide',
   '/strategies/short-term-rental': 'Short-term rental strategy guide',
   '/strategies/brrrr': 'BRRRR strategy guide',

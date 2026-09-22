@@ -236,7 +236,7 @@ Read like you’re walking a fellow investor through your own workbench over cof
 
 > DealGapIQ isn’t a listing site. /
 > It’s a **deal decision engine**. //
-> Start free — ten analyses a month, no credit card. /
+> Start free — three discoveries a month, no credit card. /
 > Go Pro when you want the full workbench — /
 > Deal Maker, comps, map hunting, exports, and the directories. //
 > Available on the web, iPhone, and Android — same product everywhere. //

@@ -17,7 +17,7 @@
 | # | File | Frame |
 |---|---|---|
 | 1 | `01-comps-no-spreadsheet.png` | Comps without the spreadsheet |
-| 2 | `02-dealmaker-arv.png` | DealMaker — ARV / rehab framing |
+| 2 | `02-dealmaker-arv.png` | Deal Maker — ARV / rehab framing |
 | 3 | `03-verdict-three-cards.png` | Verdict cards |
 | 4 | `04-pills-deal-maybe-pass.png` | DEAL / MAYBE / PASS |
 | 5 | `05-search-color-coded.png` | Color-coded map |

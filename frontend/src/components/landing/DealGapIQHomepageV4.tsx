@@ -38,8 +38,12 @@ import {
   SOURCE_COUNT,
   SPEED_CLAIM,
 } from '@/lib/claims'
+import { LEGAL_ENTITY_NAME } from '@/lib/brand'
+import { STRATEGIES, WORKED_EXAMPLE } from '@/config/site'
 import './hero-v5.css'
 import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
+import { KeyTakeaways } from '@/components/landing/KeyTakeaways'
+import { FaqSection } from '@/components/landing/FaqSection'
 
 interface Props {
   scanQr?: React.ReactNode
@@ -88,16 +92,28 @@ export function DealGapIQHomepageV4({ scanQr }: Props) {
 
       <MarketingNav onStart={runDiscovery} />
 
+      {/*
+        Section order is the answer-first GEO/AEO sequence: every H2 is a
+        question and is immediately followed by a <p> that answers it.
+        Exactly eleven H2s (ten sections + FAQ) — keep CTA/explore headings
+        as non-H2 elements.
+      */}
       <main>
         <HomeHeroStatic scanQr={scanQr} />
-        <SocialProof compact />
+        <KeyTakeaways />
         <QuickStatsBar />
-        <FounderTrustSection />
-        <DirectoriesPromoSection />
-        <FeaturesSection />
+        <WhatIsSection />
+        <DealGapSection />
         <HowItWorksSection onStart={runDiscovery} />
-        <PricingSection onFree={startFree} onPro={startPro} />
+        <ClosePathsSection />
+        <StrategiesSection />
         <ComparisonSection />
+        <PricingSection onFree={startFree} onPro={startPro} />
+        <HomeDataSourcesSection />
+        <DirectoriesPromoSection />
+        <FounderTrustSection />
+        <FaqSection />
+        <SocialProof compact />
         <FinalCTASection onStart={runDiscovery} />
         <ExploreDealGapIQSection />
       </main>
@@ -299,12 +315,86 @@ function QuickStatsBar() {
   )
 }
 
+function WhatIsSection() {
+  return (
+    <section id="what-is-dealgapiq" className="mx-auto max-w-7xl px-6 py-16">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+          What is DealGapIQ?
+        </h2>
+        <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          DealGapIQ is a web and mobile tool that turns any property address into an investor
+          analysis, a target buy price, and a set of ready-to-send offers. It is made by{' '}
+          {LEGAL_ENTITY_NAME} in Boca Raton, Florida, launched in beta in January 2026 and publicly in
+          August 2026, and ships updates weekly.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function StrategiesSection() {
+  return (
+    <section
+      id="strategies"
+      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+    >
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+            Which investment strategies does DealGapIQ cover?
+          </h2>
+          <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+            Six: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and
+            wholesale. Every discovery scores the property against all six.
+          </p>
+        </div>
+        <ul className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {STRATEGIES.map((strategy) => (
+            <li key={strategy.href}>
+              <Link
+                href={strategy.href}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 text-sm font-bold capitalize text-[var(--text-heading)] transition-colors hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
+              >
+                {strategy.label}
+                <ArrowRight className="h-4 w-4 shrink-0 text-[var(--accent-sky)]" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+function HomeDataSourcesSection() {
+  return (
+    <section id="data-sources" className="mx-auto max-w-7xl px-6 py-16">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+          Where do DealGapIQ&apos;s valuations and data come from?
+        </h2>
+        <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          DealGapIQ pulls valuation, listing, property detail, and comparable sales data from{' '}
+          {SOURCE_COUNT} sources, including Zillow, Redfin, Realtor.com, and RentCast, and shows
+          them side by side. More sources are planned. Investors can compare the valuation from each
+          source and make their own market decision instead of trusting one number.
+        </p>
+        <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          A tight spread between sources means the market is easy to read. A wide spread tells you to
+          check the comps yourself before you make an offer. Every number and every source is
+          visible in the app. There are no hidden formulas.
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function FounderTrustSection() {
-  const creds = [
-    'Founded Foreclosure.com',
-    'Built HomePath.com for Fannie Mae',
-    'Built HomeSteps.com for Freddie Mac',
-    '30+ Year GSE Partnership',
+  const builtBy = [
+    { name: 'Foreclosure.com', note: "still powers BiggerPockets' foreclosure search" },
+    { name: 'HomePath.com', note: 'for Fannie Mae' },
+    { name: 'HomeSteps.com', note: 'for Freddie Mac' },
   ]
 
   return (
@@ -315,8 +405,16 @@ function FounderTrustSection() {
           className="mx-auto mt-4 max-w-4xl text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
           style={DISPLAY_STYLE}
         >
-          From the founder of Foreclosure.com.
+          Who built DealGapIQ?
         </h2>
+        <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          DealGapIQ was built by{' '}
+          <Link href="/about" className="font-semibold text-[var(--text-heading)] underline-offset-2 hover:underline">
+            Brad Geisen
+          </Link>
+          , who founded Foreclosure.com and whose company built HomePath.com for Fannie Mae and
+          HomeSteps.com for Freddie Mac. His GSE partnerships date to a 1991 HUD pilot program.
+        </p>
       </div>
 
       <div className="mx-auto max-w-5xl rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
@@ -337,22 +435,30 @@ function FounderTrustSection() {
                 className="h-16 w-16 rounded-2xl border border-[var(--border-default)] object-cover object-top"
               />
               <div>
-                <div className="font-bold text-[var(--text-heading)]">Brad Geisen</div>
+                <Link href="/about" className="font-bold text-[var(--text-heading)] hover:text-[var(--accent-sky)]">
+                  Brad Geisen
+                </Link>
                 <div className="text-xs text-[var(--text-muted)]">Founder &amp; CEO, DealGapIQ</div>
                 <div className="mt-0.5 text-xs font-semibold text-[var(--accent-sky)]">
                   Author of The Deal Gap
                 </div>
               </div>
             </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {creds.map((cred) => (
-                <span
-                  key={cred}
-                  className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-bold text-[var(--accent-sky)]"
-                >
-                  {cred}
-                </span>
-              ))}
+            <div className="mt-8">
+              <div className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
+                Built by the founder
+              </div>
+              <ul className="mt-3 flex flex-wrap gap-3">
+                {builtBy.map((item) => (
+                  <li
+                    key={item.name}
+                    className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-bold text-[var(--accent-sky)]"
+                  >
+                    {item.name}{' '}
+                    <span className="font-medium text-[var(--text-secondary)]">({item.note})</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
@@ -389,7 +495,64 @@ function FounderTrustSection() {
   )
 }
 
-function FeaturesSection() {
+function DealGapSection() {
+  return (
+    <section
+      id="deal-gap"
+      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+    >
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-12 max-w-3xl">
+          <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
+          <h2
+            className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
+            style={DISPLAY_STYLE}
+          >
+            What is a deal gap in real estate?
+          </h2>
+          <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
+            A deal gap is the difference between what a seller is asking and the most an investor can
+            pay and still hit their return target. If a house lists at {WORKED_EXAMPLE.listPrice} and
+            the numbers say an investor should pay {WORKED_EXAMPLE.targetBuy} at 20 percent down, the
+            deal gap is 6.4 percent, or {WORKED_EXAMPLE.dealGapDollars}.
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
+          <div className="px-6 py-7 md:px-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <span className="w-fit rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1 text-xs font-black uppercase tracking-widest text-[var(--accent-sky)]">
+                Example
+              </span>
+              <span className="font-mono text-sm uppercase text-[var(--text-muted)]">
+                {WORKED_EXAMPLE.address}
+              </span>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-baseline">
+              <div>
+                <span className="text-4xl font-black tabular-nums text-[var(--text-heading)] md:text-5xl">
+                  {WORKED_EXAMPLE.listPrice}
+                </span>
+                <span className="ml-1 text-[var(--text-muted)]">list</span>
+              </div>
+              <div className="flex w-fit items-center gap-2 rounded-2xl border border-[var(--status-negative)] bg-[var(--color-red-dim)] px-4 py-1.5 text-sm font-black text-[var(--status-negative)]">
+                <ShieldCheck className="h-4 w-4" />
+                <span>{WORKED_EXAMPLE.dealGap} Deal Gap</span>
+              </div>
+            </div>
+            <div className="mt-1 text-sm text-[var(--text-secondary)]">
+              Target buy price:{' '}
+              <span className="font-bold text-[var(--text-heading)]">{WORKED_EXAMPLE.targetBuy}</span>{' '}
+              at {WORKED_EXAMPLE.downPaymentPct} down
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ClosePathsSection() {
   const paths = [
     {
       num: '1',
@@ -424,57 +587,26 @@ function FeaturesSection() {
 
   return (
     <section
-      id="features"
+      id="close-the-gap"
       className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 max-w-2xl">
-          <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
+        <div className="mb-12 max-w-3xl">
           <h2
-            className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
+            className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
           >
-            The gap <span className="italic text-[var(--accent-sky)]">is</span> the deal.
+            How do you close the gap between list price and target buy price?
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            Other tools help you mail 10,000 strangers hoping one is desperate. DealGapIQ works
-            the other way. Pick any property. We show you the exact gap between its price and
-            what it&apos;s worth to an investor — then show you four ways to close it. You
-            don&apos;t need a motivated seller. You need the right structure and the right number.
+            DealGapIQ gives four paths, and the fourth blends the other three.
           </p>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
-          <div className="border-b border-[var(--border-default)] px-6 py-7 md:px-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <span className="w-fit rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1 text-xs font-black uppercase tracking-widest text-[var(--accent-sky)]">
-                Example
-              </span>
-              <span className="font-mono text-sm uppercase text-[var(--text-muted)]">
-                1014-16 N J St - Lake Worth, FL
-              </span>
-            </div>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-baseline">
-              <div>
-                <span className="text-4xl font-black tabular-nums text-[var(--text-heading)] md:text-5xl">
-                  $457,100
-                </span>
-                <span className="ml-1 text-[var(--text-muted)]">list</span>
-              </div>
-              <div className="flex w-fit items-center gap-2 rounded-2xl border border-[var(--status-negative)] bg-[var(--color-red-dim)] px-4 py-1.5 text-sm font-black text-[var(--status-negative)]">
-                <ShieldCheck className="h-4 w-4" />
-                <span>-6.4% Deal Gap</span>
-              </div>
-            </div>
-            <div className="mt-1 text-sm text-[var(--text-secondary)]">
-              Target buy price:{' '}
-              <span className="font-bold text-[var(--text-heading)]">$428,000</span> at 20% down
-            </div>
-          </div>
-
           <div className="p-6 md:p-8">
             <div className="mb-4 text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
-              4 Paths to Close the Gap
+              4 Paths to Close the Gap on {WORKED_EXAMPLE.address}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {paths.map((path) => (
@@ -514,8 +646,12 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
     <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
-          Three clicks. One clear path forward.
+          How does DealGapIQ analyze a deal in {SPEED_CLAIM}?
         </h2>
+        <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          It runs three steps: search an address, see the deal gap, and get four offer paths. The
+          whole analysis runs in under a minute.
+        </p>
       </div>
 
       <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
@@ -556,10 +692,12 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             className="mt-2 text-3xl text-[var(--text-heading)] md:text-4xl"
             style={DISPLAY_STYLE}
           >
-            Start free. Upgrade when you are ready.
+            How much does DealGapIQ cost?
           </h2>
           <p className="mt-3 text-[var(--text-secondary)]">
-            No credit card for the free tier. Cancel Pro anytime.
+            The free plan is $0 with no credit card. Pro is {PRO_MONTHLY_PRICE} a month, or $
+            {PRO_YEARLY_PER_MONTH} a month billed annually, with a 7-day trial that also needs no
+            card.
           </p>
         </div>
 
@@ -595,9 +733,18 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
   )
 }
 
+const PRICE_ROW_LABEL = 'Starting price'
+
 function ComparisonSection() {
   const rows = [
-    ['Multi-Source Valuation', 'X', 'Partial', 'Partial', 'Full (6 sources)'],
+    [
+      PRICE_ROW_LABEL,
+      'Free',
+      'Free to ~$14/mo',
+      'Subscription plus per-record fees',
+      `${PRO_MONTHLY_PRICE}/mo, free tier`,
+    ],
+    ['Multi-Source Valuation', 'X', 'Partial', 'Partial', `Full (${SOURCE_COUNT} sources)`],
     ['Deal Gap Detection', 'X', 'X', 'X', 'Yes - with target buy price'],
     ['Pre-Built Offer Structures', 'X', 'X', 'X', '4 paths including creative'],
     ['Negotiation Scripts', 'X', 'X', 'X', 'Yes - tailored to path & seller'],
@@ -614,8 +761,12 @@ function ComparisonSection() {
     <section className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 text-center">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
-          Where most tools stop, DealGapIQ keeps going.
+          How does DealGapIQ compare with DealCheck, PropStream and DealMachine?
         </h2>
+        <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
+          DealGapIQ is the only one of the four that reports a deal gap and target buy price, and
+          the only one that ships offer structures and negotiation scripts.
+        </p>
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]">
@@ -641,21 +792,27 @@ function ComparisonSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {rows.map(([capability, listing, calc, listMail, iq]) => (
-                <tr key={capability}>
-                  <td className="px-8 py-5 font-semibold text-[var(--text-body)]">{capability}</td>
-                  <CompareCell value={listing} />
-                  <CompareCell value={calc} />
-                  <CompareCell value={listMail} />
-                  <td className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
-                    {iq}
-                  </td>
-                </tr>
-              ))}
+              {rows.map(([capability, listing, calc, listMail, iq]) => {
+                const neutral = capability === PRICE_ROW_LABEL
+                return (
+                  <tr key={capability}>
+                    <td className="px-8 py-5 font-semibold text-[var(--text-body)]">{capability}</td>
+                    <CompareCell value={listing} neutral={neutral} />
+                    <CompareCell value={calc} neutral={neutral} />
+                    <CompareCell value={listMail} neutral={neutral} />
+                    <td className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
+                      {iq}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
       </div>
+      <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
+        Third-party prices from public review sites, September 2026; check each vendor.
+      </p>
     </section>
   )
 }
@@ -668,9 +825,10 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
           <ShieldCheck className="h-10 w-10 text-[var(--accent-sky)]" />
         </div>
 
-        <h2 className="text-[clamp(2rem,5.5vw,3.25rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+        {/* Not an H2: the page keeps exactly eleven question headings for engines. */}
+        <p className="text-[clamp(2rem,5.5vw,3.25rem)] leading-tight text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Trust comes from seeing the logic that generates profit.
-        </h2>
+        </p>
         <p className="mx-auto mt-4 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
           Every number, every source, every script is reviewable. No black boxes.
         </p>
@@ -731,7 +889,7 @@ function SiteFooter() {
           links={[
             { href: '#how-it-works', label: 'How it Works' },
             { href: '/discovery', label: 'Discovery' },
-            { href: '/deal-maker', label: 'DealMaker' },
+            { href: '/deal-maker', label: 'Deal Maker' },
             { href: '/directory', label: 'Cash Buyer Directory' },
             { href: '/lenders', label: 'Hard Money Lenders' },
             { href: '/pricing', label: 'Pricing' },
@@ -763,6 +921,7 @@ function SiteFooter() {
           title="Company"
           links={[
             { href: '/about', label: 'About & Mission' },
+            { href: '/press', label: 'Press kit' },
             { href: '/legal', label: 'Legal entity' },
             { href: '/help', label: 'Help Center' },
             { href: '/privacy', label: 'Privacy' },
@@ -997,7 +1156,7 @@ function PricingCard({
   )
 }
 
-function CompareCell({ value }: { value: string }) {
+function CompareCell({ value, neutral = false }: { value: string; neutral?: boolean }) {
   const isNo = value === 'X'
   const isPartial = value === 'Partial'
   const isNotApplicable = value === '—'
@@ -1005,7 +1164,9 @@ function CompareCell({ value }: { value: string }) {
   return (
     <td
       className={`px-6 py-5 text-center ${
-        isNotApplicable
+        neutral
+          ? 'text-[var(--text-body)]'
+          : isNotApplicable
           ? 'text-[var(--text-muted)]'
           : isNo
             ? 'text-[var(--status-negative)]'
