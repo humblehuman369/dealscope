@@ -599,7 +599,8 @@ function ClosePathsSection() {
             How do you close the gap between list price and target buy price?
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            DealGapIQ gives four paths, and the fourth blends the other three.
+            DealGapIQ gives four paths to close it, Price, Income, Terms, and Equity, plus a
+            Blend that combines them.
           </p>
         </div>
 
