@@ -224,7 +224,8 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
           ) : null}
         </div>
 
-        <div className="home-hero-static__visual" aria-hidden="true">
+        <div className="home-dark-bloom">
+          <div className="home-hero-static__visual" aria-hidden="true">
           <div className="home-hero-static__card">
             <IllustratedMap />
             {PINS.map((pin) => (
@@ -256,6 +257,7 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
                 Strong deal
               </li>
             </ul>
+          </div>
           </div>
         </div>
       </div>

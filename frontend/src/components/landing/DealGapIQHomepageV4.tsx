@@ -523,7 +523,8 @@ function DealGapSection() {
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
+        <div className="home-dark-bloom">
+          <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
           <div className="px-6 py-7 md:px-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <span className="w-fit rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1 text-xs font-black uppercase tracking-widest text-[var(--accent-sky)]">
@@ -550,6 +551,7 @@ function DealGapSection() {
               <span className="font-bold text-[var(--text-heading)]">{WORKED_EXAMPLE.targetBuy}</span>{' '}
               at {WORKED_EXAMPLE.downPaymentPct} down
             </div>
+          </div>
           </div>
         </div>
 

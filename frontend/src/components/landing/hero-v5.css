@@ -718,3 +718,38 @@
     animation-delay: 0ms !important;
   }
 }
+
+/* Dark-only atmospheric bloom behind priority homepage surfaces.
+   Lives on a wrapper so overflow:hidden cards do not clip the wash. */
+.home-dark-bloom {
+  position: relative;
+}
+
+.home-dark-bloom > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme='dark'] .home-dark-bloom::before {
+  content: '';
+  position: absolute;
+  inset: -56px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 78% 70% at 50% 40%,
+      color-mix(in srgb, var(--accent-sky-light) 24%, transparent) 0%,
+      color-mix(in srgb, var(--accent-sky-light) 10%, transparent) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 95% 90% at 48% 58%,
+      color-mix(in srgb, var(--accent-brand-blue) 8%, transparent) 0%,
+      transparent 75%
+    );
+}
+
+[data-theme='dark'] .home-dark-bloom > * {
+  border-color: color-mix(in srgb, var(--accent-sky) 40%, var(--border-default));
+}
