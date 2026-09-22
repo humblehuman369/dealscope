@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { COMPARISON_LINKS, ComparisonPage, monthYearLabel } from '@/components/comparisons/ComparisonPage'
 import { META_DESCRIPTION_MAX } from '@/lib/content-schema'
-import { COMPARISON_PAGES, PRICES_CHECKED } from '@/lib/seo/comparison-pages'
+import { COMPARISON_PAGES, getHomeComparisonTable, PRICES_CHECKED } from '@/lib/seo/comparison-pages'
 import { buildComparisonJsonLd } from '@/lib/seo/comparison-schema'
 
 type Node = Record<string, unknown>
@@ -72,5 +72,22 @@ describe('comparison pages (GEO plan Phase 8)', () => {
 
   it('formats the footnote month from the price-check date', () => {
     expect(monthYearLabel('2026-09-22')).toBe('September 2026')
+  })
+
+  it('builds the home comparison table from named DealCheck, PropStream and DealMachine cells', () => {
+    const table = getHomeComparisonTable()
+    expect(table.competitors).toEqual(['DealCheck', 'PropStream', 'DealMachine'])
+    expect(table.checked).toBe(PRICES_CHECKED)
+    expect(table.rows.some((row) => row.competitors.includes('Not listed'))).toBe(true)
+    for (const row of table.rows) {
+      expect(row.competitors).toHaveLength(3)
+      expect(row.dealgapiq.length).toBeGreaterThan(0)
+      expect(row.dealgapiq).not.toBe('X')
+      expect(row.dealgapiq).not.toBe('Partial')
+    }
+    const dealcheckPrice = COMPARISON_PAGES['dealgapiq-vs-dealcheck'].table.find(
+      (row) => row.label === OUR_PRICE_ROW,
+    )!.competitor
+    expect(table.rows.find((row) => row.label === OUR_PRICE_ROW)!.competitors[0]).toBe(dealcheckPrice)
   })
 })

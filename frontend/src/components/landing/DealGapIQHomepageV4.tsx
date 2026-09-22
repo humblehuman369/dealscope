@@ -39,7 +39,12 @@ import {
   SPEED_CLAIM,
 } from '@/lib/claims'
 import { LEGAL_ENTITY_NAME } from '@/lib/brand'
-import { STRATEGIES, WORKED_EXAMPLE } from '@/config/site'
+import { HOME_UPDATED_AT, STRATEGIES, WORKED_EXAMPLE } from '@/config/site'
+import { DEAL_GAP_DEFINITION, HOME_FACTS, homeFactsCaption } from '@/content/home-facts'
+import { HOME_HOWTO_DESCRIPTION, HOME_HOWTO_STEPS } from '@/content/home-howto'
+import { formatContentDate } from '@/lib/content-dates'
+import { INDEXABLE_SITE_SECTIONS } from '@/lib/seo/indexable-routes'
+import { getHomeComparisonTable } from '@/lib/seo/comparison-pages'
 import './hero-v5.css'
 import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
 import { KeyTakeaways } from '@/components/landing/KeyTakeaways'
@@ -375,10 +380,11 @@ function HomeDataSourcesSection() {
           Where do DealGapIQ&apos;s valuations and data come from?
         </h2>
         <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
-          DealGapIQ pulls valuation, listing, property detail, and comparable sales data from{' '}
-          {SOURCE_COUNT} sources, including Zillow, Redfin, Realtor.com, and RentCast, and shows
-          them side by side. More sources are planned. Investors can compare the valuation from each
-          source and make their own market decision instead of trusting one number.
+          According to the sources DealGapIQ displays side by side (Zillow, Redfin, Realtor.com,
+          RentCast, plus IQ Estimate), investors can compare each valuation and make their own
+          market decision instead of trusting one number. DealGapIQ pulls valuation, listing,
+          property detail, and comparable sales data from {SOURCE_COUNT} sources and shows them side
+          by side. More sources are planned.
         </p>
         <p className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
           A tight spread between sources means the market is easy to read. A wide spread tells you to
@@ -511,10 +517,9 @@ function DealGapSection() {
             What is a deal gap in real estate?
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            A deal gap is the difference between what a seller is asking and the most an investor can
-            pay and still hit their return target. If a house lists at {WORKED_EXAMPLE.listPrice} and
-            the numbers say an investor should pay {WORKED_EXAMPLE.targetBuy} at 20 percent down, the
-            deal gap is 6.4 percent, or {WORKED_EXAMPLE.dealGapDollars}.
+            {DEAL_GAP_DEFINITION} If a house lists at {WORKED_EXAMPLE.listPrice} and the numbers say
+            an investor should pay {WORKED_EXAMPLE.targetBuy} at 20 percent down, the deal gap is 6.4
+            percent, or {WORKED_EXAMPLE.dealGapDollars}.
           </p>
         </div>
 
@@ -546,6 +551,42 @@ function DealGapSection() {
               at {WORKED_EXAMPLE.downPaymentPct} down
             </div>
           </div>
+        </div>
+
+        <div
+          id="home-facts"
+          className="mt-8 overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]"
+        >
+          <table className="w-full text-sm">
+            <caption className="px-6 pt-5 pb-2 text-left text-xs text-[var(--text-muted)] md:px-8">
+              {homeFactsCaption(formatContentDate(HOME_UPDATED_AT) ?? HOME_UPDATED_AT)}
+            </caption>
+            <thead>
+              <tr className="border-y border-[var(--border-default)] bg-[var(--surface-section)]">
+                <th scope="col" className="px-6 py-3 text-left font-bold text-[var(--text-heading)] md:px-8">
+                  Figure
+                </th>
+                <th scope="col" className="px-6 py-3 text-left font-bold text-[var(--text-heading)] md:px-8">
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-default)]">
+              {HOME_FACTS.map((row) => (
+                <tr key={row.label}>
+                  <th
+                    scope="row"
+                    className="px-6 py-3 font-semibold text-[var(--text-body)] md:px-8"
+                  >
+                    {row.label}
+                  </th>
+                  <td className="px-6 py-3 tabular-nums text-[var(--text-heading)] md:px-8">
+                    {row.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -625,24 +666,6 @@ function ClosePathsSection() {
 }
 
 function HowItWorksSection({ onStart }: { onStart: () => void }) {
-  const steps = [
-    {
-      num: '1',
-      title: 'Search any address',
-      body: 'Works on active listings, expired, or even off-market comps. No login required for first discovery.',
-    },
-    {
-      num: '2',
-      title: 'See the Deal Gap instantly',
-      body: 'Multi-source valuation + our proprietary gap calculation. Know exactly how far off the listing is from a real deal.',
-    },
-    {
-      num: '3',
-      title: 'Get four paths plus a Blend',
-      body: 'Price, Income, Terms and Equity, and a Blend that combines them. One click opens the full negotiation script, worksheet, and talking points tailored to the seller type.',
-    },
-  ]
-
   return (
     <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
@@ -650,19 +673,18 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
           How does DealGapIQ analyze a deal in {SPEED_CLAIM}?
         </h2>
         <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
-          It runs three steps: search an address, see the deal gap, and get four paths plus a Blend.
-          The whole analysis runs in under a minute.
+          {HOME_HOWTO_DESCRIPTION}
         </p>
       </div>
 
       <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-        {steps.map((step) => (
-          <div key={step.num} className="px-4 text-center">
+        {HOME_HOWTO_STEPS.map((step, index) => (
+          <div key={step.name} className="px-4 text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-3xl font-black text-[var(--accent-sky)]">
-              {step.num}
+              {index + 1}
             </div>
-            <div className="mb-2 text-xl font-bold text-[var(--text-heading)]">{step.title}</div>
-            <div className="text-[15px] text-[var(--text-secondary)]">{step.body}</div>
+            <div className="mb-2 text-xl font-bold text-[var(--text-heading)]">{step.name}</div>
+            <div className="text-[15px] text-[var(--text-secondary)]">{step.text}</div>
           </div>
         ))}
       </div>
@@ -734,29 +756,10 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
   )
 }
 
-const PRICE_ROW_LABEL = 'Starting price'
-
 function ComparisonSection() {
-  const rows = [
-    [
-      PRICE_ROW_LABEL,
-      'Free',
-      'Free to ~$14/mo',
-      'Subscription plus per-record fees',
-      `${PRO_MONTHLY_PRICE}/mo, free tier`,
-    ],
-    ['Multi-Source Valuation', 'X', 'Partial', 'Partial', `Full (${SOURCE_COUNT} sources)`],
-    ['Deal Gap Detection', 'X', 'X', 'X', 'Yes - with target buy price'],
-    ['Paths to Close the Gap', 'X', 'X', 'X', 'Four paths plus a Blend'],
-    ['Negotiation Scripts', 'X', 'X', 'X', 'Yes - tailored to path & seller'],
-    ['Creative Finance Modeling', 'X', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
-    ['Works Without a Mailing List', '—', '—', 'X', 'Yes - any property qualifies'],
-    ['No Per-Record Fees', '—', '—', 'X', 'Yes - flat monthly price'],
-    ['Tells You What to Offer', 'X', 'Partial', 'X', 'Target Buy + four paths plus a Blend'],
-    ['Verified Cash Buyer Directory', 'X', 'X', 'Partial', 'Cash Wholesale Buyers'],
-    ['Hard Money Lender Directory', 'X', 'X', 'X', 'Approved in 24 hrs'],
-    ['No Signup To Try', 'Yes', 'X', 'X', 'Yes - instant'],
-  ]
+  const table = getHomeComparisonTable()
+  const comparisonLinks =
+    INDEXABLE_SITE_SECTIONS.find((section) => section.title === 'Comparisons')?.links ?? []
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
@@ -772,48 +775,90 @@ function ComparisonSection() {
 
       <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-sm">
+          <table className="w-full min-w-[1100px] text-sm">
             <thead>
               <tr className="border-b border-[var(--border-default)] bg-[var(--surface-section)]">
-                <th className="w-1/3 px-8 py-5 text-left font-bold text-[var(--text-heading)]">
+                <th
+                  scope="col"
+                  className="w-1/5 px-6 py-5 text-left font-bold text-[var(--text-heading)]"
+                >
                   Capability
                 </th>
-                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
-                  Listing Sites
-                </th>
-                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
-                  Investor Calculators
-                </th>
-                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
-                  List &amp; Mail Platforms
-                </th>
-                <th className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
+                {table.competitors.map((name) => (
+                  <th
+                    key={name}
+                    scope="col"
+                    className="px-4 py-5 text-left font-bold text-[var(--text-muted)]"
+                  >
+                    {name}
+                  </th>
+                ))}
+                <th
+                  scope="col"
+                  className="bg-[var(--color-teal-dim)] px-4 py-5 text-left font-bold text-[var(--accent-sky)]"
+                >
                   DealGapIQ
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {rows.map(([capability, listing, calc, listMail, iq]) => {
-                const neutral = capability === PRICE_ROW_LABEL
-                return (
-                  <tr key={capability}>
-                    <td className="px-8 py-5 font-semibold text-[var(--text-body)]">{capability}</td>
-                    <CompareCell value={listing} neutral={neutral} />
-                    <CompareCell value={calc} neutral={neutral} />
-                    <CompareCell value={listMail} neutral={neutral} />
-                    <td className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
-                      {iq}
-                    </td>
-                  </tr>
-                )
-              })}
+              {table.rows.map((row) => (
+                <tr key={row.label} className="align-top">
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-semibold text-[var(--text-body)]"
+                  >
+                    {row.label}
+                  </th>
+                  {row.competitors.map((value, index) => (
+                    <CompareCell key={table.competitors[index]} value={value} />
+                  ))}
+                  <td className="bg-[var(--color-teal-dim)] px-4 py-4 text-left text-[13px] font-bold leading-snug text-[var(--accent-sky)]">
+                    {row.dealgapiq}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </div>
       <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
-        Third-party prices from public review sites, September 2026; check each vendor.
+        Competitor cells were read from each vendor&apos;s public pages on{' '}
+        <time dateTime={table.checked}>
+          {formatContentDate(table.checked) ?? table.checked}
+        </time>
+        . A cell reads &ldquo;Not listed&rdquo; when the vendor does not state the feature. Check
+        each vendor.
       </p>
+      <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+        Sources:{' '}
+        {table.sources.map((source, index) => (
+          <span key={source.url}>
+            {index > 0 ? '; ' : ''}
+            <a
+              href={source.url}
+              rel="nofollow noopener"
+              target="_blank"
+              className="underline hover:text-[var(--text-body)]"
+            >
+              {source.label}
+            </a>{' '}
+            (read {source.accessed})
+          </span>
+        ))}
+        .
+      </p>
+      <nav className="mt-6 flex flex-wrap justify-center gap-4 text-sm" aria-label="Full comparison pages">
+        {comparisonLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="font-semibold text-[var(--accent-sky)] underline-offset-2 hover:underline"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
     </section>
   )
 }
@@ -1157,23 +1202,13 @@ function PricingCard({
   )
 }
 
-function CompareCell({ value, neutral = false }: { value: string; neutral?: boolean }) {
-  const isNo = value === 'X'
-  const isPartial = value === 'Partial'
-  const isNotApplicable = value === '—'
+function CompareCell({ value }: { value: string }) {
+  const notListed = value === 'Not listed'
 
   return (
     <td
-      className={`px-6 py-5 text-center ${
-        neutral
-          ? 'text-[var(--text-body)]'
-          : isNotApplicable
-          ? 'text-[var(--text-muted)]'
-          : isNo
-            ? 'text-[var(--status-negative)]'
-            : isPartial
-              ? 'text-[var(--status-warning)]'
-              : 'text-[var(--status-positive)]'
+      className={`px-4 py-4 text-left text-[13px] leading-snug ${
+        notListed ? 'text-[var(--text-muted)]' : 'text-[var(--text-body)]'
       }`}
     >
       {value}

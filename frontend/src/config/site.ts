@@ -12,7 +12,7 @@ export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || '
 export const HOME_H1 = 'Find a Great Deal & How to Close It.'
 
 /** Shown under the hero lede and emitted as `Article.dateModified`. */
-export const HOME_UPDATED_AT = '2026-09-21'
+export const HOME_UPDATED_AT = '2026-09-22'
 
 /** `Article.datePublished` for the home page (beta go-live; confirmed by Brad). */
 export const HOME_PUBLISHED_AT = '2026-01-15'

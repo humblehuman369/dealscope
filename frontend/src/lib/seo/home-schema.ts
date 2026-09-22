@@ -1,8 +1,10 @@
 import { HOME_FAQ } from '@/content/home-faq'
+import { DEAL_GAP_DEFINITION, HOME_FACTS, HOME_FACTS_CAPTION, HOME_FACTS_NAME } from '@/content/home-facts'
+import { HOME_HOWTO_DESCRIPTION, HOME_HOWTO_NAME, HOME_HOWTO_STEPS } from '@/content/home-howto'
 import { FOUNDER_NAME, HOME_H1, HOME_PUBLISHED_AT, HOME_UPDATED_AT, SITE_URL } from '@/config/site'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { toSchemaDateTime } from '@/lib/seo/dates'
-import { buildFaqJsonLd } from '@/lib/seo/metadata'
+import { buildFaqJsonLd, buildHowToJsonLd } from '@/lib/seo/metadata'
 import { ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
 
 /**
@@ -25,14 +27,22 @@ const BREADCRUMB_ID = `${SITE_URL}/#breadcrumb`
 
 /**
  * Home page `@graph`: `WebPage` + its `BreadcrumbList`, `Article` (headline =
- * H1, dates from `site.ts`) and `FAQPage` (mapped from `home-faq.ts`, the same
- * array `FaqSection` renders). `Organization`, `Person`, `WebSite` and
- * `SoftwareApplication` are emitted once by `SiteJsonLd` in the root layout
- * and referenced here by `@id`.
+ * H1, dates from `site.ts`), `FAQPage` (mapped from `home-faq.ts`, the same
+ * array `FaqSection` renders), `HowTo`, `DefinedTerm` (deal gap) and
+ * `Dataset` (first-party facts table). `Organization`, `Person`, `WebSite`
+ * and `SoftwareApplication` are emitted once by `SiteJsonLd` in the root
+ * layout and referenced here by `@id`.
  */
 export function buildHomeJsonLd() {
   const { '@context': _ctx, ...faq } = buildFaqJsonLd(HOME_FAQ)
   void _ctx
+  const { '@context': _howToCtx, ...howTo } = buildHowToJsonLd({
+    name: HOME_HOWTO_NAME,
+    description: HOME_HOWTO_DESCRIPTION,
+    url: HOME_URL,
+    steps: HOME_HOWTO_STEPS.map((step) => ({ name: step.name, text: step.text })),
+  })
+  void _howToCtx
   const ogImage = `${SITE_URL}${BRAND_OG_IMAGE.url}`
 
   return {
@@ -75,6 +85,27 @@ export function buildHomeJsonLd() {
         about: { '@id': SOFTWARE_ID },
       },
       { ...faq, '@id': `${SITE_URL}/#faq` },
+      { ...howTo, '@id': `${SITE_URL}/#howto` },
+      {
+        '@type': 'DefinedTerm',
+        '@id': `${SITE_URL}/#deal-gap`,
+        name: 'deal gap',
+        description: DEAL_GAP_DEFINITION,
+        url: `${SITE_URL}/#deal-gap`,
+        inDefinedTermSet: HOME_URL,
+      },
+      {
+        '@type': 'Dataset',
+        '@id': `${SITE_URL}/#home-facts`,
+        name: HOME_FACTS_NAME,
+        description: HOME_FACTS_CAPTION,
+        url: `${HOME_URL}/#home-facts`,
+        dateModified: toSchemaDateTime(HOME_UPDATED_AT),
+        creator: { '@id': PERSON_ID },
+        publisher: { '@id': ORG_ID },
+        isPartOf: { '@id': WEBPAGE_ID },
+        variableMeasured: HOME_FACTS.map((row) => row.label),
+      },
     ],
   }
 }

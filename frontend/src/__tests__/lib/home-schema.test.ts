@@ -64,4 +64,30 @@ describe('home page schema', () => {
       'Yes. There are iOS, macOS and Android apps (App Store ID 6759636866; Google Play id com.dealgapiq.mobile) and a Point & Scan feature that runs a discovery when you point your phone camera at a house. Scanning also works without the app installed.',
     )
   })
+
+  it('emits HowTo, DefinedTerm and Dataset nodes for the visible home sections', () => {
+    const howTo = graph().find((n) => n['@type'] === 'HowTo')!
+    const term = graph().find((n) => n['@type'] === 'DefinedTerm')!
+    const dataset = graph().find((n) => n['@type'] === 'Dataset')!
+    expect((howTo.step as unknown[]).length).toBe(3)
+    expect(howTo.name).toContain('under 60 seconds')
+    expect(term.name).toBe('deal gap')
+    expect(term.description).toMatch(/difference between what a seller is asking/)
+    expect(dataset.name).toBe('DealGapIQ first-party figures')
+    expect(dataset.dateModified).toBe(toSchemaDateTime(HOME_UPDATED_AT))
+    expect(dataset.description).toMatch(/worked example, not a market average/)
+    expect(dataset.variableMeasured).toEqual(expect.arrayContaining(['Deal gap', 'List price']))
+  })
+
+  it('includes the DSCR, 1031 and house-hack questions in FAQPage', () => {
+    const faq = graph().find((n) => n['@type'] === 'FAQPage')!
+    const names = (faq.mainEntity as Array<{ name: string }>).map((q) => q.name)
+    expect(names).toContain('Does DealGapIQ calculate DSCR?')
+    expect(names).toContain('Does DealGapIQ model a 1031 exchange?')
+    expect(names).toContain('What is house hacking and does DealGapIQ score it?')
+    const exchange = (faq.mainEntity as Array<{ name: string; acceptedAnswer: { text: string } }>).find(
+      (q) => q.name === 'Does DealGapIQ model a 1031 exchange?',
+    )!
+    expect(exchange.acceptedAnswer.text.startsWith('No.')).toBe(true)
+  })
 })

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { HOME_FAQ } from '@/content/home-faq'
 
 const DISPLAY_STYLE: React.CSSProperties = {
@@ -23,7 +24,7 @@ export function FaqSection() {
           className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
           style={DISPLAY_STYLE}
         >
-          Frequently asked questions
+          What do real estate investors ask about DealGapIQ?
         </h2>
         <div className="mt-10 grid gap-8 md:grid-cols-2">
           {HOME_FAQ.map((item) => (
@@ -33,6 +34,16 @@ export function FaqSection() {
             >
               <h3 className="text-lg font-bold text-[var(--text-heading)]">{item.question}</h3>
               <p className="mt-3 text-[15px] leading-relaxed text-[var(--text-body)]">{item.answer}</p>
+              {item.related ? (
+                <p className="mt-3 text-sm">
+                  <Link
+                    href={item.related.href}
+                    className="font-semibold text-[var(--accent-sky)] underline-offset-2 hover:underline"
+                  >
+                    {item.related.label}
+                  </Link>
+                </p>
+              ) : null}
             </div>
           ))}
         </div>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ScanLine, Smartphone } from 'lucide-react'
 import { buildScanPath } from '@/lib/scanQr'
-import { HOME_UPDATED_AT } from '@/config/site'
+import { FOUNDER_NAME, HOME_UPDATED_AT } from '@/config/site'
 import { PRO_MONTHLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
 import { formatContentDate } from '@/lib/content-dates'
 import {
@@ -161,6 +161,9 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
             market in {SPEED_CLAIM}, starts free, and Pro costs {PRO_MONTHLY_PRICE} a month.
           </p>
           <p className="home-hero-static__updated">
+            By{' '}
+            <Link href="/about#brad-geisen">{FOUNDER_NAME}</Link>
+            {' · '}
             Updated <time dateTime={HOME_UPDATED_AT}>{formatContentDate(HOME_UPDATED_AT)}</time>
           </p>
           <form className="home-hero-static__cta" onSubmit={submit}>

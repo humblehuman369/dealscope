@@ -72,6 +72,12 @@
   font-weight: 500;
   color: var(--text-label);
 }
+.home-hero-static__updated a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 .home-hero-static__cta {
   position: relative;

@@ -429,3 +429,35 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageConfig> = {
     ],
   },
 }
+
+/** Named-tool columns on the home comparison table (Mashvisor is linked, not a fifth column). */
+export const HOME_COMPARISON_SLUGS = [
+  'dealgapiq-vs-dealcheck',
+  'dealgapiq-vs-propstream',
+  'dealgapiq-vs-dealmachine',
+] as const
+
+/**
+ * Home page matrix: one row per comparison-page capability, cells copied
+ * from each vendor's sourced table. Nothing is inferred here.
+ */
+export function getHomeComparisonTable() {
+  const pages = HOME_COMPARISON_SLUGS.map((slug) => COMPARISON_PAGES[slug])
+  const first = pages[0]
+  return {
+    competitors: pages.map((page) => page.competitor),
+    rows: first.table.map((row) => ({
+      label: row.label,
+      dealgapiq: row.dealgapiq,
+      competitors: pages.map((page) => {
+        const match = page.table.find((candidate) => candidate.label === row.label)
+        if (!match) {
+          throw new Error(`Missing comparison row "${row.label}" on ${page.slug}`)
+        }
+        return match.competitor
+      }),
+    })),
+    sources: pages.flatMap((page) => page.sources),
+    checked: PRICES_CHECKED,
+  }
+}
