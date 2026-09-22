@@ -1,6 +1,7 @@
 import { HOME_FAQ } from '@/content/home-faq'
 import { FOUNDER_NAME, HOME_H1, HOME_PUBLISHED_AT, HOME_UPDATED_AT, SITE_URL } from '@/config/site'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 import { ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
 
@@ -37,8 +38,8 @@ export function buildHomeJsonLd() {
         url: HOME_URL,
         mainEntityOfPage: HOME_URL,
         image: [`${SITE_URL}${BRAND_OG_IMAGE.url}`],
-        datePublished: HOME_PUBLISHED_AT,
-        dateModified: HOME_UPDATED_AT,
+        datePublished: toSchemaDateTime(HOME_PUBLISHED_AT),
+        dateModified: toSchemaDateTime(HOME_UPDATED_AT),
         inLanguage: 'en-US',
         author: { '@type': 'Person', '@id': PERSON_ID, name: FOUNDER_NAME, url: `${SITE_URL}/about` },
         publisher: { '@type': 'Organization', '@id': ORG_ID, name: 'DealGapIQ' },

@@ -34,11 +34,14 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
+// Only used below the fold / on secondary routes, so it is not worth a
+// <link rel="preload"> on every page; the browser fetches it on first use.
 const spaceMono = Space_Mono({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-space-mono',
   display: 'swap',
+  preload: false,
 })
 
 const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
