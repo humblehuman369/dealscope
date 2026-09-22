@@ -31,4 +31,14 @@ describe('home page schema', () => {
     expect(faq['@type']).toBe('FAQPage')
     expect((faq.mainEntity as unknown[]).length).toBe(HOME_FAQ.length)
   })
+
+  it('emits the approved app FAQ answer verbatim in the FAQPage node', () => {
+    const faq = graph().find((n) => n['@type'] === 'FAQPage')!
+    const apps = (faq.mainEntity as Array<{ name: string; acceptedAnswer: { text: string } }>).find(
+      (q) => q.name === 'Is there a DealGapIQ app?',
+    )!
+    expect(apps.acceptedAnswer.text).toBe(
+      'Yes. There are iOS, macOS and Android apps (App Store ID 6759636866; Google Play id com.dealgapiq.mobile) and a Point & Scan feature that runs a discovery when you point your phone camera at a house. Scanning also works without the app installed.',
+    )
+  })
 })

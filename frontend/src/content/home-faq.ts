@@ -1,5 +1,5 @@
 import type { FaqItem } from '@/lib/seo/metadata'
-import { IOS_APP_STORE_ID } from '@/config/site'
+import { ANDROID_APPLICATION_ID, IOS_APP_STORE_ID } from '@/config/site'
 import { PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH, SPEED_CLAIM } from '@/lib/claims'
 
 /**
@@ -42,6 +42,6 @@ export const HOME_FAQ: FaqItem[] = [
   },
   {
     question: 'Is there a DealGapIQ app?',
-    answer: `Yes. There is an iOS app (App Store ID ${IOS_APP_STORE_ID}) and a Point & Scan feature that runs a discovery when you point your phone camera at a house. Scanning also works without the app installed.`,
+    answer: `Yes. There are iOS, macOS and Android apps (App Store ID ${IOS_APP_STORE_ID}; Google Play id ${ANDROID_APPLICATION_ID}) and a Point & Scan feature that runs a discovery when you point your phone camera at a house. Scanning also works without the app installed.`,
   },
 ]
