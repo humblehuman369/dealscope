@@ -7,9 +7,11 @@ Operational checklist for indexing recovery and ongoing search performance. Code
 | Variable | Required value |
 |----------|----------------|
 | `NEXT_PUBLIC_APP_URL` | `https://dealgapiq.com` (no trailing slash) |
-| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Google Search Console HTML tag token |
 
-Verify in browser: View Source on production homepage → confirm `<meta name="google-site-verification" ...>` is present.
+Google Search Console ownership is verified via the domain-name-provider method
+(DNS TXT record at GoDaddy). The app emits no `google-site-verification` meta
+tag and `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` is no longer read; it can be
+removed from Vercel.
 
 ## Host canonicalization
 
