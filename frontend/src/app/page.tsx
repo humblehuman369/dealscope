@@ -4,9 +4,9 @@ import { ScanQR } from '@/components/landing/ScanQR'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { HOME_UPDATED_AT } from '@/config/site'
-import { buildHomeJsonLd, HOME_DESCRIPTION } from '@/lib/seo/home-schema'
+import { buildHomeJsonLd, HOME_DESCRIPTION, HOME_TITLE } from '@/lib/seo/home-schema'
 
-const defaultTitle = 'DealGapIQ: Real Estate Deal Analysis and Offer Tool for Investors'
+const defaultTitle = HOME_TITLE
 const defaultDescription = HOME_DESCRIPTION
 
 export const metadata: Metadata = {

@@ -14,22 +14,50 @@ import { ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schem
 export const HOME_DESCRIPTION =
   "See the gap between a property's price and its investor value and four ways to close it. Six strategies, every U.S. market, under 60 seconds. Start free."
 
+/** `<title>` of `/`, also `og:title` and `WebPage.name`. */
+export const HOME_TITLE = 'DealGapIQ: Real Estate Deal Analysis and Offer Tool for Investors'
+
 /** Canonical URL of `/` as the root layout's canonical + `og:url` emit it (no trailing slash). */
 export const HOME_URL = SITE_URL
 
+const WEBPAGE_ID = `${SITE_URL}/#webpage`
+const BREADCRUMB_ID = `${SITE_URL}/#breadcrumb`
+
 /**
- * Home page `@graph`: `Article` (headline = H1, dates from `site.ts`) and
- * `FAQPage` (mapped from `home-faq.ts`, the same array `FaqSection` renders).
- * `Organization`, `Person`, `WebSite` and `SoftwareApplication` are emitted
- * once by `SiteJsonLd` in the root layout and referenced here by `@id`.
+ * Home page `@graph`: `WebPage` + its `BreadcrumbList`, `Article` (headline =
+ * H1, dates from `site.ts`) and `FAQPage` (mapped from `home-faq.ts`, the same
+ * array `FaqSection` renders). `Organization`, `Person`, `WebSite` and
+ * `SoftwareApplication` are emitted once by `SiteJsonLd` in the root layout
+ * and referenced here by `@id`.
  */
 export function buildHomeJsonLd() {
   const { '@context': _ctx, ...faq } = buildFaqJsonLd(HOME_FAQ)
   void _ctx
+  const ogImage = `${SITE_URL}${BRAND_OG_IMAGE.url}`
 
   return {
     '@context': 'https://schema.org',
     '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': WEBPAGE_ID,
+        url: HOME_URL,
+        name: HOME_TITLE,
+        description: HOME_DESCRIPTION,
+        isPartOf: { '@id': WEBSITE_ID },
+        about: { '@id': SOFTWARE_ID },
+        primaryImageOfPage: { '@type': 'ImageObject', url: ogImage },
+        breadcrumb: { '@id': BREADCRUMB_ID },
+        inLanguage: 'en-US',
+        datePublished: toSchemaDateTime(HOME_PUBLISHED_AT),
+        dateModified: toSchemaDateTime(HOME_UPDATED_AT),
+        publisher: { '@id': ORG_ID },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': BREADCRUMB_ID,
+        itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: HOME_URL }],
+      },
       {
         '@type': 'Article',
         '@id': `${SITE_URL}/#article`,
@@ -37,7 +65,7 @@ export function buildHomeJsonLd() {
         description: HOME_DESCRIPTION,
         url: HOME_URL,
         mainEntityOfPage: HOME_URL,
-        image: [`${SITE_URL}${BRAND_OG_IMAGE.url}`],
+        image: [ogImage],
         datePublished: toSchemaDateTime(HOME_PUBLISHED_AT),
         dateModified: toSchemaDateTime(HOME_UPDATED_AT),
         inLanguage: 'en-US',
