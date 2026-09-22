@@ -719,14 +719,24 @@
   }
 }
 
-/* Dark-only canvas wash for homepage sections below the hero. */
+/* Dark-only canvas wash for homepage sections below the hero.
+   One drifting atmosphere — not a repeated center spotlight. The hot-spot
+   continues the hero's right-hand light, then answers on the left, and
+   the ellipse dies before the section seam so adjacent washes blend. */
 .home-dark-wash {
   position: relative;
+  --home-glow-x: 70%;
+  --home-glow-y: 36%;
 }
 
 .home-dark-wash > * {
   position: relative;
   z-index: 1;
+}
+
+main > .home-dark-wash:nth-child(odd) {
+  --home-glow-x: 30%;
+  --home-glow-y: 56%;
 }
 
 [data-theme='dark'] .home-dark-wash::before {
@@ -735,18 +745,27 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(
-    ellipse 78% 72% at 50% 40%,
-    color-mix(in srgb, var(--accent-sky-light) 20%, transparent) 0%,
-    color-mix(in srgb, var(--accent-sky-light) 7%, transparent) 48%,
-    rgb(from var(--accent-sky-light) r g b / 0) 100%
-  );
+  background:
+    radial-gradient(
+      ellipse 100% 86% at var(--home-glow-x) var(--home-glow-y),
+      color-mix(in srgb, var(--accent-sky-light) 10%, transparent) 0%,
+      color-mix(in srgb, var(--accent-sky-light) 4%, transparent) 38%,
+      rgb(from var(--accent-sky-light) r g b / 0) 70%
+    ),
+    radial-gradient(
+      ellipse 72% 52% at calc(100% - var(--home-glow-x)) calc(100% - var(--home-glow-y)),
+      color-mix(in srgb, var(--accent-brand-blue) 4%, transparent) 0%,
+      rgb(from var(--accent-brand-blue) r g b / 0) 58%
+    );
 }
 
 /* Dark-only atmospheric bloom behind priority homepage surfaces.
-   Lives on a wrapper so overflow:hidden cards do not clip the wash. */
+   Lives on a wrapper so overflow:hidden cards do not clip the wash.
+   Tight halo, one sky layer — a backlight, not a second light source. */
 .home-dark-bloom {
   position: relative;
+  --home-bloom-x: 50%;
+  --home-bloom-y: 42%;
 }
 
 .home-dark-bloom > * {
@@ -754,33 +773,35 @@
   z-index: 1;
 }
 
+main > .home-dark-wash:nth-child(even) .home-dark-bloom,
+.home-hero-static .home-dark-bloom {
+  --home-bloom-x: 58%;
+  --home-bloom-y: 40%;
+}
+
+main > .home-dark-wash:nth-child(odd) .home-dark-bloom {
+  --home-bloom-x: 42%;
+  --home-bloom-y: 50%;
+}
+
 [data-theme='dark'] .home-dark-bloom::before {
   content: '';
   position: absolute;
-  /* Layer must outrun the ellipse (radii stay under 50%) so 0% is never clipped. */
-  inset: -180px;
+  inset: -72px -32px;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(
-      ellipse 42% 40% at 50% 42%,
-      color-mix(in srgb, var(--accent-sky-light) 48%, transparent) 0%,
-      color-mix(in srgb, var(--accent-sky-light) 28%, transparent) 30%,
-      color-mix(in srgb, var(--accent-sky-light) 12%, transparent) 55%,
-      color-mix(in srgb, var(--accent-sky-light) 4%, transparent) 78%,
-      rgb(from var(--accent-sky-light) r g b / 0) 100%
-    ),
-    radial-gradient(
-      ellipse 46% 44% at 48% 58%,
-      color-mix(in srgb, var(--accent-brand-blue) 16%, transparent) 0%,
-      color-mix(in srgb, var(--accent-brand-blue) 6%, transparent) 50%,
-      rgb(from var(--accent-brand-blue) r g b / 0) 100%
-    );
+  background: radial-gradient(
+    ellipse 68% 60% at var(--home-bloom-x) var(--home-bloom-y),
+    color-mix(in srgb, var(--accent-sky-light) 18%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 7%, transparent) 34%,
+    color-mix(in srgb, var(--accent-sky-light) 2.5%, transparent) 58%,
+    rgb(from var(--accent-sky-light) r g b / 0) 76%
+  );
 }
 
 [data-theme='dark'] .home-dark-bloom > * {
-  border-color: color-mix(in srgb, var(--accent-sky) 42%, var(--border-default));
+  border-color: color-mix(in srgb, var(--accent-sky) 20%, var(--border-default));
   box-shadow:
-    0 0 40px color-mix(in srgb, var(--accent-sky-light) 22%, transparent),
+    0 0 28px color-mix(in srgb, var(--accent-sky-light) 9%, transparent),
     var(--shadow-card);
 }

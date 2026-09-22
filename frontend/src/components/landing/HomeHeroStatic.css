@@ -12,12 +12,18 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 78% 72% at 72% 38%,
-    color-mix(in srgb, var(--accent-sky-light) 16%, transparent) 0%,
-    color-mix(in srgb, var(--accent-sky-light) 5%, transparent) 48%,
-    rgb(from var(--accent-sky-light) r g b / 0) 100%
-  );
+  background:
+    radial-gradient(
+      ellipse 82% 70% at 74% 36%,
+      color-mix(in srgb, var(--accent-sky-light) 13%, transparent) 0%,
+      color-mix(in srgb, var(--accent-sky-light) 4%, transparent) 44%,
+      rgb(from var(--accent-sky-light) r g b / 0) 72%
+    ),
+    radial-gradient(
+      ellipse 70% 38% at 52% 100%,
+      color-mix(in srgb, var(--accent-sky-light) 5%, transparent) 0%,
+      rgb(from var(--accent-sky-light) r g b / 0) 68%
+    );
 }
 
 .home-hero-static__grid {

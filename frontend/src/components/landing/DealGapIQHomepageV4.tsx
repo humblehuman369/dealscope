@@ -483,7 +483,7 @@ function FounderTrustSection() {
                 className="pointer-events-none absolute -inset-7 -z-10"
                 style={{
                   background:
-                    'radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--accent-sky-light) 28%, transparent) 0%, transparent 70%)',
+                    'radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--accent-sky-light) 14%, transparent) 0%, transparent 72%)',
                 }}
               />
               <Image
