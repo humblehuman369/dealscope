@@ -110,7 +110,19 @@ Code: `PRO_MONTHLY_PRICE`, `PRO_YEARLY_PRICE`, `PRO_YEARLY_PER_MONTH`, `STARTER_
 
 ### Offer paths
 
-Every analysis returns **four** pre-built paths to close the gap (each with editable worksheet and negotiation script). The fourth blends the other three.
+Every analysis returns **four** pre-built paths to close the gap, plus a **Blend** that combines them. Each path has an editable worksheet and a negotiation script.
+
+| Path | Public name | What it changes |
+| --- | --- | --- |
+| 1 | **Price** | The purchase price |
+| 2 | **Income** | The income side of the deal |
+| 3 | **Terms** | How and when the seller gets paid (seller financing, subject to, and other creative financing) |
+| 4 | **Equity** | How equity is shared or deferred |
+| + | **Blend** | Combines two or more of the four |
+
+Naming rules: capitalise the path names when used as labels (the Terms path). In running prose, "four paths plus a Blend" is the approved count. Do not write "the fourth blends the other three" (superseded 22 September 2026, approved by Brad).
+
+Code mirror: `frontend/src/components/iq-verdict/make-it-work/fourWays.ts` (`FOUR_WAYS`, `WAY_NAMES`).
 
 ### Coverage
 
@@ -205,6 +217,9 @@ DealGapIQ is a real estate investment analysis tool that shows the gap between a
 
 **What does "deal gap" mean?**  
 The deal gap is the difference between the seller's asking price and the target buy price that makes the deal work for an investor. DealGapIQ reports it as a percentage and a dollar amount. A negative gap means the list price is above the target.
+
+**How do I find real estate deals?**  
+Start with the number, not the listing. A good real estate deal is any property, on-market or off-market, where the list price is close to the target buy price for your strategy. To find investment properties and undervalued properties, run every address you see through a deal gap check, then focus on the ones with the smallest gap. Sources that surface good deals include foreclosures, pre-foreclosures, expired listings, absentee owners, tax delinquent lists, and off-market owners you contact directly. DealGapIQ scores any U.S. address against six strategies in under 60 seconds and gives four paths to close the gap, Price, Income, Terms, and Equity, plus a Blend. The free plan includes three discoveries a month with no credit card.
 
 **Is DealGapIQ free?**  
 Yes, the free plan gives three discoveries a month, the full analysis, and negotiation scripts, with no credit card. Pro is $34.99 a month or $29.17 a month billed annually and comes with a 7-day trial.
