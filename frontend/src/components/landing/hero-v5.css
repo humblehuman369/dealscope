@@ -867,3 +867,8 @@ main > .home-dark-wash:nth-child(odd) .home-dark-bloom {
 [data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > .grid > :is(.rounded-2xl, .rounded-3xl).border.bg-\[var\(--surface-card\)\] {
   background-color: var(--surface-elevated);
 }
+
+/* Optional band lift so section bands read against flat black. */
+[data-theme='dark'] main:has(> #home-hero) .home-dark-wash.bg-\[var\(--surface-section\)\] {
+  background-color: #08101c;
+}
