@@ -3,6 +3,7 @@
  * the launch post, and the sitemap. Prices and directory counts live in
  * `@/lib/claims`; legal names live in `@/lib/brand`. Anything dated or
  * contact-related for the GEO/AEO launch belongs here so it cannot drift.
+ * Human/marketing SOT: `docs/brand/content-source-of-truth.md`.
  */
 
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
