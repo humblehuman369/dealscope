@@ -1,5 +1,6 @@
 import type { BlogPost } from '@/lib/content'
 import { getBlogCategory } from '@/lib/blog-categories'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
@@ -39,8 +40,8 @@ export function buildBlogPostJsonLd(post: BlogPost, ogImageUrl: string) {
       image: [image],
       url,
       mainEntityOfPage: url,
-      datePublished: fm.date_published,
-      dateModified: fm.date_modified || fm.date_published,
+      datePublished: toSchemaDateTime(fm.date_published),
+      dateModified: toSchemaDateTime(fm.date_modified || fm.date_published),
       author: authorRef(fm.author),
       publisher: { '@id': ORG_ID },
       isPartOf: { '@type': 'Blog', '@id': `${SITE_URL}/blog#blog`, name: 'DealGapIQ Blog' },
