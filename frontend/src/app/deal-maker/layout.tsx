@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
 import { PageExplainer } from '@/components/seo/PageExplainer'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
   title: 'Deal Maker — Editable Assumptions & Offer Scripts | DealGapIQ',
+  // ≤155 chars for SERP snippets.
   description:
-    'Deal Maker lets you stress-test any property: edit assumptions, model creative-finance structures (Subject-To, seller carrybacks, 0% seconds), and generate ready-to-send offer scripts and negotiation language.',
+    'Deal Maker stress-tests any property: edit assumptions, model Subject-To, seller carrybacks and 0% seconds, and generate ready-to-send offer scripts.',
   alternates: { canonical: '/deal-maker' },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'Deal Maker — Editable Assumptions & Offer Scripts',
     description:
