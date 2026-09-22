@@ -4,9 +4,17 @@ import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 import { ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schema'
 
-/** Meta description for `/`, also reused as `Article.description`. Keep under 155 chars. */
+/**
+ * Meta description for `/`, also `og:description` and `Article.description`.
+ * Must stay under 155 chars (guarded by `home-schema.test.ts`). The launch
+ * plan's Step 9 wording ran 162 chars; this trims two connectives and keeps
+ * every fact.
+ */
 export const HOME_DESCRIPTION =
-  "See the gap between a property's price and its investor value, then get four ways to close it. Six strategies, every U.S. market, under 60 seconds. Free to start."
+  "See the gap between a property's price and its investor value and four ways to close it. Six strategies, every U.S. market, under 60 seconds. Start free."
+
+/** Canonical URL of `/` as the root layout's canonical + `og:url` emit it (no trailing slash). */
+export const HOME_URL = SITE_URL
 
 /**
  * Home page `@graph`: `Article` (headline = H1, dates from `site.ts`) and
@@ -26,8 +34,8 @@ export function buildHomeJsonLd() {
         '@id': `${SITE_URL}/#article`,
         headline: HOME_H1,
         description: HOME_DESCRIPTION,
-        url: `${SITE_URL}/`,
-        mainEntityOfPage: `${SITE_URL}/`,
+        url: HOME_URL,
+        mainEntityOfPage: HOME_URL,
         image: [`${SITE_URL}${BRAND_OG_IMAGE.url}`],
         datePublished: HOME_PUBLISHED_AT,
         dateModified: HOME_UPDATED_AT,

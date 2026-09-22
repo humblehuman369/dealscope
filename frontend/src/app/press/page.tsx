@@ -14,6 +14,7 @@ import {
 } from '@/lib/claims'
 import {
   ANDROID_APPLICATION_ID,
+  ANDROID_PUBLISHED,
   COMPANY_LINKEDIN_URL,
   FOUNDER_AMAZON_URL,
   FOUNDER_BOOK,
@@ -25,7 +26,9 @@ import {
   HQ_CITY,
   IOS_APP_STORE_ID,
   IOS_APP_STORE_URL,
+  IOS_PUBLISHED,
   LAUNCH_POST_SLUG,
+  MACOS_PUBLISHED,
   SITE_URL,
   STRATEGIES,
   SUPPORT_EMAIL,
@@ -96,15 +99,15 @@ const FACT_SHEET: Array<{ label: string; value: React.ReactNode }> = [
         <a href={SITE_URL} className="text-[var(--accent-sky)] underline">
           dealgapiq.com
         </a>
-        ; iOS App Store ID{' '}
+        ; iOS ({IOS_PUBLISHED}) and macOS ({MACOS_PUBLISHED}) from the same{' '}
         <a href={IOS_APP_STORE_URL} className="text-[var(--accent-sky)] underline">
-          {IOS_APP_STORE_ID}
+          App Store listing, ID {IOS_APP_STORE_ID}
         </a>
         ; Android on{' '}
         <a href={GOOGLE_PLAY_URL} className="text-[var(--accent-sky)] underline">
           Google Play
         </a>{' '}
-        ({ANDROID_APPLICATION_ID})
+        ({ANDROID_APPLICATION_ID}, {ANDROID_PUBLISHED})
       </>
     ),
   },

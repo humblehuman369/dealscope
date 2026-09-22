@@ -51,11 +51,18 @@ export const COMPANY_LINKEDIN_URL = 'https://www.linkedin.com/company/dealgapiq/
 
 export const IOS_APP_STORE_ID = '6759636866'
 export const IOS_APP_STORE_URL = `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
+export const IOS_PUBLISHED = 'September 20, 2026'
+/**
+ * macOS ships from the same App Store listing (the iOS app opted into the Mac
+ * App Store; see public/app-store/connect/enable_mac_app_store.py). No separate id.
+ */
+export const MACOS_PUBLISHED = 'September 20, 2026'
 
 /** Android application id (Capacitor `appId` / `applicationId` in android/app/build.gradle). */
 export const ANDROID_APPLICATION_ID = 'com.dealgapiq.mobile'
 /** Canonical Play listing ("DealGapIQ: Analyze Real Estate"), no attribution params — for schema and press. */
 export const GOOGLE_PLAY_URL = `https://play.google.com/store/apps/details?id=${ANDROID_APPLICATION_ID}`
+export const ANDROID_PUBLISHED = 'September 19, 2026'
 
 /** `Organization.sameAs`. Crunchbase is added once the profile exists. */
 export const ORGANIZATION_SAME_AS = [IOS_APP_STORE_URL, GOOGLE_PLAY_URL, COMPANY_LINKEDIN_URL]

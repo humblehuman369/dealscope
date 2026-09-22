@@ -99,7 +99,7 @@ const graph = {
       url: SITE_URL,
       applicationCategory: 'BusinessApplication',
       applicationSubCategory: 'Real Estate Investment Analysis',
-      operatingSystem: 'Web, iOS, Android',
+      operatingSystem: 'Web, iOS, macOS, Android',
       installUrl: [IOS_APP_STORE_URL, GOOGLE_PLAY_URL],
       description:
         'Analyzes residential investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap so investors know what to offer.',

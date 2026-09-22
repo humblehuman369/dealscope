@@ -1,0 +1,34 @@
+import { describe, expect, it } from 'vitest'
+import { META_DESCRIPTION_MAX } from '@/lib/content-schema'
+import { buildHomeJsonLd, HOME_DESCRIPTION, HOME_URL } from '@/lib/seo/home-schema'
+import { HOME_FAQ } from '@/content/home-faq'
+import { HOME_H1, HOME_PUBLISHED_AT, HOME_UPDATED_AT } from '@/config/site'
+
+type Node = Record<string, unknown>
+
+function graph(): Node[] {
+  return buildHomeJsonLd()['@graph'] as Node[]
+}
+
+describe('home page schema', () => {
+  it('keeps the meta description under the SERP limit', () => {
+    expect(HOME_DESCRIPTION.length).toBeLessThan(META_DESCRIPTION_MAX)
+  })
+
+  it('uses the same URL form as the root canonical (no trailing slash)', () => {
+    expect(HOME_URL.endsWith('/')).toBe(false)
+    const article = graph().find((n) => n['@type'] === 'Article')!
+    expect(article.url).toBe(HOME_URL)
+    expect(article.mainEntityOfPage).toBe(HOME_URL)
+  })
+
+  it('mirrors the visible H1, dates and FAQ', () => {
+    const [article, faq] = graph()
+    expect(article.headline).toBe(HOME_H1)
+    expect(article.description).toBe(HOME_DESCRIPTION)
+    expect(article.datePublished).toBe(HOME_PUBLISHED_AT)
+    expect(article.dateModified).toBe(HOME_UPDATED_AT)
+    expect(faq['@type']).toBe('FAQPage')
+    expect((faq.mainEntity as unknown[]).length).toBe(HOME_FAQ.length)
+  })
+})
