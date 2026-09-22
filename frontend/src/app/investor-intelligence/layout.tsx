@@ -7,7 +7,7 @@ export default function InvestorIntelligenceLayout({ children }: { children: Rea
     <div className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)]">
       <div className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-[color:var(--surface-base)]/95 backdrop-blur">
         <div className="mx-auto flex min-h-14 max-w-7xl items-center gap-5 px-4 sm:px-6">
-          <Link href="/investor-intelligence/" className="shrink-0 leading-none hover:no-underline">
+          <Link href="/investor-intelligence" className="shrink-0 leading-none hover:no-underline">
             <span className="block font-bold tracking-tight text-[var(--text-heading)]">
               DealGap<span className="text-[var(--accent-sky)]">IQ</span>
             </span>

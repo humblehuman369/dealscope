@@ -28,6 +28,8 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/blog', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/markets', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/markets/near-me', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/lenders', priority: 0.7, changeFrequency: 'weekly' },
+  { path: '/directory', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/answers', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
@@ -141,7 +143,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const investorIntelligenceEntries: MetadataRoute.Sitemap = investorIntelligence.map((p) => ({
-    url: `${SITE_URL}/investor-intelligence/${p.slug}/`,
+    url: `${SITE_URL}/investor-intelligence/${p.slug}`,
     lastModified: lastModifiedFromContent(p, buildDate),
     changeFrequency: 'weekly' as const,
     priority: 0.8,

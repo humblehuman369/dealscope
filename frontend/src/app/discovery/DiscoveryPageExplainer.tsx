@@ -1,22 +1,12 @@
-'use client'
-
-import { useSearchParams } from 'next/navigation'
 import { PageExplainer } from '@/components/seo/PageExplainer'
 import { SPEED_CLAIM } from '@/lib/claims'
-import { useWorkflowV1 } from '@/lib/workflowV1'
 
 /**
- * SEO explainer for /discovery. Hidden while Level 3 (Strategy Workbench) is
- * open so the page does not read as Discovery content stacked under Strategy.
- * Hidden under workflow v1 (P1-7); the Related links row lives here too.
+ * SEO explainer for /discovery. Server component so the copy lands in the
+ * prerendered HTML; `DiscoveryExplainerVisibility` hides it on the client while
+ * Level 3 (Strategy Workbench) is open or under workflow v1 (P1-7).
  */
 export function DiscoveryPageExplainer() {
-  const searchParams = useSearchParams()
-  const { enabled: workflowV1 } = useWorkflowV1()
-  const hideForWorkflowV1 = workflowV1
-  if (hideForWorkflowV1) return null
-  if (searchParams?.get('view') === 'workbench') return null
-
   return (
     <PageExplainer
       title="What is Discovery?"
@@ -28,7 +18,7 @@ export function DiscoveryPageExplainer() {
         },
         {
           heading: 'How it works',
-          body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and AirROI with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in DealMaker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
+          body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and AirROI with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in Deal Maker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
         },
         {
           heading: 'Who it is for',
@@ -36,7 +26,7 @@ export function DiscoveryPageExplainer() {
         },
       ]}
       relatedLinks={[
-        { href: '/deal-maker', label: 'Open DealMaker for offer scripts' },
+        { href: '/deal-maker', label: 'Open Deal Maker for offer scripts' },
         { href: '/pricing', label: 'Pricing & free trial' },
         { href: '/glossary/subject-to-financing', label: 'Glossary: Subject-To financing' },
       ]}
