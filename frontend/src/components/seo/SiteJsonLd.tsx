@@ -8,9 +8,11 @@ import {
 } from '@/lib/claims'
 import {
   FOUNDER_SAME_AS,
+  GOOGLE_PLAY_URL,
   HQ_CITY,
   HQ_COUNTRY,
   HQ_REGION,
+  IOS_APP_STORE_URL,
   ORGANIZATION_SAME_AS,
   PUBLIC_LAUNCH,
   SITE_URL,
@@ -97,7 +99,8 @@ const graph = {
       url: SITE_URL,
       applicationCategory: 'BusinessApplication',
       applicationSubCategory: 'Real Estate Investment Analysis',
-      operatingSystem: 'Web, iOS',
+      operatingSystem: 'Web, iOS, Android',
+      installUrl: [IOS_APP_STORE_URL, GOOGLE_PLAY_URL],
       description:
         'Analyzes residential investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap so investors know what to offer.',
       publisher: { '@id': ORG_ID },

@@ -52,8 +52,13 @@ export const COMPANY_LINKEDIN_URL = 'https://www.linkedin.com/company/dealgapiq/
 export const IOS_APP_STORE_ID = '6759636866'
 export const IOS_APP_STORE_URL = `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
 
+/** Android application id (Capacitor `appId` / `applicationId` in android/app/build.gradle). */
+export const ANDROID_APPLICATION_ID = 'com.dealgapiq.mobile'
+/** Canonical Play listing ("DealGapIQ: Analyze Real Estate"), no attribution params — for schema and press. */
+export const GOOGLE_PLAY_URL = `https://play.google.com/store/apps/details?id=${ANDROID_APPLICATION_ID}`
+
 /** `Organization.sameAs`. Crunchbase is added once the profile exists. */
-export const ORGANIZATION_SAME_AS = [IOS_APP_STORE_URL, COMPANY_LINKEDIN_URL]
+export const ORGANIZATION_SAME_AS = [IOS_APP_STORE_URL, GOOGLE_PLAY_URL, COMPANY_LINKEDIN_URL]
 
 /** The six strategies, in the approved order. */
 export const STRATEGIES = [

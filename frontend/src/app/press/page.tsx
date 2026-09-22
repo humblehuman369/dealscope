@@ -13,6 +13,7 @@ import {
   SPEED_CLAIM,
 } from '@/lib/claims'
 import {
+  ANDROID_APPLICATION_ID,
   COMPANY_LINKEDIN_URL,
   FOUNDER_AMAZON_URL,
   FOUNDER_BOOK,
@@ -20,6 +21,7 @@ import {
   FOUNDER_LINKEDIN_URL,
   FOUNDER_NAME,
   FOUNDER_TITLE,
+  GOOGLE_PLAY_URL,
   HQ_CITY,
   IOS_APP_STORE_ID,
   IOS_APP_STORE_URL,
@@ -98,6 +100,11 @@ const FACT_SHEET: Array<{ label: string; value: React.ReactNode }> = [
         <a href={IOS_APP_STORE_URL} className="text-[var(--accent-sky)] underline">
           {IOS_APP_STORE_ID}
         </a>
+        ; Android on{' '}
+        <a href={GOOGLE_PLAY_URL} className="text-[var(--accent-sky)] underline">
+          Google Play
+        </a>{' '}
+        ({ANDROID_APPLICATION_ID})
       </>
     ),
   },
