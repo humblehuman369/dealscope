@@ -47,8 +47,9 @@ export const INDEXABLE_SITE_SECTIONS = [
     title: 'Comparisons',
     links: [
       { href: '/comparisons/dealgapiq-vs-dealcheck', label: 'DealGapIQ vs DealCheck' },
-      { href: '/comparisons/dealgapiq-vs-mashvisor', label: 'DealGapIQ vs Mashvisor' },
       { href: '/comparisons/dealgapiq-vs-propstream', label: 'DealGapIQ vs PropStream' },
+      { href: '/comparisons/dealgapiq-vs-dealmachine', label: 'DealGapIQ vs DealMachine' },
+      { href: '/comparisons/dealgapiq-vs-mashvisor', label: 'DealGapIQ vs Mashvisor' },
     ],
   },
   {

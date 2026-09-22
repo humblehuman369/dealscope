@@ -1,19 +1,14 @@
-"""Tests for motivated-seller Zillow keyword map search."""
+"""Tests for motivated-seller keyword matching and the retired map keyword pass."""
 
 from __future__ import annotations
 
-import json
-import urllib.parse
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
 from app.schemas.property import MapListing, MapSearchRequest
-from app.services.map_search_service import (
-    MapSearchService,
-    _build_keyword_cache_key,
-)
+from app.services.map_search_service import MapSearchService, _build_cache_key
 
 
 def test_motivated_seller_keywords_module_importable() -> None:
@@ -31,40 +26,6 @@ def test_motivated_seller_keywords_module_importable() -> None:
     assert "Potential" not in MOTIVATED_SELLER_KEYWORDS
     assert "Fire" not in MOTIVATED_SELLER_KEYWORDS
     assert "Rental" not in MOTIVATED_SELLER_KEYWORDS
-
-
-def test_zillow_keyword_url_encodes_kw_and_map_bounds() -> None:
-    url = MapSearchService._zillow_keyword_url(
-        north=41.5,
-        south=41.4,
-        east=-81.6,
-        west=-81.7,
-        keyword="motivated seller",
-    )
-    assert "searchQueryState=" in url
-    query = urllib.parse.urlparse(url).query
-    params = urllib.parse.parse_qs(query)
-    state = json.loads(params["searchQueryState"][0])
-    assert state["filterState"]["kw"]["value"] == "motivated seller"
-    assert state["mapBounds"] == {
-        "north": 41.5,
-        "south": 41.4,
-        "east": -81.6,
-        "west": -81.7,
-    }
-
-
-def test_keyword_cache_key_is_stable() -> None:
-    req = MapSearchRequest(
-        north=41.5,
-        south=41.4,
-        east=-81.6,
-        west=-81.7,
-    )
-    a = _build_keyword_cache_key("Motivated Seller", req)
-    b = _build_keyword_cache_key("motivated seller", req)
-    assert a == b
-    assert a.startswith("mapsearch:kw:")
 
 
 def test_merge_dedupes_same_address_from_two_keyword_queries() -> None:
@@ -119,7 +80,14 @@ def test_merge_accumulates_motivated_keywords() -> None:
 
 
 @pytest.mark.asyncio
-async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> None:
+async def test_motivated_seller_flag_runs_the_standard_source_path() -> None:
+    """``motivated_seller_search=True`` is accepted but no longer changes dispatch.
+
+    The Axesso keyword source was found not to filter (Sept 21, 2026: three
+    Norfolk VA calls with different ``kw`` values returned identical zpid sets),
+    so the flag now runs RentCast + Zillow exactly like any other request
+    instead of replacing them with 112 keyword scrapes.
+    """
     service = MapSearchService()
     service._initialized = True
     service.rentcast = MagicMock()
@@ -149,21 +117,23 @@ async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> 
 
     with (
         patch("app.services.map_search_service.get_cache_service", return_value=cache),
-        patch.object(
-            service,
-            "_fetch_motivated_seller_listings",
-            new=AsyncMock(return_value=[sample]),
-        ) as motivated_fetch,
-        patch.object(service, "_fetch_rentcast", new=AsyncMock()) as rentcast_fetch,
-        patch.object(service, "_fetch_zillow", new=AsyncMock()) as zillow_fetch,
+        patch.object(service, "_fetch_rentcast", new=AsyncMock(return_value=[])) as rentcast_fetch,
+        patch.object(service, "_fetch_zillow", new=AsyncMock(return_value=[sample])) as zillow_fetch,
+        patch.object(service, "_attach_zip_rent_screen", new=AsyncMock(side_effect=lambda rows: rows)),
     ):
         response = await service.search(req)
 
-    motivated_fetch.assert_awaited_once()
-    rentcast_fetch.assert_not_awaited()
-    zillow_fetch.assert_not_awaited()
+    rentcast_fetch.assert_awaited_once()
+    zillow_fetch.assert_awaited_once()
     assert response.total_count == 1
     assert response.listings[0].address == "200 Oak Ave"
+
+
+def test_motivated_seller_flag_does_not_fragment_the_tile_cache() -> None:
+    """Old clients still send the flag; they must share the tile's cache entry."""
+    base = MapSearchRequest(north=41.5, south=41.4, east=-81.6, west=-81.7)
+    flagged = base.model_copy(update={"motivated_seller_search": True})
+    assert _build_cache_key(base) == _build_cache_key(flagged)
 
 
 def test_match_motivated_seller_keywords_basic() -> None:

@@ -15,17 +15,20 @@ regressions are guarded here.
    returned the cached non-Airbnb result — and two different cities shared one
    entry.
 
-Plus the zoom gate: the expensive per-property modes (motivated-seller keyword
-scans, expired validation, distressed URL queries) refuse to run at region
-zoom instead of billing for a result set no investor can work.
+Plus the zoom gate: the expensive per-property modes (expired validation,
+distressed URL queries) refuse to run at region zoom instead of billing for a
+result set no investor can work.
 """
 
 from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
 from app.services.map_search_service import (
     EXPENSIVE_MODE_MAX_RADIUS_MILES,
+    ZILLOW_ACTIVE_PAGES,
     MapSearchService,
     _build_cache_key,
     _expensive_mode_labels,
@@ -154,7 +157,9 @@ def test_str_city_casing_is_normalized():
 @pytest.mark.parametrize(
     ("req", "expected"),
     [
-        (_req(motivated_seller_search=True), ["motivated sellers"]),
+        # The keyword pass behind this flag was removed (Sept 21, 2026); the
+        # flag no longer makes a search expensive.
+        (_req(motivated_seller_search=True), []),
         (_req(listing_statuses=["expired"]), ["expired listings"]),
         (_req(listing_statuses=["pre-foreclosure"]), ["distressed listings"]),
         (_req(listing_statuses=["auction", "foreclosure"]), ["distressed listings"]),
@@ -165,6 +170,114 @@ def test_str_city_casing_is_normalized():
 def test_expensive_modes_are_identified(req, expected):
     statuses = set(req.listing_statuses or ["active"])
     assert _expensive_mode_labels(req, statuses) == expected
+
+
+# ─── Axesso calls per cold tile ──────────────────────────────────────────
+#
+# The default map request (active + owner_listed + the three distressed
+# buckets) used to cost 6 Axesso calls: 1 forSale page, 2 owner-listed, and 3
+# distressed URL queries that returned the plain for-sale set every time. It
+# now costs 5: ZILLOW_ACTIVE_PAGES forSale pages + 2 owner-listed, and no
+# distressed dispatch at all.
+
+
+def _zillow_page(rows: list[dict]) -> MagicMock:
+    resp = MagicMock()
+    resp.success = True
+    resp.data = {"results": rows}
+    return resp
+
+
+def _zillow_row(zpid: int) -> dict:
+    return {
+        "zpid": zpid,
+        "address": f"{zpid} Orange Ave",
+        "latitude": 27.43,
+        "longitude": -80.33,
+        "homeStatus": "FOR_SALE",
+        "price": 300_000,
+    }
+
+
+@pytest.mark.asyncio
+async def test_default_request_costs_five_axesso_calls_and_no_distressed_queries():
+    assert ZILLOW_ACTIVE_PAGES == 3
+
+    service = MapSearchService()
+    service._initialized = True
+    service.rentcast = MagicMock()
+    service.mashvisor = None
+    zillow = MagicMock()
+    # Each forSale page returns a full, disjoint page so all three are kept.
+    zillow.search_by_coordinates = AsyncMock(
+        side_effect=lambda **kw: _zillow_page(
+            [_zillow_row(kw.get("page", 1) * 100 + i) for i in range(3)]
+        )
+    )
+    zillow.search_by_url = AsyncMock(return_value=_zillow_page([]))
+    service.zillow = zillow
+
+    cache = AsyncMock()
+    cache.get = AsyncMock(return_value=None)
+    cache.set = AsyncMock()
+
+    req = _req(listing_statuses=["active", "owner_listed", "foreclosure", "auction", "pre-foreclosure"])
+    with (
+        patch("app.services.map_search_service.get_cache_service", return_value=cache),
+        patch.object(service, "_fetch_rentcast", new=AsyncMock(return_value=[])),
+        patch.object(service, "_attach_zip_rent_screen", new=AsyncMock(side_effect=lambda rows: rows)),
+        patch.object(service, "_fetch_zillow_distressed", new=AsyncMock(return_value=[])) as distressed,
+    ):
+        response = await service.search(req)
+
+    distressed.assert_not_awaited()
+    # 3 forSale pages + 1 owner-listed typed query.
+    assert zillow.search_by_coordinates.await_count == ZILLOW_ACTIVE_PAGES + 1
+    # 1 owner-posted URL query, no auction/foreclosure/pre-foreclosure URLs.
+    assert zillow.search_by_url.await_count == 1
+    # Pages were disjoint, so all nine Zillow rows survive the zpid dedup.
+    assert response.total_count == 9
+
+
+@pytest.mark.asyncio
+async def test_zillow_paging_stops_after_the_first_short_page_and_dedupes_zpids():
+    service = MapSearchService()
+    service._initialized = True
+    zillow = MagicMock()
+    pages = {
+        1: _zillow_page([_zillow_row(1), _zillow_row(2), _zillow_row(3)]),
+        # Short page: the end of the result set. Page 3 must be ignored even
+        # though it "returns" rows, and the repeat of zpid 3 must collapse.
+        2: _zillow_page([_zillow_row(3), _zillow_row(4)]),
+        3: _zillow_page([_zillow_row(99)]),
+    }
+    zillow.search_by_coordinates = AsyncMock(side_effect=lambda **kw: pages[kw.get("page", 1)])
+    service.zillow = zillow
+
+    rows = await service._fetch_zillow(27.43, -80.33, 5.0, "forSale", _req(), None, pages=3)
+
+    assert zillow.search_by_coordinates.await_count == 3
+    assert sorted(r.id for r in rows) == ["1", "2", "3", "4"]
+
+
+@pytest.mark.asyncio
+async def test_zillow_paging_does_not_follow_an_empty_first_page():
+    """An empty page 1 is the result set. Later pages must not be billed or kept."""
+    service = MapSearchService()
+    service._initialized = True
+    zillow = MagicMock()
+    pages = {
+        1: _zillow_page([]),
+        2: _zillow_page([_zillow_row(50)]),
+        3: _zillow_page([_zillow_row(51)]),
+    }
+    zillow.search_by_coordinates = AsyncMock(side_effect=lambda **kw: pages[kw.get("page", 1)])
+    service.zillow = zillow
+
+    rows = await service._fetch_zillow(27.43, -80.33, 5.0, "forSale", _req(), None, pages=3)
+
+    assert rows == []
+    assert zillow.search_by_coordinates.await_count == 1
 
 
 def test_expensive_mode_cap_matches_the_single_grid_point_band():

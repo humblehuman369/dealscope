@@ -191,7 +191,9 @@ describe('useMapSearch', () => {
     expect(firstRequest.owner_tenure_min_years).toBeUndefined()
     expect(firstRequest.owner_occupancy).toBeUndefined()
     expect(firstRequest.owner_records_availability).toBeUndefined()
-    expect(firstRequest.motivated_seller_search).toBe(true)
+    // Off by default: the field is omitted entirely so the first request takes
+    // the plain RentCast + Zillow path.
+    expect(firstRequest.motivated_seller_search).toBeUndefined()
     expect(firstRequest.listing_statuses).toEqual([
       'active',
       'owner_listed',

@@ -102,8 +102,8 @@ export const BASE_REASONS: Reason[] = [
   },
   {
     id: 'four-paths',
-    heading: 'Four ways to close the gap when price alone will not',
-    body: 'A price cut, a capital ask, a financing change such as seller carry or a 0% second, or a blended plan of smaller asks that reaches the same math. Each is modeled on this address.',
+    heading: 'Four paths plus a Blend to close the gap when price alone will not',
+    body: 'A Price cut, an Income lift, a Terms change such as seller carry or a 0% second, an Equity ask, or a Blend of smaller asks that reaches the same math. Each is modeled on this address.',
   },
   {
     id: 'scripts',
@@ -149,7 +149,7 @@ export const BASE_REASONS: Reason[] = [
   {
     id: 'map-analyze',
     heading: 'Analyze is one tap from the pin',
-    body: 'Every card has an Analyze button. It runs the same free Discovery as the homepage: the price where the deal works, the Deal Gap to the asking price, and four ways to close it.',
+    body: 'Every card has an Analyze button. It runs the same free Discovery as the homepage: the price where the deal works, the Deal Gap to the asking price, and four paths plus a Blend to close it.',
   },
   {
     id: 'map-list-download',
@@ -656,7 +656,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['map-dom-filter', 'map-draw-area', 'map-review-pass', 'map-analyze', 'map-list-download'],
     offer: {
       heading: 'Pick a pin. Run the address. Know what to offer.',
-      body: 'The Discovery is free with no account: the price where the property works, the Deal Gap to the asking price, and four offer structures with the script for each. A free account saves your properties. Pro opens the full map and the downloads.',
+      body: 'The Discovery is free with no account: the price where the property works, the Deal Gap to the asking price, and four paths plus a Blend with the script for each. A free account saves your properties. Pro opens the full map and the downloads.',
     },
     faq: [
       {

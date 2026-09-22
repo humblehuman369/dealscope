@@ -1513,24 +1513,32 @@ class DataNormalizer:
     """
 
     # Field mapping: canonical_field -> (rentcast_field, axesso_field, priority)
+    #
+    # Property facts are Zillow (AXESSO) first with RentCast as the fallback
+    # (decided Sept 21, 2026). Two exceptions stay RentCast-first because the
+    # Zillow field is in different units and nothing here converts it:
+    # `lot_size` (`lotAreaValue` is acres or sq ft per `lotAreaUnits`) and
+    # `value_range_low/high` (`zestimateLow/HighPercent` are percentages).
+    # Rent and value *estimate* sources are untouched; `_compute_iq_estimates`
+    # still averages every provider.
     FIELD_MAPPING = {
         # Property Details
-        "property_type": ("propertyType", "homeType", "rentcast"),
-        "bedrooms": ("bedrooms", "bedrooms", "rentcast"),
-        "bathrooms": ("bathrooms", "bathrooms", "rentcast"),
-        "square_footage": ("squareFootage", "livingArea", "rentcast"),
+        "property_type": ("propertyType", "homeType", "axesso"),
+        "bedrooms": ("bedrooms", "bedrooms", "axesso"),
+        "bathrooms": ("bathrooms", "bathrooms", "axesso"),
+        "square_footage": ("squareFootage", "livingArea", "axesso"),
         "lot_size": ("lotSize", "lotAreaValue", "rentcast"),
-        "year_built": ("yearBuilt", "yearBuilt", "rentcast"),
+        "year_built": ("yearBuilt", "yearBuilt", "axesso"),
         # Valuations - Zillow (AXESSO) primary for Zestimate data
         "zestimate": (None, "zestimate", "axesso"),
         "zestimate_high_pct": (None, "zestimateHighPercent", "axesso"),
         "zestimate_low_pct": (None, "zestimateLowPercent", "axesso"),
-        "current_value_avm": ("price", "zestimate", "rentcast"),
+        "current_value_avm": ("price", "zestimate", "axesso"),
         "value_range_low": ("priceRangeLow", "zestimateLowPercent", "rentcast"),
         "value_range_high": ("priceRangeHigh", "zestimateHighPercent", "rentcast"),
-        "last_sale_price": ("lastSalePrice", "lastSoldPrice", "rentcast"),
-        "last_sale_date": ("lastSaleDate", "lastSoldDate", "rentcast"),
-        "tax_assessed_value": ("taxAssessments", "taxAssessedValue", "rentcast"),
+        "last_sale_price": ("lastSalePrice", "lastSoldPrice", "axesso"),
+        "last_sale_date": ("lastSaleDate", "lastSoldDate", "axesso"),
+        "tax_assessed_value": ("taxAssessments", "taxAssessedValue", "axesso"),
         # Rental Data
         "monthly_rent_ltr": ("rent", None, "rentcast"),
         "average_rent": (None, "rentalData.averageRent", "axesso"),
@@ -1547,14 +1555,14 @@ class DataNormalizer:
         "average_daily_rate": (None, "averageDailyRate", "axesso"),
         "occupancy_rate": (None, "occupancyRate", "axesso"),
         # Taxes
-        "property_taxes_annual": ("propertyTaxes", "annualTaxAmount", "rentcast"),
+        "property_taxes_annual": ("propertyTaxes", "annualTaxAmount", "axesso"),
         # Listing Status - AXESSO/Zillow primary
         "listing_status": (None, "homeStatus", "axesso"),
         "days_on_market": (None, "daysOnZillow", "axesso"),
         "brokerage_name": (None, "brokerageName", "axesso"),
         # Location
-        "latitude": ("latitude", "latitude", "rentcast"),
-        "longitude": ("longitude", "longitude", "rentcast"),
+        "latitude": ("latitude", "latitude", "axesso"),
+        "longitude": ("longitude", "longitude", "axesso"),
         # Property Features (AXESSO primary — RentCast features extracted separately)
         "stories": (None, "stories", "axesso"),
         "has_pool": (None, "hasPool", "axesso"),

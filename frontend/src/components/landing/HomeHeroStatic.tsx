@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ScanLine, Smartphone } from 'lucide-react'
 import { buildScanPath } from '@/lib/scanQr'
-import { HOME_UPDATED_AT } from '@/config/site'
+import { FOUNDER_NAME, HOME_UPDATED_AT } from '@/config/site'
 import { PRO_MONTHLY_PRICE, SPEED_CLAIM } from '@/lib/claims'
 import { formatContentDate } from '@/lib/content-dates'
 import {
@@ -157,10 +157,13 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
           <p className="home-hero-static__lead">
             DealGapIQ is a real estate investment analysis tool that shows the gap between a
             property&apos;s asking price and the price at which it works for an investor, then gives
-            four offer structures to close that gap. It analyzes six strategies across every U.S.
+            four paths plus a Blend to close that gap. It analyzes six strategies across every U.S.
             market in {SPEED_CLAIM}, starts free, and Pro costs {PRO_MONTHLY_PRICE} a month.
           </p>
           <p className="home-hero-static__updated">
+            By{' '}
+            <Link href="/about#brad-geisen">{FOUNDER_NAME}</Link>
+            {' · '}
             Updated <time dateTime={HOME_UPDATED_AT}>{formatContentDate(HOME_UPDATED_AT)}</time>
           </p>
           <form className="home-hero-static__cta" onSubmit={submit}>
@@ -221,7 +224,8 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
           ) : null}
         </div>
 
-        <div className="home-hero-static__visual" aria-hidden="true">
+        <div className="home-dark-bloom">
+          <div className="home-hero-static__visual" aria-hidden="true">
           <div className="home-hero-static__card">
             <IllustratedMap />
             {PINS.map((pin) => (
@@ -254,6 +258,7 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
               </li>
             </ul>
           </div>
+          </div>
         </div>
       </div>
     </section>
@@ -270,32 +275,37 @@ function IllustratedMap() {
     >
       <defs>
         <linearGradient id="hero-land" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0A1628" />
-          <stop offset="100%" stopColor="#071018" />
+          <stop offset="0%" stopColor="#12324A" />
+          <stop offset="100%" stopColor="#0C2234" />
         </linearGradient>
         <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="55%" stopColor="#000000" stopOpacity="0" />
-          <stop offset="100%" stopColor="#000000" stopOpacity="0.72" />
+          <stop offset="72%" stopColor="#000000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.32" />
         </linearGradient>
-        <radialGradient id="hero-glow" cx="46%" cy="28%" r="28%">
-          <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.38" />
+        <radialGradient id="hero-glow" cx="46%" cy="26%" r="36%">
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.55" />
+          <stop offset="42%" stopColor="#0EA5E9" stopOpacity="0.22" />
           <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="hero-glow-core" cx="46%" cy="24%" r="14%">
+          <stop offset="0%" stopColor="#7DD3FC" stopOpacity="0.7" />
+          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
         </radialGradient>
       </defs>
       <rect width="640" height="480" fill="url(#hero-land)" />
       <path
         d="M410 40 C520 80 610 160 630 250 C640 330 580 430 470 470 L640 470 L640 0 Z"
-        fill="#0B3A52"
-        opacity="0.55"
+        fill="#0E7490"
+        opacity="0.42"
       />
       <path
         d="M430 90 C510 120 580 190 600 260 C610 330 540 410 450 445 C500 400 560 320 540 240 C520 160 470 110 430 90 Z"
-        fill="#0EA5E9"
-        opacity="0.12"
+        fill="#38BDF8"
+        opacity="0.28"
       />
-      <rect x="70" y="80" width="110" height="78" rx="18" fill="#14301F" />
-      <rect x="300" y="300" width="128" height="86" rx="18" fill="#163424" />
-      <g stroke="#1E3A4C" strokeWidth="6" fill="none">
+      <rect x="70" y="80" width="110" height="78" rx="18" fill="#1D4A32" />
+      <rect x="300" y="300" width="128" height="86" rx="18" fill="#1F5338" />
+      <g stroke="#4A7A96" strokeWidth="6" fill="none">
         <path d="M0 120 H640" />
         <path d="M0 210 H640" />
         <path d="M0 300 H640" />
@@ -306,7 +316,7 @@ function IllustratedMap() {
         <path d="M460 0 V480" />
         <path d="M560 0 V480" />
       </g>
-      <g stroke="#334155" strokeWidth="2" fill="none" opacity="0.9">
+      <g stroke="#7BA4BB" strokeWidth="2" fill="none" opacity="0.85">
         <path d="M0 165 H640" />
         <path d="M0 255 H640" />
         <path d="M0 345 H640" />
@@ -315,7 +325,8 @@ function IllustratedMap() {
         <path d="M400 0 V480" />
         <path d="M510 0 V480" />
       </g>
-      <circle cx="290" cy="130" r="120" fill="url(#hero-glow)" />
+      <circle cx="290" cy="125" r="150" fill="url(#hero-glow)" />
+      <circle cx="282" cy="108" r="70" fill="url(#hero-glow-core)" />
       <rect width="640" height="480" fill="url(#hero-fade)" />
     </svg>
   )

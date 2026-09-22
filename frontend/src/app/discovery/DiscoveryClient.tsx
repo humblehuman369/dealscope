@@ -3223,8 +3223,8 @@ export function DiscoveryClient() {
           </div>
 
           {/* Plain-English narrative + mid-page "Continue to Strategy" now live
-              inside the Four Ways section (behind "See details") so the page
-              reads: overview → four ways → one CTA. */}
+              inside the Four Paths section (behind "See details") so the page
+              reads: overview → four paths → one CTA. */}
 
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 

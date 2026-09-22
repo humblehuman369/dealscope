@@ -307,7 +307,7 @@ const SUB_HEADLINE_POSITIVE =
   'A positive DealGap indicates the asking price is below supported market value, creating measurable investor opportunity. Larger positive percentages generally indicate stronger pricing advantage.'
 const SUB_HEADLINE_NEUTRAL =
   'A neutral DealGap means price and value are in balance — the deal may still work, but advantage must come from execution, financing, or future upside.'
-const SUB_HEADLINE_NEGATIVE = 'Asking is above Target Buy. Close it four ways.'
+const SUB_HEADLINE_NEGATIVE = 'Asking is above Target Buy. Four paths plus a Blend close it.'
 
 const MOTIVATING_SUBTITLES = {
   cashFlow: 'clears at standard terms',

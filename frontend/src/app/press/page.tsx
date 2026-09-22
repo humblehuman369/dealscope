@@ -204,7 +204,7 @@ export default function PressPage() {
         <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[var(--text-body)]">
           DealGapIQ, founded by Foreclosure.com founder Brad Geisen, publicly launched in August
           2026 as a free real estate deal analysis tool that shows investors the gap between a
-          property&apos;s price and its investor value, and four ways to close it.
+          property&apos;s price and its investor value, and four paths plus a Blend to close it.
         </p>
 
         <div className="mt-12 space-y-14 text-[15px] leading-relaxed">
@@ -251,7 +251,7 @@ export default function PressPage() {
                   DealGapIQ, made by InvestIQ LLC in Boca Raton, Florida, launched in beta in January
                   2026 and publicly in August 2026, and ships updates weekly. It shows investors the
                   gap between a property&apos;s asking price and the price at which it works for an
-                  investor, then gives four offer structures to close that gap. It scores any U.S.
+                  investor, then gives four paths plus a Blend to close that gap. It scores any U.S.
                   address against six strategies in {SPEED_CLAIM}. The free plan is $0 with no
                   credit card; Pro is {PRO_MONTHLY_PRICE} a month or ${PRO_YEARLY_PER_MONTH} a month
                   billed annually with a 7-day trial, and adds directories of {BUYER_COUNT} verified

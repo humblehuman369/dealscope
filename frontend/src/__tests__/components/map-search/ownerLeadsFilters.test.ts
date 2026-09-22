@@ -49,8 +49,8 @@ describe('empty default', () => {
     expect(DEFAULT_FILTERS.owner_records_availability).toBeUndefined()
   })
 
-  it('starts with motivated sellers, distressed, and Active + Owner Listed on', () => {
-    expect(DEFAULT_FILTERS.motivated_seller_search).toBe(true)
+  it('starts with distressed and Active + Owner Listed on, motivated sellers off', () => {
+    expect(DEFAULT_FILTERS.motivated_seller_search).toBe(false)
     expect(DEFAULT_FILTERS.listing_type).toBe('sale')
     expect(DEFAULT_FILTERS.sort_by).toBe('deal_signal')
     expect(DEFAULT_FILTERS.listing_statuses).toEqual([

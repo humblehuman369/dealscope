@@ -1220,12 +1220,15 @@ class MapSearchRequest(BaseModel):
     )
     limit: int = Field(default=500, le=500)
     offset: int = 0
+    # Accepted but no longer changes the dispatch. The keyword source behind it
+    # (Axesso search-by-url with filterState.kw) was found not to filter: on
+    # Sept 21, 2026, over the Norfolk VA tile 36.6875–36.90625 N / -76.25 to
+    # -76.09375 E, kw=Unlivable, kw="Cash only" and no kw each returned the same
+    # 41 zpids. The per-keyword pass was removed; the field stays so older
+    # clients and saved searches still parse.
     motivated_seller_search: bool = Field(
         default=False,
-        description=(
-            "When true, replace normal map sources with Zillow keyword searches "
-            "for motivated-seller listing-description phrases."
-        ),
+        description="Deprecated; ignored. Kept for request compatibility.",
     )
     owner_tenure_min_years: int | None = Field(
         default=None,

@@ -520,7 +520,7 @@ async def search_property_area(
     """
     Map viewport / polygon listing search. Open to anonymous users so the
     map is a top-of-funnel discovery surface; API costs are controlled by
-    the viewport-keyed Redis cache (10-min TTL) and the per-IP anonymous
+    the viewport-keyed Redis cache (1-hour TTL) and the per-IP anonymous
     quota on the property-analysis endpoint downstream.
 
     Registered on the property router (before ``/properties/{property_id}``)

@@ -65,6 +65,15 @@ interface FilterPanelProps {
   onPanelMouseLeave?: () => void
 }
 
+/**
+ * Motivated Seller Search is hidden. The keyword source behind it (Axesso
+ * `search-by-url` with `filterState.kw`) was found on Sept 21, 2026 to return
+ * the same rows regardless of keyword, and the backend no longer runs the
+ * pass. The toggle code stays so it can be re-enabled if a source that
+ * actually filters on listing descriptions is wired up.
+ */
+const MOTIVATED_SELLER_ENABLED = false
+
 const LISTING_TYPES: { value: 'sale' | 'rental'; label: string }[] = [
   { value: 'sale', label: 'For Sale' },
   { value: 'rental', label: 'For Rent' },
@@ -284,6 +293,10 @@ export function FilterPanel({
   // pill is on: tenure, occupancy, or availability.
   const ownerRecordsActive = isOwnerRecordsActive(filters)
 
+  // A restored snapshot may still carry the flag; while the toggle is hidden
+  // it is treated as off everywhere in this panel.
+  const motivatedSellerOn = MOTIVATED_SELLER_ENABLED && Boolean(filters.motivated_seller_search)
+
   const activeFilterCount = [
     filters.property_type,
     filters.min_price,
@@ -292,7 +305,7 @@ export function FilterPanel({
     filters.bathrooms,
     filters.listing_statuses.length > 0 ? true : undefined,
     filters.min_dom,
-    filters.motivated_seller_search ? true : undefined,
+    motivatedSellerOn ? true : undefined,
     ownerRecordsActive ? true : undefined,
   ].filter(Boolean).length
 
@@ -318,7 +331,7 @@ export function FilterPanel({
   }
   const resultsText = filterResultsCountText({
     isLoading,
-    motivatedSellerSearch: !!filters.motivated_seller_search,
+    motivatedSellerSearch: motivatedSellerOn,
     hasSearchResponded,
     totalCount,
   })
@@ -470,6 +483,7 @@ export function FilterPanel({
         )}
 
         {/* Motivated Seller Search */}
+        {MOTIVATED_SELLER_ENABLED && (
         <div
           className="rounded-lg p-3 space-y-2"
           role="group"
@@ -519,6 +533,7 @@ export function FilterPanel({
             {filters.motivated_seller_search ? 'On' : 'Off'}
           </PillButton>
         </div>
+        )}
 
         {/* Distressed deals */}
         <div

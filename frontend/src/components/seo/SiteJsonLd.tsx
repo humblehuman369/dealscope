@@ -24,7 +24,7 @@ import { FOUNDER_IMAGE_PATH, ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '
 /** Spoken/typed variants of the brand SERP term (see DIRECT_RESPONSE_PLAYBOOK.md §2). */
 const BRAND_ALTERNATE_NAMES = ['Deal Gap IQ', 'DealGap IQ', 'Deal Gap']
 
-const graph = {
+export const siteGraph = {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -71,6 +71,15 @@ const graph = {
       alternateName: BRAND_ALTERNATE_NAMES,
       publisher: { '@id': ORG_ID },
       inLanguage: 'en-US',
+      // `/discovery` reads `address` (DiscoveryClient), so this is a real search endpoint.
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${SITE_URL}/discovery?address={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
     },
     {
       '@type': 'Person',
@@ -114,7 +123,7 @@ const graph = {
         'Multi-source IQ Estimate (Zillow, RentCast, Redfin, Realtor) with AirROI STR analytics',
         'Editable assumptions and stress-testing',
         'Creative-finance modeling (Subject-To, seller carrybacks, 0% seconds)',
-        'Four pre-built offer structures with negotiation scripts',
+        'Four paths plus a Blend to close the gap (Price, Income, Terms, Equity), each with a negotiation script',
         'PDF and Excel exports',
         '10-year financial projections',
       ],
@@ -182,7 +191,7 @@ export function SiteJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraph) }}
     />
   )
 }

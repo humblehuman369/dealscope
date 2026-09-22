@@ -108,9 +108,21 @@ Code: `PRO_MONTHLY_PRICE`, `PRO_YEARLY_PRICE`, `PRO_YEARLY_PER_MONTH`, `STARTER_
 - **484** hard money lenders  
 - Searchable by city, county, ZIP, state, strategy, and loan product (Pro)
 
-### Offer paths
+### Paths to close the gap
 
-Every analysis returns **four** pre-built paths to close the gap (each with editable worksheet and negotiation script). The fourth blends the other three.
+Every analysis returns **four paths plus a Blend** to close the gap. Each path has an editable worksheet and a negotiation script.
+
+| Path | Public name | What it changes |
+| --- | --- | --- |
+| 1 | **Price** | The purchase price |
+| 2 | **Income** | The income side of the deal |
+| 3 | **Terms** | How and when the seller gets paid (seller financing, subject to, and other creative financing) |
+| 4 | **Equity** | How equity is shared or deferred |
+| + | **Blend** | Combines two or more of the four |
+
+Naming rules: capitalise the path names when used as labels (the Terms path). In running prose, **"four paths plus a Blend"** is the only approved phrase. Never "four offer structures", "four ways", "four pre-built paths", "offer paths", "4 ways", or "the fourth blends the other three" (superseded 22 September 2026, approved by Brad). Seller financing and subject-to sit in the Terms path. Code identifiers (`fourWays.ts`, `FourWaysSection`, `four_ways`) stay as they are.
+
+Code mirror: `frontend/src/components/iq-verdict/make-it-work/fourWays.ts` (`FOUR_WAYS`, `WAY_NAMES`).
 
 ### Coverage
 
@@ -180,20 +192,20 @@ DealGapIQ: Real Estate Deal Analysis and Offer Tool for Investors
 ### Home meta description (`HOME_DESCRIPTION`, under 155 chars)
 
 ```
-See the gap between a property's price and its investor value and four ways to close it. Six strategies, every U.S. market, under 60 seconds. Start free.
+See a property's deal gap (price vs. investor value) and four paths plus a Blend to close it. Six strategies, every U.S. market, under 60 seconds. Free.
 ```
 
 ### Home hero lede (verbatim)
 
 ```
-DealGapIQ is a real estate investment analysis tool that shows the gap between a property's asking price and the price at which it works for an investor, then gives four offer structures to close that gap. It analyzes six strategies across every U.S. market in under 60 seconds, starts free, and Pro costs $34.99 a month.
+DealGapIQ is a real estate investment analysis tool that shows the gap between a property's asking price and the price at which it works for an investor, then gives four paths plus a Blend to close that gap. It analyzes six strategies across every U.S. market in under 60 seconds, starts free, and Pro costs $34.99 a month.
 ```
 
 ### Key takeaways (verbatim list)
 
 1. The "deal gap" is the difference between the list price and the target buy price that makes a property pencil for a chosen strategy.
 2. DealGapIQ scores any address, on-market or off-market, against six strategies: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and wholesale.
-3. Every analysis returns four pre-built paths to close the gap, each with an editable worksheet and a negotiation script.
+3. Every analysis returns four paths plus a Blend to close the gap, each with an editable worksheet and a negotiation script.
 4. The free plan gives three discoveries a month with no card. Pro is $34.99 a month or $29.17 a month billed annually.
 5. Pro adds directories of 2,812 verified cash buyers and 484 hard money lenders, plus comps, Excel proformas and PDF reports.
 6. Built by Brad Geisen, who founded Foreclosure.com and whose team built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac.
@@ -201,10 +213,13 @@ DealGapIQ is a real estate investment analysis tool that shows the gap between a
 ### FAQ answers (verbatim; match `home-faq.ts`)
 
 **What is DealGapIQ?**  
-DealGapIQ is a real estate investment analysis tool that shows the gap between a property's price and its investor value, then gives four offer structures to close it. It covers six strategies in every U.S. market and runs in under 60 seconds. It starts free.
+DealGapIQ is a real estate investment analysis tool that shows the gap between a property's price and its investor value, then gives four paths plus a Blend to close it. It covers six strategies in every U.S. market and runs in under 60 seconds. It starts free.
 
 **What does "deal gap" mean?**  
 The deal gap is the difference between the seller's asking price and the target buy price that makes the deal work for an investor. DealGapIQ reports it as a percentage and a dollar amount. A negative gap means the list price is above the target.
+
+**How do I find real estate deals?**  
+Start with the number, not the listing. A good real estate deal is any property, on-market or off-market, where the list price is close to the target buy price for your strategy. To find investment properties and undervalued properties, run every address you see through a deal gap check, then focus on the ones with the smallest gap. Sources that surface good deals include foreclosures, pre-foreclosures, expired listings, absentee owners, tax delinquent lists, and off-market owners you contact directly. DealGapIQ scores any U.S. address against six strategies in under 60 seconds and gives four paths plus a Blend to close the gap: Price, Income, Terms and Equity, and a Blend that combines them. The free plan includes three discoveries a month with no credit card.
 
 **Is DealGapIQ free?**  
 Yes, the free plan gives three discoveries a month, the full analysis, and negotiation scripts, with no credit card. Pro is $34.99 a month or $29.17 a month billed annually and comes with a 7-day trial.
@@ -213,7 +228,7 @@ Yes, the free plan gives three discoveries a month, the full analysis, and negot
 Yes. Every discovery is scored against six strategies: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and wholesale. Pro users can edit the assumptions for each.
 
 **How is DealGapIQ different from DealCheck?**  
-DealCheck is a calculator that tells you whether a deal works at a given price. DealGapIQ tells you the price at which it works, how far the listing is from that price, and four ways to get there, including creative financing. DealCheck is cheaper; DealGapIQ includes buyer and lender directories.
+DealCheck is a calculator that tells you whether a deal works at a given price. DealGapIQ tells you the price at which it works, how far the listing is from that price, and four paths plus a Blend to get there, including creative financing. DealCheck is cheaper; DealGapIQ includes buyer and lender directories.
 
 **Does DealGapIQ need a mailing list or motivated seller?**  
 No. Any property qualifies. The tool finds the gap and the structure that closes it, so you can make an offer on a normal listing rather than mailing thousands of owners hoping one is distressed.
@@ -227,7 +242,7 @@ Yes. There are iOS, macOS and Android apps (App Store ID 6759636866; Google Play
 ### Press launch sentence (verbatim)
 
 ```
-DealGapIQ, founded by Foreclosure.com founder Brad Geisen, publicly launched in August 2026 as a free real estate deal analysis tool that shows investors the gap between a property's price and its investor value, and four ways to close it.
+DealGapIQ, founded by Foreclosure.com founder Brad Geisen, publicly launched in August 2026 as a free real estate deal analysis tool that shows investors the gap between a property's price and its investor value, and four paths plus a Blend to close it.
 ```
 
 ### Launch announcement title

@@ -87,7 +87,7 @@ export function HeroSampleResult({
       <div
         className="hero-sample-result"
         role="img"
-        aria-label={`Sample Discovery result for ${addressLine}: Deal Gap ${dealGap} (${dealGapPct}) with four offer paths to close it`}
+        aria-label={`Sample Discovery result for ${addressLine}: Deal Gap ${dealGap} (${dealGapPct}) with four paths plus a Blend to close it`}
       >
         <div className="hero-sample-result__property hero-sample-result__anim" style={delayStyle(0)}>
           <div className="hero-sample-result__photo" aria-hidden="true">
@@ -169,7 +169,7 @@ export function HeroSampleResult({
         </div>
 
         <div className="hero-sample-result__paths-head hero-sample-result__anim" style={delayStyle(380)}>
-          <span className="hero-sample-result__mono-label">4 Offer Paths to Close It</span>
+          <span className="hero-sample-result__mono-label">4 Paths + a Blend to Close It</span>
           <span className="hero-sample-result__paths-kicker">Most tools stop here. We keep going.</span>
         </div>
 

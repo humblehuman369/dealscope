@@ -312,7 +312,7 @@ function Row({
 }
 
 /**
- * Four ways to cash flow — an offer memo, not a glossary.
+ * Four paths to cash flow — an offer memo, not a glossary.
  *
  * Header states the gap in dollars and the recommended play. Each row is a
  * trade (ask vs cash to close). Expand adds the trade-off and the opening

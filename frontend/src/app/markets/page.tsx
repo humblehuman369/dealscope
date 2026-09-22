@@ -153,8 +153,8 @@ export default async function MarketsHubPage() {
             Run a real address through these assumptions.
           </h2>
           <p className="mt-3 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            Discovery pulls the right state row automatically, then shows the Deal Gap, target buy price, and the
-            offer structures that close it.
+            Discovery pulls the right state row automatically, then shows the Deal Gap, target buy price, and
+            four paths plus a Blend to close it.
           </p>
           <Link
             href="/discovery?utm_source=markets&utm_medium=hub&utm_campaign=markets-index"

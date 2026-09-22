@@ -54,7 +54,7 @@ export const DEFAULT_FILTERS: MapSearchFilters = {
   listing_type: 'sale',
   listing_statuses: ['active', 'owner_listed', 'foreclosure', 'auction', 'pre-foreclosure'],
   sort_by: 'deal_signal',
-  motivated_seller_search: true,
+  motivated_seller_search: false,
 }
 
 /**
@@ -106,7 +106,8 @@ function isPartialResultSet(totalCount: number, estimatedTotal: number | null): 
 }
 
 export function isExpensiveSearch(filters: MapSearchFilters): boolean {
-  if (filters.motivated_seller_search) return true
+  // motivated_seller_search is intentionally not checked: the backend no
+  // longer runs a keyword pass for it, so it costs the same as a plain search.
   if (isOwnerRecordsActive(filters)) return true
   return filters.listing_statuses.some((s) => EXPENSIVE_STATUSES.has(s))
 }
