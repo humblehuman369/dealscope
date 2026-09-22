@@ -10,11 +10,11 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 - [About](https://dealgapiq.com/about): founder story, methodology philosophy, and the three proprietary metrics (Target Buy, Income Value, Deal Gap)
 - [Pricing](https://dealgapiq.com/pricing): Starter (free) and Pro (monthly or annual, with a 7-day free trial)
 - [What is DealGapIQ](https://dealgapiq.com/what-is-dealgapiq): plain-English overview of the platform
+- [Methodology](https://dealgapiq.com/methodology): how DealGapIQ blends its data sources into the IQ Estimate, derives Target Buy and Income Value, and computes the Deal Gap — what is modeled, what is deliberately not, and the editable-assumptions philosophy
 
 ## Product
 
-- [Discovery](https://dealgapiq.com/discovery): instant deal score (0–95) for any address with ranked strategy recommendations
-- [Strategy](https://dealgapiq.com/strategy): full financial deep-dive — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
+- [Discovery](https://dealgapiq.com/discovery): instant deal score (0–95) for any address with ranked strategy recommendations, plus the embedded Strategy Workbench — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
 - [DealMaker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
 
 ## Strategy guides
@@ -48,8 +48,8 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 ## Reference
 
 - [Help Center](https://dealgapiq.com/help): FAQ on getting started, scoring, reports, and account
-- [Investor Intelligence](https://dealgapiq.com/investor-intelligence/): residential investor trends, policy, financing, market intelligence, and property-level deal math
-- [The Great Investor Reset — 2026](https://dealgapiq.com/investor-intelligence/great-investor-reset-2026/): flagship analysis of the shift from mega-investor acquisition toward smaller investors and stricter acquisition math
+- [Investor Intelligence](https://dealgapiq.com/investor-intelligence): residential investor trends, policy, financing, market intelligence, and property-level deal math
+- [The Great Investor Reset — 2026](https://dealgapiq.com/investor-intelligence/great-investor-reset-2026): flagship analysis of the shift from mega-investor acquisition toward smaller investors and stricter acquisition math
 
 ## Optional
 

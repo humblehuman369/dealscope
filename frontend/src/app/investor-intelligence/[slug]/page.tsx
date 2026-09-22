@@ -31,12 +31,12 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/investor-intelligence/${slug}/` },
+    alternates: { canonical: `/investor-intelligence/${slug}` },
     robots: INDEXABLE_ROBOTS,
     openGraph: {
       title,
       description,
-      url: `/investor-intelligence/${slug}/`,
+      url: `/investor-intelligence/${slug}`,
       type: 'article',
       publishedTime: post.frontmatter.date_published,
       modifiedTime: post.frontmatter.date_modified,
@@ -73,7 +73,7 @@ export default async function InvestorIntelligenceArticle({
   const post = await getContent('investor-intelligence', slug)
   if (!post) notFound()
 
-  const canonicalUrl = `${BASE_URL}/investor-intelligence/${slug}/`
+  const canonicalUrl = `${BASE_URL}/investor-intelligence/${slug}`
   const published = formatDate(post.frontmatter.date_published)
   const modified = formatDate(post.frontmatter.date_modified)
   const image = post.frontmatter.hero_image
@@ -109,7 +109,7 @@ export default async function InvestorIntelligenceArticle({
         '@type': 'ListItem',
         position: 2,
         name: 'Investor Intelligence',
-        item: `${BASE_URL}/investor-intelligence/`,
+        item: `${BASE_URL}/investor-intelligence`,
       },
       {
         '@type': 'ListItem',
@@ -135,7 +135,7 @@ export default async function InvestorIntelligenceArticle({
         <header className="border-b border-[var(--border-subtle)] bg-[radial-gradient(ellipse_at_top,rgba(15,164,233,0.14),transparent_62%)]">
           <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
             <Link
-              href="/investor-intelligence/"
+              href="/investor-intelligence"
               className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--accent-sky)] hover:opacity-80"
             >
               ← Investor Intelligence
