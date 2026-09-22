@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
 import { ArticleShare } from '@/components/investor-intelligence/ArticleShare'
 import { getAllContent, getContent } from '@/lib/content'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { BRAND_OG_IMAGE, LEGAL_ENTITY_NAME } from '@/lib/brand'
 
@@ -84,8 +85,8 @@ export default async function InvestorIntelligenceArticle({
     headline: post.frontmatter.title,
     description: post.frontmatter.meta_description || post.frontmatter.subtitle,
     image: image ? [`${BASE_URL}${image}`] : undefined,
-    datePublished: post.frontmatter.date_published,
-    dateModified: post.frontmatter.date_modified || post.frontmatter.date_published,
+    datePublished: toSchemaDateTime(post.frontmatter.date_published),
+    dateModified: toSchemaDateTime(post.frontmatter.date_modified || post.frontmatter.date_published),
     author: {
       '@type': 'Person',
       name: post.frontmatter.author || 'DealGapIQ Investor Intelligence',

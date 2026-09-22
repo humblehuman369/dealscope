@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { SOURCE_COUNT } from '@/lib/claims'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -41,8 +42,8 @@ const JSONLD = {
       mainEntityOfPage: PAGE_URL,
       author: { '@id': `${SITE_URL}/about#brad-geisen` },
       publisher: { '@id': `${SITE_URL}/#organization` },
-      datePublished: '2026-05-10',
-      dateModified: '2026-05-10',
+      datePublished: toSchemaDateTime('2026-05-10'),
+      dateModified: toSchemaDateTime('2026-05-10'),
       inLanguage: 'en-US',
       about: { '@id': `${SITE_URL}/#software` },
     },

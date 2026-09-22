@@ -40,6 +40,7 @@ const graph = {
         width: 1024,
         height: 1024,
       },
+      image: `${SITE_URL}${BRAND_ASSETS.appIcon}`,
       description:
         'Residential real estate deal analysis platform that scores investment properties across six acquisition strategies and surfaces the Deal Gap.',
       foundingDate: PUBLIC_LAUNCH,

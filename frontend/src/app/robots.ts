@@ -14,9 +14,12 @@ const AI_CRAWLERS = [
   'Applebot-Extended',
 ]
 
-/** Paths crawlers should not fetch. Prefer per-route `noindex` for de-indexing SERP URLs. */
+/**
+ * Paths crawlers should not fetch. Prefer per-route `noindex` for de-indexing
+ * SERP URLs. `/_next/` must stay crawlable: it serves every JS chunk, CSS file
+ * and font, and Googlebot renders an unstyled, unhydrated page without them.
+ */
 const PRIVATE_PATHS = [
-  '/_next/',
   '/api/',
   '/admin',
   '/dashboard',
