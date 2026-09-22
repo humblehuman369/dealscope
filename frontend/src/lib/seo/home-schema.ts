@@ -8,11 +8,11 @@ import { ORG_ID, PERSON_ID, SOFTWARE_ID, WEBSITE_ID } from '@/lib/seo/site-schem
 /**
  * Meta description for `/`, also `og:description` and `Article.description`.
  * Must stay under 155 chars (guarded by `home-schema.test.ts`). The launch
- * plan's Step 9 wording ran 162 chars; this trims two connectives and keeps
- * every fact.
+ * plan's Step 9 wording ran 176 chars; this keeps every fact and the approved
+ * "four paths plus a Blend" phrase at 152.
  */
 export const HOME_DESCRIPTION =
-  "See the gap between a property's price and its investor value and four ways to close it. Six strategies, every U.S. market, under 60 seconds. Start free."
+  "See a property's deal gap (price vs. investor value) and four paths plus a Blend to close it. Six strategies, every U.S. market, under 60 seconds. Free."
 
 /** `<title>` of `/`, also `og:title` and `WebPage.name`. */
 export const HOME_TITLE = 'DealGapIQ: Real Estate Deal Analysis and Offer Tool for Investors'

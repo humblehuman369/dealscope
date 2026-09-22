@@ -123,7 +123,7 @@ export const siteGraph = {
         'Multi-source IQ Estimate (Zillow, RentCast, Redfin, Realtor) with AirROI STR analytics',
         'Editable assumptions and stress-testing',
         'Creative-finance modeling (Subject-To, seller carrybacks, 0% seconds)',
-        'Four pre-built offer structures with negotiation scripts',
+        'Four paths plus a Blend to close the gap (Price, Income, Terms, Equity), each with a negotiation script',
         'PDF and Excel exports',
         '10-year financial projections',
       ],

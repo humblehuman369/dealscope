@@ -40,7 +40,7 @@ export function FourWaysSection({
   const pathCount = payload.hasPaths ? payload.paths.length : 0
 
   // North-star activation: the section is the first place a user sees the
-  // four ways, so it carries the milestone the collapsed FourPathsPanel used to.
+  // four paths, so it carries the milestone the collapsed FourPathsPanel used to.
   useEffect(() => {
     if (pathCount > 0) trackActivation('four_ways')
   }, [pathCount])

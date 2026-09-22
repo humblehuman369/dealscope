@@ -321,7 +321,7 @@ export function MakeItWorkWizard({
                   No plan clears the gap on your terms
                 </h3>
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: 'var(--text-body)' }}>
-                  With those answers, none of the four ways gets this property to positive cash flow.
+                  With those answers, none of the four paths, or a Blend of them, gets this property to positive cash flow.
                   That is a real answer, not a failure. Loosen one constraint and we will re-run it.
                 </p>
                 <button

@@ -599,8 +599,8 @@ function ClosePathsSection() {
             How do you close the gap between list price and target buy price?
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            DealGapIQ gives four paths to close it, Price, Income, Terms, and Equity, plus a
-            Blend that combines them.
+            DealGapIQ gives four paths plus a Blend: Price, Income, Terms and Equity, and a Blend
+            that combines them.
           </p>
         </div>
 
@@ -638,8 +638,8 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
     },
     {
       num: '3',
-      title: 'Get 4 Ways to Make the Deal Work',
-      body: 'Four pre-built offers. One click opens the full negotiation script, worksheet, and talking points tailored to the seller type.',
+      title: 'Get four paths plus a Blend',
+      body: 'Price, Income, Terms and Equity, and a Blend that combines them. One click opens the full negotiation script, worksheet, and talking points tailored to the seller type.',
     },
   ]
 
@@ -650,8 +650,8 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
           How does DealGapIQ analyze a deal in {SPEED_CLAIM}?
         </h2>
         <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
-          It runs three steps: search an address, see the deal gap, and get four offer paths. The
-          whole analysis runs in under a minute.
+          It runs three steps: search an address, see the deal gap, and get four paths plus a Blend.
+          The whole analysis runs in under a minute.
         </p>
       </div>
 
@@ -747,12 +747,12 @@ function ComparisonSection() {
     ],
     ['Multi-Source Valuation', 'X', 'Partial', 'Partial', `Full (${SOURCE_COUNT} sources)`],
     ['Deal Gap Detection', 'X', 'X', 'X', 'Yes - with target buy price'],
-    ['Pre-Built Offer Structures', 'X', 'X', 'X', '4 paths including creative'],
+    ['Paths to Close the Gap', 'X', 'X', 'X', 'Four paths plus a Blend'],
     ['Negotiation Scripts', 'X', 'X', 'X', 'Yes - tailored to path & seller'],
     ['Creative Finance Modeling', 'X', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
     ['Works Without a Mailing List', '—', '—', 'X', 'Yes - any property qualifies'],
     ['No Per-Record Fees', '—', '—', 'X', 'Yes - flat monthly price'],
-    ['Tells You What to Offer', 'X', 'Partial', 'X', 'Target Buy + 4 offer paths'],
+    ['Tells You What to Offer', 'X', 'Partial', 'X', 'Target Buy + four paths plus a Blend'],
     ['Verified Cash Buyer Directory', 'X', 'X', 'Partial', 'Cash Wholesale Buyers'],
     ['Hard Money Lender Directory', 'X', 'X', 'X', 'Approved in 24 hrs'],
     ['No Signup To Try', 'Yes', 'X', 'X', 'Yes - instant'],
@@ -766,7 +766,7 @@ function ComparisonSection() {
         </h2>
         <p className="mx-auto mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-secondary)] md:text-xl">
           DealGapIQ is the only one of the four that reports a deal gap and target buy price, and
-          the only one that ships offer structures and negotiation scripts.
+          the only one that ships four paths plus a Blend with negotiation scripts.
         </p>
       </div>
 
@@ -874,8 +874,8 @@ function SiteFooter() {
             DealGap<span className="text-[var(--accent-sky)]">IQ</span>
           </Link>
           <div className="max-w-xs text-[var(--text-secondary)]">
-            The only tool that turns maybe listings into signed contracts with clear offer
-            structures and scripts.
+            The only tool that turns maybe listings into signed contracts with four paths plus a
+            Blend and the scripts to send.
           </div>
           <GetTheAppButton
             source="footer"

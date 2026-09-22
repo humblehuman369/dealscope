@@ -157,7 +157,7 @@ export function HomeHeroStatic({ scanQr }: { scanQr?: ReactNode }) {
           <p className="home-hero-static__lead">
             DealGapIQ is a real estate investment analysis tool that shows the gap between a
             property&apos;s asking price and the price at which it works for an investor, then gives
-            four offer structures to close that gap. It analyzes six strategies across every U.S.
+            four paths plus a Blend to close that gap. It analyzes six strategies across every U.S.
             market in {SPEED_CLAIM}, starts free, and Pro costs {PRO_MONTHLY_PRICE} a month.
           </p>
           <p className="home-hero-static__updated">

@@ -1,5 +1,5 @@
 /**
- * The four ways to breakeven, in the order the engine returns them.
+ * The four paths to breakeven, in the order the engine returns them.
  *
  * Pure helpers shared by the Breakeven Analysis section, the wizard, and tests.
  * The vocabulary maps 1:1 onto the backend selector's fixed slots
@@ -245,7 +245,7 @@ export function defaultAdvice(
   backup: DealStructure | null,
 ): string {
   if (!lead || !isBreakevenFamily(lead.family) || !lead.breakeven) {
-    return 'Four ways get you to cash flow. Build a plan around the one that fits how you buy.'
+    return 'Four paths plus a Blend get you to cash flow. Build a plan around the one that fits how you buy.'
   }
   const play = describePlay(lead.family, lead.breakeven)
   const gapPct = summary?.gapPct ?? 0

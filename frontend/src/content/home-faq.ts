@@ -9,7 +9,7 @@ import { PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH, SPEED_CLAIM } from '@/lib/clai
 export const HOME_FAQ: FaqItem[] = [
   {
     question: 'What is DealGapIQ?',
-    answer: `DealGapIQ is a real estate investment analysis tool that shows the gap between a property's price and its investor value, then gives four offer structures to close it. It covers six strategies in every U.S. market and runs in ${SPEED_CLAIM}. It starts free.`,
+    answer: `DealGapIQ is a real estate investment analysis tool that shows the gap between a property's price and its investor value, then gives four paths plus a Blend to close it. It covers six strategies in every U.S. market and runs in ${SPEED_CLAIM}. It starts free.`,
   },
   {
     question: 'What does "deal gap" mean?',
@@ -18,7 +18,7 @@ export const HOME_FAQ: FaqItem[] = [
   },
   {
     question: 'How do I find real estate deals?',
-    answer: `Start with the number, not the listing. A good real estate deal is any property, on-market or off-market, where the list price is close to the target buy price for your strategy. To find investment properties and undervalued properties, run every address you see through a deal gap check, then focus on the ones with the smallest gap. Sources that surface good deals include foreclosures, pre-foreclosures, expired listings, absentee owners, tax delinquent lists, and off-market owners you contact directly. DealGapIQ scores any U.S. address against six strategies in ${SPEED_CLAIM} and gives four paths to close the gap, Price, Income, Terms, and Equity, plus a Blend. The free plan includes three discoveries a month with no credit card.`,
+    answer: `Start with the number, not the listing. A good real estate deal is any property, on-market or off-market, where the list price is close to the target buy price for your strategy. To find investment properties and undervalued properties, run every address you see through a deal gap check, then focus on the ones with the smallest gap. Sources that surface good deals include foreclosures, pre-foreclosures, expired listings, absentee owners, tax delinquent lists, and off-market owners you contact directly. DealGapIQ scores any U.S. address against six strategies in ${SPEED_CLAIM} and gives four paths plus a Blend to close the gap: Price, Income, Terms and Equity, and a Blend that combines them. The free plan includes three discoveries a month with no credit card.`,
   },
   {
     question: 'Is DealGapIQ free?',
@@ -32,7 +32,7 @@ export const HOME_FAQ: FaqItem[] = [
   {
     question: 'How is DealGapIQ different from DealCheck?',
     answer:
-      'DealCheck is a calculator that tells you whether a deal works at a given price. DealGapIQ tells you the price at which it works, how far the listing is from that price, and four ways to get there, including creative financing. DealCheck is cheaper; DealGapIQ includes buyer and lender directories.',
+      'DealCheck is a calculator that tells you whether a deal works at a given price. DealGapIQ tells you the price at which it works, how far the listing is from that price, and four paths plus a Blend to get there, including creative financing. DealCheck is cheaper; DealGapIQ includes buyer and lender directories.',
   },
   {
     question: 'Does DealGapIQ need a mailing list or motivated seller?',

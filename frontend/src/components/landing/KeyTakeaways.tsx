@@ -3,7 +3,7 @@ import { BUYER_COUNT, LENDER_COUNT, PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH } fr
 const TAKEAWAYS: string[] = [
   'The "deal gap" is the difference between the list price and the target buy price that makes a property pencil for a chosen strategy.',
   'DealGapIQ scores any address, on-market or off-market, against six strategies: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and wholesale.',
-  'Every analysis returns four pre-built paths to close the gap, each with an editable worksheet and a negotiation script.',
+  'Every analysis returns four paths plus a Blend to close the gap, each with an editable worksheet and a negotiation script.',
   `The free plan gives three discoveries a month with no card. Pro is ${PRO_MONTHLY_PRICE} a month or $${PRO_YEARLY_PER_MONTH} a month billed annually.`,
   `Pro adds directories of ${BUYER_COUNT} verified cash buyers and ${LENDER_COUNT} hard money lenders, plus comps, Excel proformas and PDF reports.`,
   'Built by Brad Geisen, who founded Foreclosure.com and whose team built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac.',

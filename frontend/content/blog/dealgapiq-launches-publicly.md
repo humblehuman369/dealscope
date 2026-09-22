@@ -46,7 +46,7 @@ The deal gap is the difference between what a seller is asking and the most an i
 
 Take 1014-16 N J St in Lake Worth, Florida. It lists at $457,100. At 20 percent down, the numbers say an investor should pay $428,000. The deal gap is -6.4 percent, or about $29,000. Once you know that number, the question stops being "is this a deal?" and becomes "which structure closes $29,000?"
 
-DealGapIQ answers with four paths: raise or verify the income, negotiate the price, put more capital down, or blend the three into one creative offer. Each path comes with an editable worksheet and a negotiation script. Every discovery is scored against six strategies: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and wholesale. It runs on any U.S. address, on-market or off-market, in under 60 seconds.
+DealGapIQ answers with four paths plus a Blend: Price, Income, Terms and Equity, and a Blend that combines them. Seller financing and subject-to sit in the Terms path. Each path comes with an editable worksheet and a negotiation script. Every discovery is scored against six strategies: long-term rental, short-term rental, BRRRR, fix and flip, house hack, and wholesale. It runs on any U.S. address, on-market or off-market, in under 60 seconds.
 
 ## What is free and what is Pro
 

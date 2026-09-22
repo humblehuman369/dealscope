@@ -157,10 +157,10 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'What should I offer on this house?',
     agitate:
       'Offer too high and the deal never cash flows. Offer too low with no reason attached and the seller stops answering. Most investors guess a percentage off list and hope.',
-    nextStep: 'Paste the address. Discovery shows the Target Buy price and four ways to structure the offer.',
-    metaTitle: 'What Should I Offer on This House? Target Buy Price + 4 Offer Structures',
+    nextStep: 'Paste the address. Discovery shows the Target Buy price and four paths plus a Blend to structure the offer.',
+    metaTitle: 'What Should I Offer on This House? Target Buy Price + Four Paths',
     metaDescription:
-      'Get the price at which an investment property works, then four offer structures that close the gap: price, capital, financing or a blended plan, each with a script. Free.',
+      'Get the price at which an investment property works, then four paths plus a Blend to close the gap: Price, Income, Terms and Equity, each with a script. Free.',
     persona: 'first-time',
     strategyPath: 'target-buy',
     steps: [
@@ -169,8 +169,8 @@ export const PROBLEM_PAGES: ProblemPage[] = [
         body: 'The price at which the property meets your return target after real expenses, computed from live value and rent estimates.',
       },
       {
-        heading: 'Four offer structures',
-        body: 'A price cut, a capital ask, a financing change such as seller carry, and a blended plan of smaller asks that reaches the same math.',
+        heading: 'Four paths plus a Blend',
+        body: 'A Price cut, an Income lift, a Terms change such as seller carry, an Equity ask, and a Blend of smaller asks that reaches the same math.',
       },
       {
         heading: 'The script for each',
@@ -248,7 +248,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     agitate:
       'A 6% price cut is a no. Walking away is the default. But the same math can be reached with three smaller asks the seller can actually say yes to, and most investors never put them on the table.',
     nextStep: 'Paste the address. Discovery shows which financing and capital structures close the gap without a headline price cut.',
-    metaTitle: "Seller Won't Lower the Price? Offer Structures That Close the Gap",
+    metaTitle: "Seller Won't Lower the Price? Other Paths That Close the Gap",
     metaDescription:
       'When the seller holds firm, seller financing, a 0% second, a rate buydown or a blended plan can reach the same numbers. See which apply to a specific address, free.',
     persona: 'cold-market',

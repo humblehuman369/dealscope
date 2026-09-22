@@ -282,7 +282,7 @@ export default function PricingContent() {
   const faqs = [
     {
       q: 'How fast can I underwrite a deal and make an offer?',
-      a: `${SPEED_CLAIM_SENTENCE}. Search any address and DealGapIQ returns Income Value, Target Buy, and the Deal Gap across all six strategies — plus four offer paths and a negotiation script. Pro unlocks editable assumptions, comps, and the Cash Buyer and Hard Money directories so you can move from analysis to a fundable offer in one place.`,
+      a: `${SPEED_CLAIM_SENTENCE}. Search any address and DealGapIQ returns Income Value, Target Buy, and the Deal Gap across all six strategies — with four paths plus a Blend and a negotiation script for each. Pro unlocks editable assumptions, comps, and the Cash Buyer and Hard Money directories so you can move from analysis to a fundable offer in one place.`,
     },
     {
       q: 'What happens after my 7-day trial?',

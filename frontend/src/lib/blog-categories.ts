@@ -39,7 +39,7 @@ export const BLOG_CATEGORIES: Record<BlogCategorySlug, BlogCategory> = {
     slug: 'offers-negotiation',
     label: 'Offers & Negotiation',
     description:
-      'Offer structures, pitch scripts, and negotiation frames that trade price for terms instead of losing the deal on the call.',
+      'Deal structures, pitch scripts, and negotiation frames that trade price for terms instead of losing the deal on the call.',
     pillarHref: '/blog/how-to-make-an-offer-on-an-investment-property',
     pillarLabel: 'How to Make an Offer on an Investment Property',
   },

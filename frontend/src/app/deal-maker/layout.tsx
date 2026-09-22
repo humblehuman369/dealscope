@@ -51,8 +51,8 @@ export default function DealMakerLayout({ children }: { children: React.ReactNod
         intro="Deal Maker is where Discovery turns into a real offer. Every assumption that drives the score — purchase price, rent, vacancy, rehab, financing, exit — is editable, so you can stress-test the deal and structure an offer that actually closes."
         sections={[
           {
-            heading: 'Four pre-built offer structures',
-            body: 'For every property, Deal Maker generates four offer paths: an income-uplift play, a price-negotiation offer, a capital-heavy down-payment scenario, and a blended structure. Each path is sized to the property and ranked by expected return, so you can pick the one that matches the seller you are talking to.',
+            heading: 'Four paths plus a Blend',
+            body: 'For every property, Deal Maker generates four paths plus a Blend: Price, Income, Terms and Equity, and a Blend that combines them. Each path is sized to the property and ranked by expected return, so you can pick the one that matches the seller you are talking to.',
           },
           {
             heading: 'Creative-finance modeling',

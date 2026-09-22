@@ -15,7 +15,7 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 ## Product
 
 - [Discovery](https://dealgapiq.com/discovery): instant deal score (0–95) for any address with ranked strategy recommendations, plus the embedded Strategy Workbench — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
-- [Deal Maker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
+- [Deal Maker](https://dealgapiq.com/deal-maker): editable assumptions, four paths plus a Blend to close the gap (Price, Income, Terms, Equity), and AI-generated negotiation scripts
 
 ## Strategy guides
 
@@ -36,7 +36,7 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 - [Blog index](https://dealgapiq.com/blog): deal teardowns, creative-finance breakdowns, financing comparisons, and pitch scripts (RSS: https://dealgapiq.com/blog/feed.xml)
 - [Creative Finance](https://dealgapiq.com/blog/category/creative-finance): Subject-To, seller carrybacks, wraps, lease options, Morby Method
 - [Deal Analysis](https://dealgapiq.com/blog/category/deal-analysis): underwriting rentals, cap rate vs cash-on-cash, DSCR, ARV, the Deal Gap
-- [Offers & Negotiation](https://dealgapiq.com/blog/category/offers-negotiation): offer structures and seller pitch scripts
+- [Offers & Negotiation](https://dealgapiq.com/blog/category/offers-negotiation): deal structures and seller pitch scripts
 - [Financing](https://dealgapiq.com/blog/category/financing): hard money, DSCR loans, private money, refinance seasoning
 - [Strategies](https://dealgapiq.com/blog/category/strategies): LTR, STR, BRRRR, fix & flip, house hack, wholesale compared
 - [Markets](https://dealgapiq.com/blog/category/markets): reading a local market before you offer
