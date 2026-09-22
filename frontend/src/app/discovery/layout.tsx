@@ -8,8 +8,9 @@ import { DiscoveryPageExplainer } from './DiscoveryPageExplainer'
 
 export const metadata: Metadata = {
   title: 'Discovery — Instant Deal Score for Any Property | DealGapIQ',
+  // ≤155 chars for SERP snippets; the six strategies are named in the H1 explainer below.
   description:
-    `Discovery scores any single-family or small multi-family property ${SPEED_CLAIM} — across Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — and surfaces the Deal Gap so you know what to offer.`,
+    `Discovery scores any single-family or small multi-family property ${SPEED_CLAIM} across six strategies and shows the Deal Gap so you know what to offer.`,
   alternates: { canonical: '/discovery' },
   robots: INDEXABLE_ROBOTS,
   openGraph: {

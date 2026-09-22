@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getAllContent, getContent } from '@/lib/content'
 import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -96,8 +97,8 @@ export default async function GlossaryTerm({ params }: { params: Promise<{ slug:
           url: `${SITE_URL}/about`,
         },
         publisher: { '@id': `${SITE_URL}/#organization` },
-        ...(datePublished ? { datePublished } : {}),
-        ...(dateModified ? { dateModified } : {}),
+        ...(datePublished ? { datePublished: toSchemaDateTime(datePublished) } : {}),
+        ...(dateModified ? { dateModified: toSchemaDateTime(dateModified) } : {}),
         inLanguage: 'en-US',
         speakable: {
           '@type': 'SpeakableSpecification',

@@ -19,6 +19,13 @@ import { BlogViewTracker } from '@/components/blog/BlogViewTracker'
 import { ArticleShare } from '@/components/investor-intelligence/ArticleShare'
 import { SPEED_CLAIM_SENTENCE } from '@/lib/claims'
 
+/**
+ * Every renderable slug is known at build time (`getBlogPost` applies the same
+ * published/draft filter as `getAllBlogPosts`), so unknown slugs get a real
+ * HTTP 404 from the route table instead of a rendered 200 + noindex soft 404.
+ */
+export const dynamicParams = false
+
 export async function generateStaticParams() {
   const posts = await getAllBlogPosts()
   return posts.map((p) => ({ slug: p.slug }))
@@ -31,7 +38,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const post = await getBlogPost(slug)
-  if (!post) return {}
+  // Throwing here (not just in the page) lets Next commit a real 404 status
+  // before any streaming starts, instead of a 200 + noindex soft 404.
+  if (!post) notFound()
   const fm = post.frontmatter
   const title = fm.meta_title || fm.title
   const description = fm.meta_description || fm.subtitle

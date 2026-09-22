@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { META_DESCRIPTION_MAX } from '@/lib/content-schema'
 import { buildHomeJsonLd, HOME_DESCRIPTION, HOME_URL } from '@/lib/seo/home-schema'
 import { HOME_FAQ } from '@/content/home-faq'
+import { toSchemaDateTime } from '@/lib/seo/dates'
 import { HOME_H1, HOME_PUBLISHED_AT, HOME_UPDATED_AT } from '@/config/site'
 
 type Node = Record<string, unknown>
@@ -26,10 +27,18 @@ describe('home page schema', () => {
     const [article, faq] = graph()
     expect(article.headline).toBe(HOME_H1)
     expect(article.description).toBe(HOME_DESCRIPTION)
-    expect(article.datePublished).toBe(HOME_PUBLISHED_AT)
-    expect(article.dateModified).toBe(HOME_UPDATED_AT)
+    expect(article.datePublished).toBe(toSchemaDateTime(HOME_PUBLISHED_AT))
+    expect(article.dateModified).toBe(toSchemaDateTime(HOME_UPDATED_AT))
     expect(faq['@type']).toBe('FAQPage')
     expect((faq.mainEntity as unknown[]).length).toBe(HOME_FAQ.length)
+  })
+
+  it('emits full ISO 8601 datetimes with a UTC offset, derived from the YYYY-MM-DD constants', () => {
+    // Rich Results Test flags bare dates as "Invalid datetime value / missing a timezone".
+    const article = graph().find((n) => n['@type'] === 'Article')!
+    expect(article.datePublished).toBe('2026-01-15T09:00:00-05:00')
+    expect(article.dateModified).toBe(`${HOME_UPDATED_AT}T09:00:00-04:00`)
+    expect(HOME_UPDATED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 
   it('emits the approved app FAQ answer verbatim in the FAQPage node', () => {
