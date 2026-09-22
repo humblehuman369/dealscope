@@ -805,3 +805,65 @@ main > .home-dark-wash:nth-child(odd) .home-dark-bloom {
     0 0 28px color-mix(in srgb, var(--accent-sky-light) 9%, transparent),
     var(--shadow-card);
 }
+
+/* Homepage only. SocialProof reuses these classes on /pricing and the
+   listicle and problem landings, which do not have main > #home-hero. */
+
+/* Wash off by default */
+[data-theme='dark'] main:has(> #home-hero) .home-dark-wash:before {
+  background: none;
+}
+
+/* Wash kept on #deal-gap, #close-the-gap, and #pricing */
+[data-theme='dark'] main:has(> #home-hero) :is(#deal-gap, #close-the-gap, #pricing).home-dark-wash:before {
+  background: radial-gradient(
+    ellipse 70% 60% at var(--home-glow-x) var(--home-glow-y),
+    color-mix(in srgb, var(--accent-sky-light) 6%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 2%, transparent) 38%,
+    rgb(from var(--accent-sky-light) r g b / 0) 65%
+  );
+}
+
+/* No border or glow on grid wrappers */
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > .grid {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Glow and sky border on the cards themselves:
+   a card that is the bloom's direct child, or a card inside a direct-child grid */
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > :is(.rounded-2xl, .rounded-3xl).border,
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > .grid > :is(.rounded-2xl, .rounded-3xl).border {
+  border-color: color-mix(in srgb, var(--accent-sky) 20%, var(--border-default));
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom:before {
+  inset: -24px;
+  background: radial-gradient(
+    ellipse 68% 60% at var(--home-bloom-x) var(--home-bloom-y),
+    color-mix(in srgb, var(--accent-sky-light) 10%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 3%, transparent) 34%,
+    rgb(from var(--accent-sky-light) r g b / 0) 60%
+  );
+}
+
+/* No haze cloud behind grids of small cards */
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom:has(> .grid):before {
+  background: none;
+}
+
+/* Hero card bloom: a bit softer than today, still the strongest on the page */
+[data-theme='dark'] main:has(> #home-hero) .home-hero-static .home-dark-bloom:before {
+  background: radial-gradient(
+    ellipse 68% 60% at var(--home-bloom-x) var(--home-bloom-y),
+    color-mix(in srgb, var(--accent-sky-light) 12%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 4%, transparent) 34%,
+    rgb(from var(--accent-sky-light) r g b / 0) 64%
+  );
+}
+
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > :is(.rounded-2xl, .rounded-3xl).border.bg-\[var\(--surface-card\)\],
+[data-theme='dark'] main:has(> #home-hero) .home-dark-bloom > .grid > :is(.rounded-2xl, .rounded-3xl).border.bg-\[var\(--surface-card\)\] {
+  background-color: var(--surface-elevated);
+}
