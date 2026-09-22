@@ -9,7 +9,7 @@ export function ExploreDealGapIQSection() {
 
   return (
     <section
-      className="border-t border-[var(--border-default)] bg-[var(--surface-card)] py-14"
+      className="home-dark-wash border-t border-[var(--border-default)] bg-[var(--surface-card)] py-14"
       aria-labelledby="explore-dealgapiq-heading"
     >
       <div className="mx-auto max-w-7xl px-6">
@@ -34,6 +34,7 @@ export function ExploreDealGapIQSection() {
             View all pages →
           </Link>
         </div>
+        <div className="home-dark-bloom">
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {primary.map((link) => (
             <li key={link.href}>
@@ -46,6 +47,7 @@ export function ExploreDealGapIQSection() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
     </section>
   )

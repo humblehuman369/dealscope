@@ -23,6 +23,7 @@ function renderQuote(quote: string) {
 export function SocialProof({ compact = false }: { compact?: boolean }) {
   return (
     <section
+      className="home-dark-wash"
       style={{ padding: compact ? '32px 24px 40px' : '80px 24px' }}
       aria-label="What early users are saying"
     >
@@ -39,6 +40,7 @@ export function SocialProof({ compact = false }: { compact?: boolean }) {
       >
         What Early Users Are Saying
       </p>
+      <div className="home-dark-bloom">
       <div
         style={{
           display: 'grid',
@@ -103,6 +105,7 @@ export function SocialProof({ compact = false }: { compact?: boolean }) {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </section>
   )

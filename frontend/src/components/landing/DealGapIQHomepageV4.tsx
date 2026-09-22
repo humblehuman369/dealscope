@@ -295,7 +295,7 @@ function QuickStatsBar() {
   ]
 
   return (
-    <div className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5">
+    <div className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
           {stats.map((stat) => (
@@ -322,7 +322,8 @@ function QuickStatsBar() {
 
 function WhatIsSection() {
   return (
-    <section id="what-is-dealgapiq" className="mx-auto max-w-7xl px-6 py-16">
+    <section id="what-is-dealgapiq" className="home-dark-wash">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mx-auto max-w-3xl">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           What is DealGapIQ?
@@ -334,6 +335,7 @@ function WhatIsSection() {
           August 2026, and ships updates weekly.
         </p>
       </div>
+      </div>
     </section>
   )
 }
@@ -342,7 +344,7 @@ function StrategiesSection() {
   return (
     <section
       id="strategies"
-      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+      className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-3xl text-center">
@@ -354,7 +356,8 @@ function StrategiesSection() {
             wholesale. Every discovery scores the property against all six.
           </p>
         </div>
-        <ul className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="home-dark-bloom mx-auto mt-10 max-w-4xl">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {STRATEGIES.map((strategy) => (
             <li key={strategy.href}>
               <Link
@@ -367,6 +370,7 @@ function StrategiesSection() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
     </section>
   )
@@ -374,7 +378,8 @@ function StrategiesSection() {
 
 function HomeDataSourcesSection() {
   return (
-    <section id="data-sources" className="mx-auto max-w-7xl px-6 py-16">
+    <section id="data-sources" className="home-dark-wash">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mx-auto max-w-3xl">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Where do DealGapIQ&apos;s valuations and data come from?
@@ -392,6 +397,7 @@ function HomeDataSourcesSection() {
           visible in the app. There are no hidden formulas.
         </p>
       </div>
+      </div>
     </section>
   )
 }
@@ -404,7 +410,8 @@ function FounderTrustSection() {
   ]
 
   return (
-    <section id="trust" className="mx-auto max-w-7xl px-6 py-16">
+    <section id="trust" className="home-dark-wash">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
         <SectionEyebrow>Who Built This</SectionEyebrow>
         <h2
@@ -423,7 +430,8 @@ function FounderTrustSection() {
         </p>
       </div>
 
-      <div className="mx-auto max-w-5xl rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
+      <div className="home-dark-bloom mx-auto max-w-5xl">
+      <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
         <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:gap-12">
           <div>
             <p className="text-lg leading-relaxed text-[var(--text-body)] md:text-xl">
@@ -497,6 +505,8 @@ function FounderTrustSection() {
           </div>
         </div>
       </div>
+      </div>
+      </div>
     </section>
   )
 }
@@ -505,7 +515,7 @@ function DealGapSection() {
   return (
     <section
       id="deal-gap"
-      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+      className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12 max-w-3xl">
@@ -555,9 +565,10 @@ function DealGapSection() {
           </div>
         </div>
 
+        <div className="home-dark-bloom mt-8">
         <div
           id="home-facts"
-          className="mt-8 overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]"
+          className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]"
         >
           <table className="w-full text-sm">
             <caption className="px-6 pt-5 pb-2 text-left text-xs text-[var(--text-muted)] md:px-8">
@@ -589,6 +600,7 @@ function DealGapSection() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </section>
@@ -631,7 +643,7 @@ function ClosePathsSection() {
   return (
     <section
       id="close-the-gap"
-      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+      className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12 max-w-3xl">
@@ -647,6 +659,7 @@ function ClosePathsSection() {
           </p>
         </div>
 
+        <div className="home-dark-bloom">
         <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
           <div className="p-6 md:p-8">
             <div className="mb-4 text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
@@ -662,6 +675,7 @@ function ClosePathsSection() {
             </div>
           </div>
         </div>
+        </div>
       </div>
     </section>
   )
@@ -669,7 +683,8 @@ function ClosePathsSection() {
 
 function HowItWorksSection({ onStart }: { onStart: () => void }) {
   return (
-    <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-16">
+    <section id="how-it-works" className="home-dark-wash">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           How does DealGapIQ analyze a deal in {SPEED_CLAIM}?
@@ -679,7 +694,8 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+      <div className="home-dark-bloom mx-auto max-w-5xl">
+      <div className="grid gap-8 md:grid-cols-3">
         {HOME_HOWTO_STEPS.map((step, index) => (
           <div key={step.name} className="px-4 text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-3xl font-black text-[var(--accent-sky)]">
@@ -690,12 +706,14 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
           </div>
         ))}
       </div>
+      </div>
 
       <div className="mt-10 text-center">
         <SecondaryButton onClick={onStart}>
           Try it on your next lead - it is free
           <ArrowRight className="h-5 w-5 text-[var(--accent-sky)]" />
         </SecondaryButton>
+      </div>
       </div>
     </section>
   )
@@ -708,7 +726,7 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
   return (
     <section
       id="pricing"
-      className="border-y border-[var(--border-default)] bg-[var(--surface-card)] py-14"
+      className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-card)] py-14"
     >
       <div className="mx-auto max-w-4xl px-6 text-center">
         <div className="mx-auto max-w-md">
@@ -726,7 +744,8 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
           </p>
         </div>
 
-        <div className="mx-auto mt-8 grid max-w-3xl gap-6 md:grid-cols-2">
+        <div className="home-dark-bloom mx-auto mt-8 max-w-3xl">
+        <div className="grid gap-6 md:grid-cols-2">
           <PricingCard
             title="Free"
             subtitle="For serious explorers"
@@ -748,6 +767,7 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             onClick={onPro}
           />
         </div>
+        </div>
         <p className="mx-auto mt-6 max-w-lg text-xs text-[var(--text-muted)]">
           <strong className="font-semibold text-[var(--text-secondary)]">
             {DIRECTORY_ACCESS_NOTE}
@@ -764,7 +784,8 @@ function ComparisonSection() {
     INDEXABLE_SITE_SECTIONS.find((section) => section.title === 'Comparisons')?.links ?? []
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16">
+    <section className="home-dark-wash">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 text-center">
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           How does DealGapIQ compare with DealCheck, PropStream and DealMachine?
@@ -775,6 +796,7 @@ function ComparisonSection() {
         </p>
       </div>
 
+      <div className="home-dark-bloom">
       <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1100px] text-sm">
@@ -824,6 +846,7 @@ function ComparisonSection() {
           </table>
         </div>
       </div>
+      </div>
       <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
         Competitor cells were read from each vendor&apos;s public pages on{' '}
         <time dateTime={table.checked}>
@@ -861,13 +884,14 @@ function ComparisonSection() {
           </Link>
         ))}
       </nav>
+      </div>
     </section>
   )
 }
 
 function FinalCTASection({ onStart }: { onStart: () => void }) {
   return (
-    <section className="border-t border-[var(--border-default)] bg-[var(--surface-card)] py-16 text-center">
+    <section className="home-dark-wash border-t border-[var(--border-default)] bg-[var(--surface-card)] py-16 text-center">
       <div className="mx-auto max-w-3xl px-6">
         <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)]">
           <ShieldCheck className="h-10 w-10 text-[var(--accent-sky)]" />

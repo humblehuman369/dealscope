@@ -94,7 +94,8 @@ export function DirectoriesPromoSection() {
   const lenderTotalLabel = formatLenderDirectoryTotal()
 
   return (
-    <section id="directories" className="mx-auto max-w-7xl px-6 py-16" aria-labelledby="directories-heading">
+    <section id="directories" className="home-dark-wash" aria-labelledby="directories-heading">
+      <div className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 text-center">
         <h2
           id="directories-heading"
@@ -112,6 +113,7 @@ export function DirectoriesPromoSection() {
         </p>
       </div>
 
+      <div className="home-dark-bloom">
       <div className="grid gap-6 md:grid-cols-2">
         <DirectoryCard
           productLabel="Cash Buyers"
@@ -140,6 +142,7 @@ export function DirectoriesPromoSection() {
           trackEventName="homepage_directory_lenders_click"
         />
       </div>
+      </div>
 
       <div className="mx-auto mt-8 max-w-2xl text-center">
         <p className="text-sm text-[var(--text-secondary)]">
@@ -152,6 +155,7 @@ export function DirectoriesPromoSection() {
           </Link>
           {' '}— unlock when you are ready to move from analysis to a signed contract.
         </p>
+      </div>
       </div>
     </section>
   )

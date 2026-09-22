@@ -12,7 +12,8 @@ const TAKEAWAYS: string[] = [
 /** Answer-first summary under the hero. A real `<ul>` so engines can lift it verbatim. */
 export function KeyTakeaways() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-10 pt-2" aria-labelledby="key-takeaways-heading">
+    <section className="home-dark-wash" aria-labelledby="key-takeaways-heading">
+      <div className="mx-auto max-w-7xl px-6 pb-10 pt-2">
       <div className="home-dark-bloom mx-auto max-w-4xl">
         <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 shadow-[var(--shadow-card)] md:p-8">
           <p
@@ -27,6 +28,7 @@ export function KeyTakeaways() {
             ))}
           </ul>
         </div>
+      </div>
       </div>
     </section>
   )

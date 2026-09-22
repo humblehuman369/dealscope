@@ -15,7 +15,7 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="border-t border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+      className="home-dark-wash border-t border-[var(--border-default)] bg-[var(--surface-section)] py-16"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-7xl px-6">
@@ -26,7 +26,8 @@ export function FaqSection() {
         >
           What do real estate investors ask about DealGapIQ?
         </h2>
-        <div className="mt-10 grid gap-8 md:grid-cols-2">
+        <div className="home-dark-bloom mt-10">
+        <div className="grid gap-8 md:grid-cols-2">
           {HOME_FAQ.map((item) => (
             <div
               key={item.question}
@@ -46,6 +47,7 @@ export function FaqSection() {
               ) : null}
             </div>
           ))}
+        </div>
         </div>
       </div>
     </section>

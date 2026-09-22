@@ -719,6 +719,30 @@
   }
 }
 
+/* Dark-only canvas wash for homepage sections below the hero. */
+.home-dark-wash {
+  position: relative;
+}
+
+.home-dark-wash > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme='dark'] .home-dark-wash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 40%,
+    color-mix(in srgb, var(--accent-sky-light) 20%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 7%, transparent) 48%,
+    rgb(from var(--accent-sky-light) r g b / 0) 100%
+  );
+}
+
 /* Dark-only atmospheric bloom behind priority homepage surfaces.
    Lives on a wrapper so overflow:hidden cards do not clip the wash. */
 .home-dark-bloom {
@@ -755,5 +779,8 @@
 }
 
 [data-theme='dark'] .home-dark-bloom > * {
-  border-color: color-mix(in srgb, var(--accent-sky) 40%, var(--border-default));
+  border-color: color-mix(in srgb, var(--accent-sky) 42%, var(--border-default));
+  box-shadow:
+    0 0 40px color-mix(in srgb, var(--accent-sky-light) 22%, transparent),
+    var(--shadow-card);
 }
