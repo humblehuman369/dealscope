@@ -27,10 +27,21 @@ class StateMarketSummary(BaseModel):
     code: str
     name: str
     slug: str
-    lender_count: int
+    lender_count: int = Field(
+        description="All active lenders that lend in the state: state_lender_count + nationwide_lender_count"
+    )
+    state_lender_count: int = Field(
+        description="Active lenders licensed in this state that are not nationwide shops"
+    )
+    nationwide_lender_count: int = Field(
+        description="Active nationwide lenders; the same number for every state"
+    )
     buyer_count: int
     has_state_specific_assumptions: bool
-    indexable: bool
+    indexable: bool = Field(
+        description="True only when the state has its own MARKET_ADJUSTMENTS row and at least one "
+        "state-scoped directory section (in-state lenders or in-state buyers)"
+    )
 
 
 class StateMarketDetail(StateMarketSummary):
@@ -38,7 +49,10 @@ class StateMarketDetail(StateMarketSummary):
     buyer_cities: list[CityCount] = Field(
         default_factory=list, description="Cities with the most directory cash buyers"
     )
-    data_sections: list[str] = Field(description="Which sections have real data: assumptions, lenders, buyers")
+    data_sections: list[str] = Field(
+        description="Which sections carry state-scoped data: assumptions, lenders, buyers. "
+        "Nationwide lenders do not make a state's lenders section."
+    )
     generated_at: str
 
 
