@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   title: 'DealGapIQ Investor Intelligence | Residential Real Estate Investor Research & Analysis',
   description:
     'Understand the market. Then understand the property. Residential real estate investor trends, market intelligence, financing analysis, and Deal Gap property math from DealGapIQ.',
-  alternates: { canonical: '/investor-intelligence/' },
+  alternates: { canonical: '/investor-intelligence' },
   robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'DealGapIQ Investor Intelligence',
     description: 'Understand the market. Then understand the property.',
-    url: '/investor-intelligence/',
+    url: '/investor-intelligence',
     type: 'website',
     images: [
       {
@@ -57,8 +57,8 @@ export default function InvestorIntelligenceHub() {
     '@graph': [
       {
         '@type': 'CollectionPage',
-        '@id': 'https://dealgapiq.com/investor-intelligence/#page',
-        url: 'https://dealgapiq.com/investor-intelligence/',
+        '@id': 'https://dealgapiq.com/investor-intelligence#page',
+        url: 'https://dealgapiq.com/investor-intelligence',
         name: 'DealGapIQ Investor Intelligence',
         description: 'Residential real estate research, data, analysis, and property-level investment intelligence.',
         publisher: { '@id': 'https://dealgapiq.com/#org' },
@@ -74,7 +74,7 @@ export default function InvestorIntelligenceHub() {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'DealGapIQ', item: 'https://dealgapiq.com/' },
-          { '@type': 'ListItem', position: 2, name: 'Investor Intelligence', item: 'https://dealgapiq.com/investor-intelligence/' },
+          { '@type': 'ListItem', position: 2, name: 'Investor Intelligence', item: 'https://dealgapiq.com/investor-intelligence' },
         ],
       },
     ],
@@ -133,7 +133,7 @@ export default function InvestorIntelligenceHub() {
 
       <section className="border-t border-[var(--border-subtle)] px-4 py-16 sm:px-6 lg:py-20" aria-labelledby="featured-intelligence">
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
-          <Link href="/investor-intelligence/great-investor-reset-2026/" className="group overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] shadow-[var(--shadow-card)]">
+          <Link href="/investor-intelligence/great-investor-reset-2026" className="group overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] shadow-[var(--shadow-card)]">
             <Image
               src="/investor-intelligence/great-investor-reset-2026.webp"
               alt="The Great Investor Reset 2026 — Wall Street pulls back while small investors keep buying."
@@ -150,7 +150,7 @@ export default function InvestorIntelligenceHub() {
             <h2 id="featured-intelligence" className="mt-5 text-3xl font-bold leading-tight text-[var(--text-heading)] sm:text-4xl">Wall Street Is Pulling Back. Small Investors Are Still Buying.</h2>
             <p className="mt-5 leading-relaxed text-[var(--text-secondary)]">Institutional acquisition activity has retreated sharply from pandemic-era peaks while small investors account for a growing share of investor purchases. New federal restrictions are changing the rules for large buyers—but expensive financing and rising operating costs mean opportunity still has to pencil.</p>
             <p className="mt-5 text-xl font-bold text-[var(--text-heading)]">The market is not running out of properties. It is running out of properties that pencil.</p>
-            <Link href="/investor-intelligence/great-investor-reset-2026/" className="mt-7 inline-flex rounded-full bg-[linear-gradient(135deg,var(--accent-brand-blue),var(--accent-sky-light))] px-6 py-3 font-semibold text-white hover:no-underline hover:opacity-95">
+            <Link href="/investor-intelligence/great-investor-reset-2026" className="mt-7 inline-flex rounded-full bg-[linear-gradient(135deg,var(--accent-brand-blue),var(--accent-sky-light))] px-6 py-3 font-semibold text-white hover:no-underline hover:opacity-95">
               Read the Full Analysis →
             </Link>
           </div>

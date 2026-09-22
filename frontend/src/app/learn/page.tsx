@@ -97,7 +97,7 @@ export default async function LearnHubPage() {
               {investorIntelligence.map((post) => (
                 <li key={post.slug}>
                   <Link
-                    href={`/investor-intelligence/${post.slug}/`}
+                    href={`/investor-intelligence/${post.slug}`}
                     className="font-medium text-[var(--accent-sky)] hover:underline"
                   >
                     {post.frontmatter.title}

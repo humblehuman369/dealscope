@@ -8,15 +8,15 @@ export type InvestorIntelligenceTopic = {
 }
 
 export const investorIntelligenceNav = [
-  { label: 'Latest', href: '/investor-intelligence/' },
-  { label: 'Markets', href: '/investor-intelligence/#market-intelligence' },
-  { label: 'Investor Trends', href: '/investor-intelligence/#investor-trends' },
-  { label: 'Finding Deals', href: '/investor-intelligence/#finding-deals' },
-  { label: 'Financing', href: '/investor-intelligence/#financing' },
-  { label: 'SFR', href: '/investor-intelligence/#sfr' },
-  { label: 'Multifamily', href: '/investor-intelligence/#multifamily' },
-  { label: 'Build-to-Rent', href: '/investor-intelligence/#build-to-rent' },
-  { label: 'Flipping', href: '/investor-intelligence/#flipping' },
+  { label: 'Latest', href: '/investor-intelligence' },
+  { label: 'Markets', href: '/investor-intelligence#market-intelligence' },
+  { label: 'Investor Trends', href: '/investor-intelligence#investor-trends' },
+  { label: 'Finding Deals', href: '/investor-intelligence#finding-deals' },
+  { label: 'Financing', href: '/investor-intelligence#financing' },
+  { label: 'SFR', href: '/investor-intelligence#sfr' },
+  { label: 'Multifamily', href: '/investor-intelligence#multifamily' },
+  { label: 'Build-to-Rent', href: '/investor-intelligence#build-to-rent' },
+  { label: 'Flipping', href: '/investor-intelligence#flipping' },
 ] as const
 
 export const launchTopics: InvestorIntelligenceTopic[] = [
@@ -26,7 +26,7 @@ export const launchTopics: InvestorIntelligenceTopic[] = [
     title: 'The Great Investor Reset — 2026',
     description:
       'Institutional investors are changing strategy. Smaller investors remain active. Financing costs are higher, operating expenses are rising, and easy cash flow is harder to find. We examine what the changing residential investment landscape means for independent investors.',
-    href: '/investor-intelligence/great-investor-reset-2026/',
+    href: '/investor-intelligence/great-investor-reset-2026',
     live: true,
   },
   {
