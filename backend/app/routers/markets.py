@@ -25,11 +25,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/markets", tags=["Markets"])
 
 MARKETS_CACHE_TTL = 86400
-_LIST_KEY = "markets:states:v1"
+# v2: payload gained state_lender_count / nationwide_lender_count and the
+# indexability rule changed; a v1 entry would fail validation or mislabel a page.
+_LIST_KEY = "markets:states:v2"
 
 
 def _detail_key(code: str) -> str:
-    return f"markets:state:v1:{code}"
+    return f"markets:state:v2:{code}"
 
 
 @router.get("/states", response_model=StateMarketListResponse, summary="All state market summaries")

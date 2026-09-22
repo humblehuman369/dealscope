@@ -91,7 +91,10 @@ export default async function MarketsHubPage() {
             <UsStatesMap entries={states.map((s) => ({ state: s, indexable: Boolean(s.market?.indexable) }))} />
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-            <span>Highlighted states have a full market profile. Dimmed states expand as lenders and buyers are verified.</span>
+            <span>
+              Highlighted states have state-specific assumptions and in-state directory data. Dimmed states show the
+              national baseline and expand as state adjustments, lenders, and buyers are added.
+            </span>
             <Link
               href="/markets/near-me"
               className="inline-flex items-center rounded-full border px-4 py-2 font-medium transition-colors hover:border-[var(--accent-sky)]"
@@ -179,7 +182,14 @@ function StateTile({ name, slug, market }: { name: string; slug: string; market:
       {market ? (
         <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <span>
-            {market.lender_count.toLocaleString('en-US')} {market.lender_count === 1 ? 'lender' : 'lenders'}
+            {market.state_lender_count.toLocaleString('en-US')} in-state{' '}
+            {market.state_lender_count === 1 ? 'lender' : 'lenders'}
+            {market.nationwide_lender_count > 0 && (
+              <span style={{ color: 'var(--text-muted)' }}>
+                {' '}
+                + {market.nationwide_lender_count.toLocaleString('en-US')} nationwide
+              </span>
+            )}
           </span>
           <span>
             {market.buyer_count.toLocaleString('en-US')} {market.buyer_count === 1 ? 'cash buyer' : 'cash buyers'}
