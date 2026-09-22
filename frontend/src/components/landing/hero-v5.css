@@ -733,20 +733,24 @@
 [data-theme='dark'] .home-dark-bloom::before {
   content: '';
   position: absolute;
-  inset: -56px;
+  /* Layer must outrun the ellipse (radii stay under 50%) so 0% is never clipped. */
+  inset: -180px;
   pointer-events: none;
   z-index: 0;
   background:
     radial-gradient(
-      ellipse 78% 70% at 50% 40%,
-      color-mix(in srgb, var(--accent-sky-light) 24%, transparent) 0%,
-      color-mix(in srgb, var(--accent-sky-light) 10%, transparent) 42%,
-      transparent 72%
+      ellipse 42% 40% at 50% 42%,
+      color-mix(in srgb, var(--accent-sky-light) 48%, transparent) 0%,
+      color-mix(in srgb, var(--accent-sky-light) 28%, transparent) 30%,
+      color-mix(in srgb, var(--accent-sky-light) 12%, transparent) 55%,
+      color-mix(in srgb, var(--accent-sky-light) 4%, transparent) 78%,
+      rgb(from var(--accent-sky-light) r g b / 0) 100%
     ),
     radial-gradient(
-      ellipse 95% 90% at 48% 58%,
-      color-mix(in srgb, var(--accent-brand-blue) 8%, transparent) 0%,
-      transparent 75%
+      ellipse 46% 44% at 48% 58%,
+      color-mix(in srgb, var(--accent-brand-blue) 16%, transparent) 0%,
+      color-mix(in srgb, var(--accent-brand-blue) 6%, transparent) 50%,
+      rgb(from var(--accent-brand-blue) r g b / 0) 100%
     );
 }
 
