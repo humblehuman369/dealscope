@@ -43,7 +43,11 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 
 ## Markets
 
-- [Investor market data by state](https://dealgapiq.com/markets): per-state property tax rate, vacancy, appreciation, and rent-to-price assumptions used by DealGapIQ, plus lender and cash-buyer counts (one page per state at /markets/{state-name})
+- [Investment properties by state](https://dealgapiq.com/markets): hub for the state pages below, plus the national baseline assumptions applied to every other state
+- [California investment properties](https://dealgapiq.com/markets/california): California-specific property tax, vacancy, appreciation, and rent-to-price assumptions, with in-state hard money lender and cash buyer counts
+- [Florida investment properties](https://dealgapiq.com/markets/florida): Florida-specific assumptions and in-state lender and cash buyer counts
+- [Georgia investment properties](https://dealgapiq.com/markets/georgia): Georgia-specific assumptions and in-state lender and cash buyer counts
+- [Texas investment properties](https://dealgapiq.com/markets/texas): Texas-specific assumptions and in-state lender and cash buyer counts
 
 ## Reference
 
