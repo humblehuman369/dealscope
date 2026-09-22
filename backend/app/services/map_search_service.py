@@ -1892,11 +1892,12 @@ class MapSearchService:
         ``_derive_zillow_status`` can classify **Foreclosed** (REO / bank-owned)
         vs **Pre-foreclosure** separately, consistent with Zillow's split filters.
 
-        ``pages`` > 1 fetches that many result pages concurrently (AXESSO
-        returns ~41 rows per page and accepts ``page``; verified live Sept 21,
-        2026 on Norfolk VA: pages 1–3 were disjoint, 41 rows each, of 1034).
-        Pages after the first short page are discarded, and rows are deduped
-        by zpid.
+        ``pages`` > 1 fetches extra result pages (AXESSO returns ~41 rows per
+        page and accepts ``page``; verified live Sept 21, 2026 on Norfolk VA:
+        pages 1–3 were disjoint, 41 rows each, of 1034). Page 1 is fetched
+        first; later pages are only requested when page 1 returned rows, so an
+        empty first page does not bill the rest of the window. Pages after the
+        first short page are discarded, and rows are deduped by zpid.
         """
         if not self.zillow:
             return []
@@ -1920,37 +1921,56 @@ class MapSearchService:
                     **page_kwargs,
                 )
 
-            responses = await asyncio.gather(
-                *(_page(n) for n in range(1, max(pages, 1) + 1)), return_exceptions=True
-            )
-
-            raw_props: list[dict] = []
-            first_page_rows: int | None = None
-            for page_no, resp in enumerate(responses, start=1):
-                if isinstance(resp, Exception):
-                    logger.warning("Zillow %s page %d failed: %s", label, page_no, resp)
-                    break
-                if not resp.success or not resp.data:
-                    if page_no == 1:
-                        logger.info("Zillow %s returned no data", label)
-                    break
+            def _rows_from(resp: Any) -> list:
                 rows = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
                 if isinstance(resp.data, dict) and not rows:
                     for val in resp.data.values():
                         if isinstance(val, list) and len(val) > 0:
                             rows = val
                             break
-                raw_props.extend(rows)
-                if first_page_rows is None:
-                    first_page_rows = len(rows)
-                # A short page is the last page; anything after it is empty.
-                if len(rows) < first_page_rows:
-                    break
+                return rows if isinstance(rows, list) else []
+
+            try:
+                first = await _page(1)
+            except Exception as exc:
+                logger.warning("Zillow %s page 1 failed: %s", label, exc)
+                return []
+            if not first.success or not first.data:
+                logger.info("Zillow %s returned no data", label)
+                return []
+
+            first_rows = _rows_from(first)
+            # An empty first page is the whole result set. Do not page further:
+            # first_page_rows=0 would make `len(rows) < 0` impossible and later
+            # pages would be billed and merged as if they were more inventory.
+            if not first_rows:
+                return []
+
+            raw_props: list[dict] = list(first_rows)
+            first_page_rows = len(first_rows)
+            extra = max(pages, 1) - 1
+            if extra > 0:
+                responses = await asyncio.gather(
+                    *(_page(n) for n in range(2, extra + 2)), return_exceptions=True
+                )
+                for page_no, resp in enumerate(responses, start=2):
+                    if isinstance(resp, Exception):
+                        logger.warning("Zillow %s page %d failed: %s", label, page_no, resp)
+                        break
+                    if not resp.success or not resp.data:
+                        break
+                    rows = _rows_from(resp)
+                    # Empty or shorter than page 1: last page. Stop before
+                    # treating later concurrent replies as more inventory.
+                    if not rows or len(rows) < first_page_rows:
+                        raw_props.extend(rows)
+                        break
+                    raw_props.extend(rows)
 
             if not raw_props:
                 return []
 
-            if len(responses) > 1:
+            if extra > 0:
                 seen_zpids: set[str] = set()
                 deduped: list[dict] = []
                 for item in raw_props:

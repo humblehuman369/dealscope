@@ -260,6 +260,26 @@ async def test_zillow_paging_stops_after_the_first_short_page_and_dedupes_zpids(
     assert sorted(r.id for r in rows) == ["1", "2", "3", "4"]
 
 
+@pytest.mark.asyncio
+async def test_zillow_paging_does_not_follow_an_empty_first_page():
+    """An empty page 1 is the result set. Later pages must not be billed or kept."""
+    service = MapSearchService()
+    service._initialized = True
+    zillow = MagicMock()
+    pages = {
+        1: _zillow_page([]),
+        2: _zillow_page([_zillow_row(50)]),
+        3: _zillow_page([_zillow_row(51)]),
+    }
+    zillow.search_by_coordinates = AsyncMock(side_effect=lambda **kw: pages[kw.get("page", 1)])
+    service.zillow = zillow
+
+    rows = await service._fetch_zillow(27.43, -80.33, 5.0, "forSale", _req(), None, pages=3)
+
+    assert rows == []
+    assert zillow.search_by_coordinates.await_count == 1
+
+
 def test_expensive_mode_cap_matches_the_single_grid_point_band():
     """An expensive mode must never also be multiplied by grid fan-out.
 
