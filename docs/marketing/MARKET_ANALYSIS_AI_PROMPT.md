@@ -128,7 +128,7 @@ We see two **co-primary personas**. They share an underlying motivation (the dre
 | Tier | Monthly price | Annual price | Effective monthly (annual) |
 |---|---:|---:|---:|
 | Starter (Free) | $0 | $0 | $0 |
-| Pro | $39.99 | $349.99 | $29.17 |
+| Pro | $34.99 | $349.99 | $29.17 |
 
 - The free tier requires no signup and no payment method to receive a baseline valuation result. Paid tier gates strategy worksheets, negotiation scripts, exports, and saved properties.
 - Annual pricing is set at a ~27% discount to month-to-month to incentivize annual conversion and reduce churn.
@@ -175,7 +175,7 @@ A written market assessment of approximately 8–15 pages (or equivalent), addre
 
 **3. Competitive landscape.** Independent characterization of the incumbents in each tier above, including any incumbents we have likely missed. For each, assess: feature overlap, distribution advantage, pricing posture, and the realistic likelihood of them building into the synthesis layer themselves within 18 months.
 
-**4. Pricing assessment.** Is the $39.99 / $349.99 single-tier structure well-positioned for the personas described? Specifically: (a) is the price point too high, too low, or appropriately positioned vs. willingness-to-pay; (b) should there be a second paid tier, and if so what should it gate; (c) what discount/incentive levers most reliably reduce prosumer-SaaS churn in this category.
+**4. Pricing assessment.** Is the $34.99 / $349.99 single-tier structure well-positioned for the personas described? Specifically: (a) is the price point too high, too low, or appropriately positioned vs. willingness-to-pay; (b) should there be a second paid tier, and if so what should it gate; (c) what discount/incentive levers most reliably reduce prosumer-SaaS churn in this category.
 
 **5. Audience validation.** Are the two co-primary personas as described an accurate representation of the buying segment, or is your read of the market different? Is the willingness-to-pay driver (synthesis-under-time-pressure for the active investor; aspiration-fueled curiosity for the enthusiast) the right anchor, or is something else doing more of the work?
 

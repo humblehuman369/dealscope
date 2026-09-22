@@ -4,7 +4,7 @@ const BASE = {
   dealgapiqStrengths: [
     'Six-strategy Discovery score with Deal Gap on every address',
     'Transparent IQ Estimate blending Zillow, RentCast, Redfin, and Realtor.com, plus AirROI STR analytics',
-    'DealMaker offer scripts and creative-finance structures (Subject-To, seller carry)',
+    'Deal Maker offer scripts and creative-finance structures (Subject-To, seller carry)',
     '60-second first pass before you build a spreadsheet',
   ],
 }

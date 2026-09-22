@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
-import { SPEED_CLAIM } from '@/lib/claims'
+import { SPEED_CLAIM, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 const t = {
   bgPrimary: '#000000',
@@ -1096,7 +1096,7 @@ export default function WhatIsDealGapIQ() {
           </svg>
         </Link>
         <div style={{ fontSize: '0.82rem', color: t.textMuted, marginTop: '1rem' }}>
-          2 free analyses per month · No credit card required
+          {STARTER_VERDICTS_PER_MONTH} free discoveries per month · No credit card required
         </div>
       </div>
 

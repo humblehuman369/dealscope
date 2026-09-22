@@ -15,7 +15,12 @@ import { authApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
-import { PRO_MONTHLY_PRICE, PRO_YEARLY_PER_MONTH, PRO_YEARLY_PRICE } from '@/lib/claims'
+import {
+  PRO_MONTHLY_PRICE,
+  PRO_YEARLY_PER_MONTH,
+  PRO_YEARLY_PRICE,
+  STARTER_VERDICTS_PER_MONTH,
+} from '@/lib/claims'
 
 // ─── Icons ───
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
@@ -190,7 +195,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
         'Side-by-side deal comparison',
       ]
     : [
-        '2 property analyses per month',
+        `${STARTER_VERDICTS_PER_MONTH} discoveries per month`,
         'Deal Gap + Income Value + Target Buy',
         'Discovery score',
         'All 6 strategy snapshots',
@@ -533,7 +538,7 @@ function RegistrationInner() {
       >
         {plan === 'pro'
           ? `Create your account, then start your 7-day free trial — no charge until ${trialEndDate}.`
-          : 'Get started with 2 free analyses per month.'}
+          : `Get started with ${STARTER_VERDICTS_PER_MONTH} free discoveries per month.`}
       </p>
 
       {/* Sign in with Apple */}

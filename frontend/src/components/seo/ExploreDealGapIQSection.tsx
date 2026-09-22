@@ -15,12 +15,13 @@ export function ExploreDealGapIQSection() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2
+            {/* Not an H2: the home page keeps exactly eleven question headings for engines. */}
+            <p
               id="explore-dealgapiq-heading"
               className="text-2xl font-bold text-[var(--text-heading)] md:text-3xl"
             >
               Explore DealGapIQ
-            </h2>
+            </p>
             <p className="mt-2 max-w-xl text-sm text-[var(--text-secondary)]">
               Guides, strategy playbooks, glossary, and product pages — everything you need before
               you run your first Discovery.

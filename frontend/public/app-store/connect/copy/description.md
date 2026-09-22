@@ -28,7 +28,7 @@ Enter an address — or just point your phone at a house — and get an investor
 • IQ Estimates — value and rent cross-referenced from Zillow, RentCast, Redfin, Realtor.com, and county records
 • 6 Strategy Rankings — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — scored and ranked for every property
 • Key Metrics — Cap Rate, Cash-on-Cash Return, DSCR, and monthly cash flow
-• DealMaker — adjust purchase price, financing, and expenses with live metric updates
+• Deal Maker — adjust purchase price, financing, and expenses with live metric updates
 • Reports — full property and appraisal reports, plus an editable Excel worksheet
 
 COVERAGE BEYOND THE MLS
@@ -43,7 +43,7 @@ Built for investors who want data-driven decisions without the spreadsheets — 
 
 SUBSCRIPTION OPTIONS:
 • Free: 3 property analyses per month
-• Pro Monthly: $34.99/month — unlimited analyses, full strategy breakdowns, DealMaker, saved properties, and the cash buyer + hard money lender directories
+• Pro Monthly: $34.99/month — unlimited analyses, full strategy breakdowns, Deal Maker, saved properties, and the cash buyer + hard money lender directories
 • Pro Annual: $349.99/year (about $29/month) — all Pro features at the best price
 
 Payment is charged to your Apple ID account at confirmation of purchase. Subscriptions automatically renew unless canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions in your Apple ID account settings after purchase.

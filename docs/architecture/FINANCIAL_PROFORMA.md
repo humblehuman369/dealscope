@@ -11,7 +11,7 @@
 | Tier | Monthly Price | Annual Price | Effective Monthly (Annual) |
 |------|--------------|-------------|---------------------------|
 | Starter (Free) | $0 | $0 | $0 |
-| Pro | $39.99 | $349.99 | $29.17 |
+| Pro | $34.99 | $349.99 | $29.17 |
 
 ### Net Revenue After Payment Processing
 
@@ -102,7 +102,7 @@ Each cold property search (cache miss) triggers parallel requests:
 
 ### Stripe Processing (Already in Blended ARPU)
 
-- Monthly: $1.46/txn (2.9% × $39.99 + $0.30)
+- Monthly: $1.31/txn (2.9% × $34.99 + $0.30)
 - Annual: $10.45/txn ($349.99 × 2.9% + $0.30) → $0.87/mo amortized
 
 ### App Store Commission (Already in Blended ARPU)

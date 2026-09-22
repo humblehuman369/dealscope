@@ -143,12 +143,12 @@ const PRICING_FAQ = [
   {
     question: 'Is there a free plan?',
     answer:
-      'Yes. Starter is free forever with property search, 2 analyses per month, Discovery scores, and snapshots across all six strategies.',
+      `Yes. Starter is free forever with property search, ${STARTER_VERDICTS_PER_MONTH} discoveries per month, Discovery scores, and snapshots across all six strategies.`,
   },
   {
     question: 'What does Pro include?',
     answer:
-      'Pro unlocks unlimited analyses, full calculation breakdowns, editable assumptions, sensitivity analysis, DealMaker offer scripts, Excel and PDF exports, and 10-year projections.',
+      'Pro unlocks unlimited analyses, full calculation breakdowns, editable assumptions, sensitivity analysis, Deal Maker offer scripts, Excel and PDF exports, and 10-year projections.',
   },
   {
     question: 'Is there a free trial for Pro?',

@@ -11,15 +11,15 @@
  * flip it only when the persona content is substantially unique, or the
  * family becomes near-duplicate content for Google.
  *
- * Copy rules: every reason is a verifiable product fact. Free = 2 analyses
- * and 10 saves a month. Pro features are marked "(Pro)". Directories and
+ * Copy rules: every reason is a verifiable product fact. Free = STARTER_VERDICTS_PER_MONTH
+ * discoveries and STARTER_SAVED_PROPERTIES saves a month (lib/claims.ts). Pro features are marked "(Pro)". Directories and
  * exports unlock with the first payment, never during trial. Nothing is
  * fabricated; when a source has no data the product says unavailable.
  */
 
 import type { FaqItem } from '@/lib/seo/metadata'
 import type { ProblemPersona } from '@/lib/seo/problem-pages'
-import { SPEED_CLAIM } from '@/lib/claims'
+import { SPEED_CLAIM, STARTER_SAVED_PROPERTIES, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
 
 export type PersonaKey =
   | ProblemPersona
@@ -183,9 +183,9 @@ export const PERSONA_PAGES: PersonaPage[] = [
         body: 'Most first-time investors learn a listing does not pencil after the showing. Fifteen seconds on the address replaces that afternoon, and the next one.',
       },
       {
-        id: 'ten-free',
-        heading: 'Ten analyses a month on the free account',
-        body: 'Enough to run every property from a weekend of searching, with up to ten saved so you can come back to the ones that held up.',
+        id: 'free-discoveries',
+        heading: `${STARTER_VERDICTS_PER_MONTH} discoveries a month on the free account`,
+        body: `Enough to check the properties that survive a weekend of searching, with up to ${STARTER_SAVED_PROPERTIES} saved so you can come back to the ones that held up.`,
       },
     ],
     reasonIds: ['free-verdict', 'three-sources', 'income-value', 'deal-gap', 'four-paths', 'six-strategies'],
@@ -202,7 +202,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
       {
         question: 'What happens after free Discovery?',
         answer:
-          'Nothing you do not choose. A free account adds ten analyses a month and ten saved properties. Pro unlocks editable assumptions, comps and exports if you want them.',
+          `Nothing you do not choose. A free account adds ${STARTER_VERDICTS_PER_MONTH} discoveries a month and ${STARTER_SAVED_PROPERTIES} saved properties. Pro unlocks editable assumptions, comps and exports if you want them.`,
       },
       {
         question: 'Is this investment advice?',

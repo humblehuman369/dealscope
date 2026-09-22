@@ -243,7 +243,7 @@ export default function MethodologyPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Editable assumptions</h2>
             <p className="text-slate-400">
-              Every assumption that drives the math is editable in DealMaker: down payment, interest
+              Every assumption that drives the math is editable in Deal Maker: down payment, interest
               rate, loan term, property taxes, insurance, vacancy, management fees, repairs, capex
               reserve, rehab budget, exit costs. Defaults are conservative. Sensitivity analysis
               lets you see how Discovery shifts when an assumption changes &mdash; so you can
@@ -255,7 +255,7 @@ export default function MethodologyPage() {
             <h2 className="text-xl font-bold text-white mb-3">Creative finance</h2>
             <p className="text-slate-400">
               Subject-To, seller carrybacks, 0% seconds, the Morby Method, and loan assumptions are
-              first-class structures in DealMaker. Plug in the seller&apos;s loan balance and rate
+              first-class structures in Deal Maker. Plug in the seller&apos;s loan balance and rate
               and the math runs against the actual capital stack &mdash; not just &ldquo;20% down,
               today&apos;s rate.&rdquo; Worked examples and risks are in the{' '}
               <Link
@@ -275,7 +275,7 @@ export default function MethodologyPage() {
                 <strong className="text-slate-200">Appreciation forecasts.</strong> We do not
                 project a specific price growth rate. Long-horizon appreciation is too sensitive to
                 macro conditions, local supply, and policy to be useful in a per-deal Discovery. You
-                can model your own appreciation assumption in DealMaker for the 10-year projection.
+                can model your own appreciation assumption in Deal Maker for the 10-year projection.
               </li>
               <li>
                 <strong className="text-slate-200">Tax strategy.</strong> Depreciation, 1031

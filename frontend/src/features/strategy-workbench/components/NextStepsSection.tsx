@@ -187,7 +187,7 @@ export function NextStepsSection({
                 text: (
                   <>
                     <strong style={{ color: 'var(--text-heading)' }}>Adjust the Numbers</strong>{' '}
-                    – Use the DealMaker tab to tweak parameters and see real-time changes.
+                    – Use the Deal Maker tab to tweak parameters and see real-time changes.
                   </>
                 ),
               },
