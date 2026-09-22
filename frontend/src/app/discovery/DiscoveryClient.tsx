@@ -1,0 +1,3482 @@
+'use client'
+
+/**
+ * IQ Verdict Page
+ * Route: /discovery?address=... OR /discovery?propertyId=...
+ *
+ * Shows the IQ Verdict with ranked strategy recommendations after analysis.
+ * Fetches real property data from the API including photos, beds, baths, sqft, and price.
+ *
+ * IMPORTANT: All calculations are done by the backend API.
+ * This page does NOT perform any financial calculations locally.
+ *
+ * ARCHITECTURE:
+ * - For SAVED properties (propertyId param): Loads from dealMakerStore
+ *   The DealMakerRecord contains all the assumptions and metrics from Deal Maker
+ * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
+import { IQProperty, IQStrategy, IQAnalysisResult } from '@/components/iq-verdict'
+import { getDealGapTier } from '@/components/iq-verdict/types'
+import {
+  IQEstimateSelector,
+  type IQEstimateSources,
+  type DataSourceId,
+} from '@/components/iq-verdict/IQEstimateSelector'
+import { parseAddressString } from '@/utils/formatters'
+import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
+import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
+import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { api, ApiError } from '@/lib/api-client'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import { fetchPropertyPhotos } from '@/services/photoService'
+import { PropertyPhotoGallery } from '@/components/property-details'
+import {
+  buildDealMakerSessionKey,
+  canonicalizeAddressForIdentity,
+  isInitialOverrideEligible,
+  isLikelyFullAddress,
+  readDealMakerOverrides,
+  writeDealMakerOverrides,
+} from '@/utils/addressIdentity'
+import { PriceTarget } from '@/lib/priceUtils'
+import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
+import { FinancingProvenanceNote } from '@/components/iq-verdict/FinancingProvenanceNote'
+import { InfoPopover } from '@/components/ui/InfoPopover'
+import { VideoModal } from '@/components/ui/VideoModal'
+import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
+import {
+  isListedStatus,
+  resolveMarketPriceFromPropertyResponse,
+} from '@/lib/resolveMarketPrice'
+import { trackEvent } from '@/lib/eventTracking'
+import { SPEED_CLAIM, STARTER_VERDICTS_PER_MONTH } from '@/lib/claims'
+import { VerdictEmailCapture } from '@/components/verdict/VerdictEmailCapture'
+import { newMetaEventId } from '@/lib/metaPixel'
+import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
+import { DiscoveryQuotaGate } from '@/components/discovery/DiscoveryQuotaGate'
+import { UpgradeWall } from '@/components/discovery/UpgradeWall'
+import { useStartProTrial } from '@/hooks/useStartProTrial'
+import {
+  BILLING_USAGE_QUERY_KEY,
+  deriveQuotaExceeded,
+  isQuotaExceededError,
+  nextResetIso,
+  quotaDetailFromError,
+  type BillingUsage,
+  type QuotaExceededDetail,
+} from '@/lib/analysisQuota'
+import { ANON_FUNNEL_COPY } from '@/lib/anonFunnelCopy'
+import {
+  discoveryQueriesNeedAuthRefetch,
+  invalidateDiscoveryQueriesAfterAuth,
+} from '@/lib/invalidateDiscoveryAfterAuth'
+import {
+  buildMotivatedSellerInsights,
+  type MotivatedSellerInsight,
+} from '@/lib/motivatedSellerInsights'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import {
+  buildVerdictAnalysisPayload,
+  toOccupancyFraction,
+  type VerdictPayloadBase,
+} from '@/utils/verdictPayload'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
+import { effectiveMarketValueFromRecord } from '@/lib/dealMakerOverrides'
+import { resolveSessionMonthlyRent } from '@/lib/sessionRent'
+import { resolveSelectedLiveRent } from '@/components/iq-verdict/IQEstimateSelector'
+import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
+import {
+  VerdictGapGuidance,
+  VerdictPositiveGuidance,
+} from '@/components/iq-verdict/VerdictGapGuidance'
+import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
+import { formatGapAmount, type FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
+import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
+import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
+import {
+  parseStrategyWorksheetSection,
+  type StrategyWorksheetSection,
+} from '@/components/iq-verdict/strategyWorksheetSection'
+import { retargetPlanContinuity } from '@/lib/makeItWorkContinuity'
+import { buildScenarioPayload, writeLastAppliedScenario } from '@/lib/dealStructures/loadScenario'
+import { encodeScenario } from '@/lib/dealStructures/scenarioPayload'
+import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
+import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
+import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
+import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
+import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
+import { HowThisCloses } from '@/components/discovery/HowThisCloses'
+import { VerdictGapSlider } from '@/components/discovery/VerdictGapSlider'
+import { VerdictCard } from '@/components/discovery/VerdictCard'
+import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
+import { MathTab } from '@/components/workflow/MathTab'
+import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
+import { WorkCheckError } from '@/components/workflow/WorkCheckError'
+import { fetchVerdictAnalysis, refetchVerdictAnalysis } from '@/lib/verdictAnalysisQuery'
+import { DealPageContent } from '@/app/deals/[id]/page'
+import {
+  isPlanView,
+  parseWorkflowV1View,
+  resolveWorkDealId,
+  workflowV1TabHref,
+} from '@/lib/workflowRoutes'
+import { summarizeSourceStatus } from '@/lib/sourceStatus'
+import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
+import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
+import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
+import { rememberPropertyPath } from '@/lib/checkoutReturn'
+import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
+import { V1_UI_FONT } from '@/components/workflow/v1-style'
+import {
+  formatSellerRead,
+  formatVerdictSentence,
+  sellerPathFromDealStructures,
+} from '@/lib/verdictCopy'
+import {
+  anyLeverClosesGap,
+  countVerdictSignals,
+  listingSignalsFromListing,
+  resolveCall,
+  type ListingSignalInput,
+} from '@/lib/verdictRules'
+import { useReviewPrompt } from '@/hooks/useReviewPrompt'
+import { usePersona } from '@/hooks/usePersona'
+import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
+import { Route } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Backend analysis response type — canonical shape from @dealscope/shared.
+// The backend serializes both snake_case and camelCase via Pydantic alias_generator,
+// so parseAnalysisResponse below handles both casings with nullish coalescing.
+// See: shared/src/types/verdict.ts
+import type { IQVerdictResponse } from '@dealscope/shared'
+
+// Fixed height reserves layout while the dynamic chunk loads, so the
+// scroll-into-view anchor is stable and there is no jank on expand.
+function WorkbenchSkeleton() {
+  return (
+    <div
+      aria-hidden
+      className="mx-0 sm:mx-5 mt-4 rounded-none sm:rounded-[14px] animate-pulse"
+      style={{
+        height: 720,
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+      }}
+    />
+  )
+}
+
+// Lazy — Discovery's initial bundle must not pay for the workbench (250 KB budget).
+const StrategyWorkbench = dynamic(
+  () => import('@/features/strategy-workbench').then((m) => m.StrategyWorkbench),
+  { ssr: false, loading: () => <WorkbenchSkeleton /> },
+)
+
+// Lazy — only loaded when the user opens "Make this work for me".
+const MakeItWorkWizard = dynamic(
+  () =>
+    import('@/components/iq-verdict/make-it-work/MakeItWorkWizard').then(
+      (m) => m.MakeItWorkWizard,
+    ),
+  { ssr: false },
+)
+
+const ActionPlanSlideOver = dynamic(
+  () => import('@/components/deal/ActionPlanSlideOver').then((m) => m.ActionPlanSlideOver),
+  { ssr: false },
+)
+
+interface MakeItWorkState {
+  open: boolean
+  source: 'tile' | 'cta' | 'save_tile'
+  focusFamily: FourWayFamily | null
+  saveOnly: boolean
+  /** Verdict body captured at open so the wizard re-runs the same property inputs. */
+  baseInputs: Record<string, unknown> | null
+}
+
+const MAKE_IT_WORK_CLOSED: MakeItWorkState = {
+  open: false,
+  source: 'cta',
+  focusFamily: null,
+  saveOnly: false,
+  baseInputs: null,
+}
+
+function InsightItem({
+  title,
+  detail,
+  delay = 0,
+}: {
+  title: ReactNode
+  detail?: ReactNode
+  delay?: number
+}) {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 300 + delay)
+    return () => clearTimeout(t)
+  }, [delay])
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 12,
+        alignItems: 'flex-start',
+        opacity: show ? 1 : 0,
+        transform: show ? 'translateY(0)' : 'translateY(6px)',
+        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    >
+      <div
+        aria-hidden
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: 'var(--color-cyan-electric)',
+          flexShrink: 0,
+          marginTop: 8,
+        }}
+      />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          className="text-[13px] sm:text-[16px] font-semibold"
+          style={{
+            margin: 0,
+            lineHeight: 1.4,
+            color: 'var(--text-heading)',
+          }}
+        >
+          {title}
+        </p>
+        {detail && (
+          <p
+            className="text-[12px] sm:text-[14px]"
+            style={{
+              margin: '6px 0 0',
+              lineHeight: 1.5,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {detail}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Helper to get strategy icon
+function getStrategyIcon(strategyId: string): string {
+  const icons: Record<string, string> = {
+    'long-term-rental': '🏠',
+    'short-term-rental': '🏨',
+    brrrr: '🔄',
+    'fix-and-flip': '🔨',
+    'house-hack': '🏡',
+    wholesale: '📋',
+  }
+  return icons[strategyId] || '📊'
+}
+
+// How long the pulsating loading logo may run before the page surfaces a
+// recovery screen. A hung fetch or a silently swallowed processing error
+// otherwise leaves the spinner up forever with no way out.
+const ANALYSIS_LOAD_TIMEOUT_MS = 60_000
+
+/**
+ * Interactive half of /discovery. Reads search params, so it is client-rendered;
+ * `page.tsx` wraps it in Suspense so the layout's explainer still prerenders.
+ */
+export function DiscoveryClient() {
+  const router = useRouter()
+  const searchParams = useAppSearchParams()
+  const queryClient = useQueryClient()
+  const { isAuthenticated, isLoading: authLoading } = useSession()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const workflowV1Layout = workflowV1
+  const [v1DiscoveryFailed, setV1DiscoveryFailed] = useState(false)
+  const { isPro } = useSubscription()
+  const { openAuthModal } = useAuthModal()
+  const { data: usage } = useQuery<BillingUsage>({
+    queryKey: BILLING_USAGE_QUERY_KEY,
+    queryFn: () => api.get<BillingUsage>('/api/v1/billing/usage'),
+    staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated && !isPro,
+  })
+  const used = usage?.searches_used
+  const limit = usage?.searches_limit
+  const plan = isPro || usage?.tier === 'pro' ? 'pro' : 'starter'
+  const quotaExceeded = deriveQuotaExceeded({ plan, used, limit })
+
+  // Check for saved property mode (when coming from Deal Maker with a propertyId)
+  const propertyIdParam = searchParams.get('propertyId')
+  const addressParam = searchParams.get('address') || ''
+  const hasCachedProperty = addressParam
+    ? !!queryClient.getQueryData(['property-search', canonicalizeAddressForIdentity(addressParam)])
+    : false
+
+  useEffect(() => {
+    if (!addressParam) return
+    rememberPropertyPath(`/discovery?${searchParams.toString()}`)
+  }, [addressParam, searchParams])
+  const cityParam = searchParams.get('city') || undefined
+  const stateParam = searchParams.get('state') || undefined
+  const zipCodeParam = searchParams.get('zip_code') || undefined
+  // Deal Maker Store (for saved properties)
+  const dealMakerStore = useDealMakerStore()
+  const { hasRecord } = useDealMakerReady()
+
+  // Determine if we're in "saved property mode" (use store) or "legacy mode" (use URL params)
+  const isSavedPropertyMode = !!propertyIdParam
+
+  // Check for Deal Maker override values
+  // Priority: URL params > sessionStorage (for toolbar navigation)
+  const urlPurchasePrice = searchParams.get('purchasePrice')
+  const urlMonthlyRent = searchParams.get('monthlyRent')
+  const urlPropertyTaxes = searchParams.get('propertyTaxes')
+  const urlInsurance = searchParams.get('insurance')
+  const urlArv = searchParams.get('arv')
+  const urlMarketValue = searchParams.get('marketValue')
+  const urlZpid = searchParams.get('zpid')
+  const conditionParam = searchParams.get('condition')
+  const locationParam = searchParams.get('location')
+
+  // Load sessionStorage data synchronously to avoid race conditions
+  // This function is called during render, so we use a try/catch
+  const getSessionData = useCallback(() => {
+    if (typeof window === 'undefined' || !addressParam || urlPurchasePrice) {
+      return null
+    }
+
+    try {
+      const data = readDealMakerOverrides(addressParam)
+      // Check if data is recent (within last hour)
+      const ts = data?.timestamp
+      if (
+        typeof ts === 'number' &&
+        !Number.isNaN(ts) &&
+        Date.now() - ts < 3600000 &&
+        isInitialOverrideEligible(data)
+      ) {
+        console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
+        return data
+      }
+    } catch (e) {
+      console.warn('Failed to load sessionStorage:', e)
+    }
+    return null
+  }, [addressParam, urlPurchasePrice])
+
+  // Use state to trigger re-render when sessionStorage is available (client-side only)
+  const [isClient, setIsClient] = useState(false)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Get session data (only on client) once per property context.
+  // This avoids feedback loops when this page itself writes overrides to sessionStorage.
+  const sessionData = useMemo(() => {
+    if (!isClient) return null
+    return getSessionData()
+  }, [isClient, getSessionData])
+
+  // Use URL params only for purchasePrice — sessionStorage purchasePrice is auto-written
+  // by this page's own analysis output, so reading it back creates a feedback loop where
+  // the previous Target Buy becomes the next analysis's purchase_price override.
+  // DealMaker always navigates here with URL params; saved-property mode uses dealMakerStore directly.
+  const overridePurchasePrice = urlPurchasePrice || null
+  // Keep Verdict default calculations anchored to IQ Estimate rent unless an explicit
+  // URL override is provided (e.g., coming directly from Deal Maker).
+  const overrideMonthlyRent = urlMonthlyRent
+  const overridePropertyTaxes =
+    urlPropertyTaxes ??
+    (sessionData?.propertyTaxes != null ? String(sessionData.propertyTaxes) : null)
+  const overrideInsurance =
+    urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
+  const overrideArv = urlArv ?? (sessionData?.arv != null ? String(sessionData.arv) : null)
+  const overrideZpidRaw = urlZpid || sessionData?.zpid || null
+  const overrideZpid = typeof overrideZpidRaw === 'string' ? overrideZpidRaw : null
+
+  // Has any overrides (from URL or session)
+  const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
+
+  // Shared property data cache (React Query) — prevents redundant API calls
+  // when navigating between Verdict ↔ Strategy for the same property
+  const { fetchProperty } = usePropertyData()
+
+  const { savedPropertyId, hasChecked, checkFailed, refreshSavedCheck, save: saveProperty } = useSaveProperty({
+    displayAddress: addressParam,
+    propertySnapshot:
+      overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
+  })
+  const { record: dealSnapshotRecord } = useDealSnapshot(savedPropertyId)
+
+  // State for property data and analysis
+  const [property, setProperty] = useState<IQProperty | null>(null)
+  const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
+  const [strMarketData, setStrMarketData] = useState<{
+    str_market_stats?: any
+    str_regulatory?: any
+  } | null>(null)
+  const [isLoading, setIsLoading] = useState(() => {
+    if (!addressParam) return true
+    const canonical = canonicalizeAddressForIdentity(addressParam)
+    return !queryClient.getQueryData(['property-search', canonical])
+  })
+  const [error, setError] = useState<string | null>(null)
+  // True when the loading state has exceeded ANALYSIS_LOAD_TIMEOUT_MS.
+  const [loadTimedOut, setLoadTimedOut] = useState(false)
+  // Incremented by the timeout screen's "Try Again" to re-run the fetch effect.
+  const [retryNonce, setRetryNonce] = useState(0)
+  // Set when the backend rejects the search with a usage-limit 402/403 —
+  // 'free' = monthly Starter cap, 'anonymous' = signed-out daily IP cap.
+  const [limitError, setLimitError] = useState<'free' | 'anonymous' | null>(null)
+  const [quotaWall, setQuotaWall] = useState<QuotaExceededDetail | null>(null)
+  const discoveryReturnTo = addressParam
+    ? `/discovery?${searchParams.toString()}`
+    : '/search'
+  const { startTrial, error: trialError } = useStartProTrial({
+    returnTo: discoveryReturnTo,
+    source: 'upgrade_wall',
+  })
+  const tourReady = Boolean(property && analysis && !error && !limitError && !quotaExceeded)
+  const {
+    phase: tourPhase,
+    joyrideIndex: tourJoyrideIndex,
+    setPhase: setTourPhase,
+    setJoyrideIndex: setTourJoyrideIndex,
+    dismissTour,
+  } = useWorkbenchTour({ ready: tourReady && !workflowV1Layout, isAuthenticated })
+  const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
+  const [listingSignals, setListingSignals] = useState<ListingSignalInput | null>(null)
+  const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
+  const backendFullAddressRef = useRef('')
+
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
+  const [showMethodologySheet, setShowMethodologySheet] = useState(false)
+  const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
+  const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
+  const [makeItWork, setMakeItWork] = useState<MakeItWorkState>(MAKE_IT_WORK_CLOSED)
+
+  // IQ Estimate 3-value sources (populated from API response)
+  const [iqSources, setIqSources] = useState<IQEstimateSources>({
+    value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+  })
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
+  const dataSourcesRef = useRef<HTMLDivElement>(null)
+  const [showDealGapVideo, setShowDealGapVideo] = useState(false)
+  const [showAllInsights, setShowAllInsights] = useState(true)
+  const [actionPlanOpen, setActionPlanOpen] = useState(false)
+
+  // Level 3 workbench (R4 Stage 2). Null = collapsed. The workbench mounts
+  // only when this is set ({request && <StrategyWorkbench/>}), never via
+  // conditional hooks — see React #310 note below.
+  const [workbenchRequest, setWorkbenchRequest] = useState<{
+    address: string
+    strategyId: string | null
+    section: StrategyWorksheetSection | null
+    scenario: string | null
+  } | null>(null)
+  const workbenchSectionRef = useRef<HTMLDivElement>(null)
+  const { preferredStrategyIds } = usePersona()
+
+  // Stores the static analysis inputs so the verdict can be re-calculated
+  // when the user switches data source without re-fetching property data
+  const analysisInputsRef = useRef<Record<string, any> | null>(null)
+  const hasRecordedAnalysisRef = useRef(false)
+
+  // Guards against race conditions when rapidly switching between properties.
+  // Each address change increments the counter; stale async responses are discarded.
+  const fetchGenerationRef = useRef(0)
+  const wasAuthenticatedRef = useRef<boolean | null>(null)
+
+  // Reset recording flag when user navigates to a different property (new address or propertyId)
+  useEffect(() => {
+    hasRecordedAnalysisRef.current = false
+  }, [addressParam, propertyIdParam])
+
+  // Analytics: old-layout verdict. V1 fires from VerdictCard. Wait for the
+  // same call-rules inputs so `call` is present even though the old page
+  // does not show the chip. Once per property per session.
+  useEffect(() => {
+    if (!workflowV1Ready || workflowV1) return
+    if (!addressParam && !propertyIdParam) return
+    if (!property || !analysis) return
+    const incomeValue = analysis.incomeValue ?? property.price
+    const dealGapPct =
+      typeof analysis.dealGapPercent === 'number' && Number.isFinite(analysis.dealGapPercent)
+        ? analysis.dealGapPercent
+        : 0
+    const signals = listingSignals ?? listingSignalsFromListing(null)
+    const signalBreakdown = countVerdictSignals(signals)
+    const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
+    const call = resolveCall(callGap, signalBreakdown.count, {
+      listPrice: property.price,
+      incomeValue,
+    })
+    const propertyId =
+      propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+    const key = `dgiq_verdict_viewed_v1:${propertyId || addressParam}`
+    try {
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch {
+      /* private mode */
+    }
+    trackEvent(
+      'verdict_viewed',
+      {
+        call,
+        gap: callGap,
+        signals: signalBreakdown.count,
+        closes: anyLeverClosesGap(analysis.dealStructures?.paths),
+        has_address: !!addressParam,
+        has_property_id: !!propertyIdParam,
+        layout: layoutFromRender(false),
+        ...(propertyId ? { property_id: propertyId } : {}),
+        ...(property.state ? { property_state: property.state } : {}),
+      },
+      newMetaEventId(),
+    )
+  }, [
+    addressParam,
+    propertyIdParam,
+    workflowV1,
+    workflowV1Ready,
+    property,
+    analysis,
+    listingSignals,
+  ])
+
+  // Record one analysis for Starter usage when verdict loads (address or saved property)
+  useEffect(() => {
+    if (
+      !isLoading &&
+      property &&
+      analysis &&
+      (addressParam || propertyIdParam) &&
+      isAuthenticated &&
+      !isPro &&
+      !hasRecordedAnalysisRef.current
+    ) {
+      hasRecordedAnalysisRef.current = true
+      api
+        .post('/api/v1/billing/usage/record-analysis')
+        .then(() => queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] }))
+        .catch(() => {})
+    }
+  }, [
+    isLoading,
+    property,
+    analysis,
+    addressParam,
+    propertyIdParam,
+    isAuthenticated,
+    isPro,
+    queryClient,
+  ])
+
+  // Native in-app review prompt at the peak-satisfaction moment: the first
+  // verdict the user receives. No-op on web; requested once per device (the
+  // hook + the OS both throttle), so this can safely fire on every verdict.
+  const requestReview = useReviewPrompt()
+  useEffect(() => {
+    if (!isLoading && property && analysis && (addressParam || propertyIdParam)) {
+      void requestReview()
+    }
+  }, [isLoading, property, analysis, addressParam, propertyIdParam, requestReview])
+
+  // Header photo/zpid without a property fetch. The analysis request is gated
+  // on quotaExceeded, so AppHeader would otherwise never get a zpid/photo.
+  useEffect(() => {
+    if (!quotaExceeded || !addressParam) return
+    const parsed = parseAddressString(addressParam)
+    writeDealMakerOverrides(
+      addressParam,
+      {
+        city: cityParam ?? parsed.city,
+        state: stateParam ?? parsed.state,
+        zip: zipCodeParam ?? parsed.zip,
+        zpid: overrideZpid,
+      },
+      { origin: 'verdict_sync' },
+    )
+  }, [quotaExceeded, addressParam, cityParam, stateParam, zipCodeParam, overrideZpid])
+
+  // Load from dealMakerStore for saved properties
+  // Check both hasRecord AND if the loaded record is for the correct property
+  // This handles navigation between different saved properties
+  useEffect(() => {
+    if (isSavedPropertyMode && propertyIdParam) {
+      const isWrongProperty = dealMakerStore.propertyId !== propertyIdParam
+      if (!hasRecord || isWrongProperty) {
+        dealMakerStore.loadRecord(propertyIdParam)
+      }
+    }
+  }, [isSavedPropertyMode, propertyIdParam, hasRecord, dealMakerStore])
+
+  // Fetch property data from API (or use store data for saved properties)
+  useEffect(() => {
+    const generation = ++fetchGenerationRef.current
+
+    async function fetchPropertyData() {
+      const canonical = addressParam ? canonicalizeAddressForIdentity(addressParam) : ''
+      const hasCachedProperty = canonical
+        ? !!queryClient.getQueryData(['property-search', canonical])
+        : false
+      if (quotaExceeded && addressParam && !hasCachedProperty) {
+        return
+      }
+
+      // For saved property mode, wait for store to load then use that data
+      if (isSavedPropertyMode) {
+        if (!hasRecord) {
+          // loadRecord failed (often a 401 before the magic-link session is
+          // readable). Do not spin the IQ logo forever — fall through to the
+          // address in the URL when we have one.
+          if (dealMakerStore.isLoading) return
+          if (dealMakerStore.error && !addressParam) {
+            setError(dealMakerStore.error)
+            setIsLoading(false)
+            return
+          }
+          if (!dealMakerStore.error) return
+        }
+
+        // Use data from the dealMakerStore
+        const record = dealMakerStore.record!
+        // We need to fetch property details still, but use store values for calculations
+        // The propertyId should be used to load from saved properties API
+        // For now, continue to regular flow but use store values as overrides
+      }
+
+      if (!addressParam && !isSavedPropertyMode) {
+        setError('No address provided')
+        setIsLoading(false)
+        return
+      }
+
+      // Reset stale state from previous property before fetching
+      setProperty(null)
+      setAnalysis(null)
+      setPropertyPhotos([])
+      setListingSignals(null)
+      setMotivatedInsights([])
+      setIqSources({
+        value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
+        rent: { iq: null, zillow: null, rentcast: null, redfin: null },
+      })
+
+      try {
+        if (!hasCachedProperty) setIsLoading(true)
+        setError(null)
+        setLimitError(null)
+        setQuotaWall(null)
+
+        // Fetch property data (React Query cache — shared with Strategy page)
+        const data = await fetchProperty(addressParam, {
+          city: cityParam,
+          state: stateParam,
+          zip_code: zipCodeParam,
+          ...(overrideZpid ? { zpid: overrideZpid } : {}),
+        })
+
+        // Discard if a newer address search has started since this fetch began
+        if (generation !== fetchGenerationRef.current) return
+
+        // One session rent: saved override if set, else the selected live source.
+        // Frozen record.monthly_rent must not win over live IQ.
+        const iqSourcesForRent = mapPropertyToIQSources(data, {
+          marketValueOverride: dealSnapshotRecord?.market_value_override,
+          monthlyRentOverride: dealSnapshotRecord?.monthly_rent_override,
+        })
+        const monthlyRent =
+          resolveSessionMonthlyRent({
+            savedOverride:
+              dealSnapshotRecord?.monthly_rent_override ??
+              dealMakerStore.record?.monthly_rent_override,
+            selectedLiveSource: resolveSelectedLiveRent(iqSourcesForRent),
+          }) ??
+          data.rentals?.monthly_rent_ltr ??
+          0
+
+        const price = resolveMarketPriceFromPropertyResponse(data, {
+          fallback: 1,
+          marketValueOverride: dealSnapshotRecord?.market_value_override,
+        })
+        const zestimate = data.valuations?.zestimate ?? null
+        const currentAvm = data.valuations?.current_value_avm ?? null
+        const taxAssessed = data.valuations?.tax_assessed_value ?? null
+        const isListed = isListedStatus(data.listing?.listing_status)
+
+        const propertyTaxes = data.market?.property_taxes_annual ?? undefined
+        const insurance = data.market?.insurance_annual ?? undefined
+
+        // Get STR data if available (use null checks to properly handle 0 values)
+        const averageDailyRate = data.rentals?.average_daily_rate ?? null
+        const occupancyRate = data.rentals?.occupancy_rate ?? null
+
+        // Get ARV if available (for flip/BRRRR strategies)
+        const arv = data.valuations?.arv ?? null
+
+        // Prefer backend-resolved full address to avoid URL/address drift in UI.
+        const backendFullAddress = data.address?.full_address || ''
+        backendFullAddressRef.current = backendFullAddress
+        const parsedAddress = parseAddressString(backendFullAddress || addressParam)
+
+        // Build IQProperty from API data with enriched data for dynamic scoring
+        const propertyData: IQProperty = {
+          id: data.property_id,
+          zpid: data.zpid ?? undefined,
+          address:
+            data.address?.street || parsedAddress.street || backendFullAddress || addressParam,
+          city: data.address?.city || parsedAddress.city,
+          state: data.address?.state || parsedAddress.state,
+          zip: data.address?.zip_code || parsedAddress.zip,
+          beds: data.details?.bedrooms || FALLBACK_PROPERTY.beds,
+          baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
+          sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
+          price: Math.round(price),
+          zestimate: zestimate != null && zestimate > 0 ? Math.round(zestimate) : undefined,
+          imageUrl: undefined, // Set when photo API returns real photos
+          yearBuilt: data.details?.year_built ?? undefined,
+          lotSize: data.details?.lot_size ?? undefined,
+          propertyType: (data.details?.property_type ?? undefined) as IQProperty['propertyType'],
+          listingStatus: data.listing?.listing_status || undefined,
+          // Enriched data for dynamic scoring
+          monthlyRent: monthlyRent,
+          propertyTaxes: propertyTaxes ?? undefined,
+          insurance: insurance ?? undefined,
+          averageDailyRate: averageDailyRate ?? undefined,
+          // Backend emits occupancy as a 0-1 fraction; the old `/100` here
+          // corrupted 0.75 into 0.0075. toOccupancyFraction handles either
+          // convention and preserves a legitimate 0.
+          occupancyRate: toOccupancyFraction(occupancyRate) ?? undefined,
+          // AirROI per-property monthly STR revenue — drives canonical STR
+          // revenue in both the offline calculator and the verdict payload.
+          mashvisorMonthlyStrRevenue:
+            data.rentals?.str_market_stats?.monthly_revenue_per_bed ?? undefined,
+          arv: arv ?? undefined,
+          latitude: data.address?.latitude ?? undefined,
+          longitude: data.address?.longitude ?? undefined,
+        }
+
+        setProperty(propertyData)
+        setListingSignals(listingSignalsFromListing(data.listing))
+        setStrMarketData({
+          str_market_stats: data.rentals?.str_market_stats ?? null,
+          str_regulatory: data.rentals?.str_regulatory ?? null,
+        })
+        setMotivatedInsights(buildMotivatedSellerInsights(data as any))
+
+        setIqSources(
+          mapPropertyToIQSources(data, {
+            marketValueOverride: dealSnapshotRecord?.market_value_override,
+            monthlyRentOverride: dealSnapshotRecord?.monthly_rent_override,
+          }),
+        )
+
+        // Store property info to sessionStorage so global AppHeader can access it
+        try {
+          const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+          const fullAddress = [propertyData.address, propertyData.city, stateZip]
+            .filter(Boolean)
+            .join(', ')
+          const headerPatch = {
+            city: propertyData.city,
+            state: propertyData.state,
+            zip: propertyData.zip,
+            zpid: propertyData.zpid != null ? String(propertyData.zpid) : undefined,
+            propertyId: propertyData.id,
+            beds: propertyData.beds,
+            baths: propertyData.baths,
+            sqft: propertyData.sqft,
+            yearBuilt: propertyData.yearBuilt,
+            price: propertyData.price,
+            listingStatus: propertyData.listingStatus || null,
+            daysOnMarket: data.listing?.days_on_market ?? null,
+            description: data.listing?.description ?? null,
+            latitude: propertyData.latitude,
+            longitude: propertyData.longitude,
+          }
+          const resolvedAddress = fullAddress || addressParam
+          writeDealMakerOverrides(resolvedAddress, headerPatch, { origin: 'verdict_sync' })
+          if (
+            addressParam &&
+            canonicalizeAddressForIdentity(addressParam) !==
+              canonicalizeAddressForIdentity(resolvedAddress)
+          ) {
+            writeDealMakerOverrides(addressParam, headerPatch, { origin: 'verdict_sync' })
+          }
+        } catch {
+          // Ignore storage errors
+        }
+
+        // Fetch analysis from backend API (all calculations done server-side)
+        // Priority for calculation values:
+        // 1. DealMakerStore (for saved properties) - has locked assumptions from Deal Maker
+        // 2. URL param overrides (legacy mode for unsaved properties)
+        // 3. Property data from API
+
+        let listPriceForCalc: number
+        let rentForCalc: number
+        let taxesForCalc: number
+        let insuranceForCalc: number | null
+        let arvForCalc: number | null
+
+        if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
+          // Use values from DealMakerRecord for expenses / ARV. Rent follows the
+          // session rule (override else live source), not frozen monthly_rent.
+          const record = dealMakerStore.record
+          listPriceForCalc = propertyData.price
+          rentForCalc = monthlyRent
+          taxesForCalc = record.annual_property_tax
+          insuranceForCalc = record.annual_insurance
+          arvForCalc = record.arv
+
+          console.log('[IQ Verdict] Using DealMakerStore values:', {
+            list_price: listPriceForCalc,
+            monthly_rent: rentForCalc,
+            property_taxes: taxesForCalc,
+            insurance: insuranceForCalc,
+            arv: arvForCalc,
+            source: 'dealMakerStore',
+          })
+        } else {
+          // Legacy mode: use URL param overrides or property data
+          // list_price stays as the original market/asking price
+          const persistedMarket = effectiveMarketValueFromRecord(dealSnapshotRecord)
+          listPriceForCalc = urlMarketValue
+            ? parseFloat(urlMarketValue)
+            : persistedMarket != null && persistedMarket > 0
+              ? persistedMarket
+              : propertyData.price
+          rentForCalc = overrideMonthlyRent
+            ? parseFloat(overrideMonthlyRent)
+            : monthlyRent
+          taxesForCalc = overridePropertyTaxes
+            ? parseFloat(overridePropertyTaxes)
+            : propertyData.propertyTaxes || 0
+          insuranceForCalc = overrideInsurance
+            ? parseFloat(overrideInsurance)
+            : (propertyData.insurance ?? null)
+          arvForCalc = overrideArv
+            ? parseFloat(overrideArv)
+            : dealSnapshotRecord?.arv && dealSnapshotRecord.arv > 0
+              ? dealSnapshotRecord.arv
+              : (propertyData.arv ?? null)
+
+          console.log('[IQ Verdict] Using legacy override values:', {
+            list_price: listPriceForCalc,
+            monthly_rent: rentForCalc,
+            property_taxes: taxesForCalc,
+            insurance: insuranceForCalc,
+            arv: arvForCalc,
+            source: hasLegacyOverrides ? 'urlParams' : 'propertyData',
+          })
+        }
+
+        // Apply condition / location slider adjustments (from IQ Gateway)
+        if (conditionParam) {
+          const cond = getConditionAdjustment(Number(conditionParam))
+          // Turnkey premium increases effective list price; rehab doesn't change list price
+          // (rehab cost is handled downstream in strategy page)
+          listPriceForCalc += cond.pricePremium
+        }
+        if (locationParam) {
+          const loc = getLocationAdjustment(Number(locationParam))
+          rentForCalc = Math.round(rentForCalc * loc.rentMultiplier)
+        }
+
+        // Fire analysis + photo resolution in parallel (both depend on property
+        // search response, but not on each other)
+        // Send user's purchase price override separately so the backend
+        // keeps list_price as market/asking price for deal gap calculation
+        const purchasePriceOverride = overridePurchasePrice
+          ? parseFloat(overridePurchasePrice)
+          : isSavedPropertyMode && hasRecord && dealMakerStore.record
+            ? dealMakerStore.record.buy_price
+            : undefined
+
+        const payloadBase: VerdictPayloadBase = {
+          listPrice: listPriceForCalc,
+          monthlyRent: rentForCalc,
+          propertyTaxes: taxesForCalc,
+          insurance: insuranceForCalc,
+          hoaFeesMonthly: data.market?.hoa_fees_monthly ?? null,
+          bedrooms: propertyData.beds,
+          bathrooms: propertyData.baths,
+          sqft: propertyData.sqft,
+          arv: arvForCalc,
+          averageDailyRate: propertyData.averageDailyRate ?? null,
+          occupancyRate: propertyData.occupancyRate ?? null,
+          monthlyStrRevenue: propertyData.mashvisorMonthlyStrRevenue ?? null,
+          isListed: !!isListed,
+          zestimate: zestimate ?? undefined,
+          currentValueAvm: currentAvm ?? undefined,
+          taxAssessedValue: taxAssessed ?? undefined,
+          listingStatus: data.listing?.listing_status || undefined,
+          daysOnMarket: data.listing?.days_on_market ?? undefined,
+          sellerType: data.listing?.seller_type || undefined,
+          isForeclosure: data.listing?.is_foreclosure || false,
+          isBankOwned: data.listing?.is_bank_owned || false,
+          isFsbo: data.listing?.is_fsbo || false,
+          marketTemperature: data.market?.market_stats?.market_temperature || undefined,
+          priceReductions: data.listing?.price_reduction_count ?? 0,
+          sellerMotivationScore: data.seller_motivation?.score ?? undefined,
+          isAbsenteeOwner: data.listing?.is_absentee_owner ?? undefined,
+          ownerState: data.listing?.owner_state ?? data.owner_state ?? undefined,
+          state: propertyData.state || undefined,
+          dismissedFamilies: getDismissedFamilies(),
+        }
+        const savedExpenseOverrides =
+          isSavedPropertyMode && dealMakerStore.record
+            ? {
+                propertyTaxes: dealMakerStore.record.annual_property_tax,
+                insurance: dealMakerStore.record.annual_insurance,
+                vacancyRate: Math.round((dealMakerStore.record.vacancy_rate ?? 0.05) * 100),
+                managementRate: Math.round((dealMakerStore.record.management_pct ?? 0) * 100),
+                maintenanceRate: dealMakerStore.record.maintenance_pct,
+                capexRate: dealMakerStore.record.capex_pct,
+                monthlyHoa: dealMakerStore.record.monthly_hoa,
+              }
+            : null
+        const analysisBody = buildVerdictAnalysisPayload(payloadBase, {
+          ...(purchasePriceOverride != null ? { purchasePrice: purchasePriceOverride } : {}),
+          ...(savedExpenseOverrides ?? {}),
+        })
+        analysisInputsRef.current = analysisBody
+
+        const analysisData = await fetchVerdictAnalysis<
+          IQVerdictResponse & Record<string, any>
+        >(queryClient, addressParam, analysisBody)
+
+        // Discard if a newer address search has started since this fetch began
+        if (generation !== fetchGenerationRef.current) return
+
+        // Diagnostic logging — traces exact key formats from backend
+        console.log(
+          '[IQ Verdict] Raw backend response:',
+          JSON.stringify(analysisData).slice(0, 500),
+        )
+        console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
+
+        try {
+          const analysisResult = parseAnalysisResponse(
+            analysisData,
+            data?.property_id || propertyData?.id,
+          )
+          setAnalysis(analysisResult)
+
+          // Single source of truth: persist backend list_price, income_value, purchase_price
+          // to the same key Strategy reads (dealMaker_${canonicalAddress}) so both pages
+          // show the same Market, Target Buy, and Income Value when navigating Verdict → Strategy.
+          const backendListPrice = analysisData.list_price ?? analysisData.listPrice
+          const backendIncomeValue = analysisData.income_value ?? analysisData.incomeValue
+          const backendPurchasePrice = analysisData.purchase_price ?? analysisData.purchasePrice
+          // Persist to sessionStorage so Strategy page (and toolbar nav) get same values
+          try {
+            const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+            const parts = [propertyData.address, propertyData.city, stateZip].filter(Boolean)
+            const canonicalAddress = canonicalizeAddressForIdentity(parts.join(', '))
+            if (canonicalAddress) {
+              const sessionKey = buildDealMakerSessionKey(canonicalAddress)
+              const existing = sessionStorage.getItem(sessionKey)
+              const parsed = existing ? JSON.parse(existing) : {}
+              if (backendListPrice != null)
+                parsed.listPrice = isListed ? backendListPrice : propertyData.price
+              if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
+              if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
+              parsed.timestamp = Date.now()
+              parsed.canonicalAddress = canonicalAddress
+              // For saved properties, write full Deal Maker overrides so Strategy recalculates with adjusted values
+              if (isSavedPropertyMode && dealMakerStore.record) {
+                const record = dealMakerStore.record
+                parsed.address = canonicalAddress
+                parsed.purchasePrice = record.buy_price
+                parsed.buyPrice = record.buy_price
+                parsed.propertyTaxes = record.annual_property_tax
+                parsed.insurance = record.annual_insurance
+                parsed.arv = record.arv
+                parsed.rehabBudget = record.rehab_budget
+                // Keep parsed.listPrice from backendListPrice (set above) — backend analysis is single source of truth
+                parsed.downPayment = Math.round((record.down_payment_pct ?? 0.2) * 100)
+                parsed.closingCosts = Math.round((record.closing_costs_pct ?? 0.03) * 100)
+                parsed.interestRate = Math.round((record.interest_rate ?? 0.06) * 1000) / 10
+                parsed.loanTerm = record.loan_term_years ?? 30
+                parsed.vacancyRate = Math.round((record.vacancy_rate ?? 0.05) * 100)
+                parsed.managementRate = Math.round((record.management_pct ?? 0) * 100)
+              }
+              writeDealMakerOverrides(canonicalAddress, parsed, {
+                origin: isSavedPropertyMode ? 'saved_property' : 'verdict_sync',
+              })
+            }
+          } catch {
+            // Ignore storage errors
+          }
+
+          // For listed properties, the backend list_price is the authoritative asking price.
+          // For off-market, the price from the cascade (IQ Estimate default) is kept so the
+          // Data Sources selector drives Market Price.
+          if (isListed && backendListPrice != null && backendListPrice > 0) {
+            setProperty((prev) => {
+              if (!prev) return null
+              return { ...prev, price: Math.round(backendListPrice) } as IQProperty
+            })
+            try {
+              const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+              const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                .filter(Boolean)
+                .join(', ')
+              writeDealMakerOverrides(
+                fullAddress || addressParam,
+                {
+                  listPrice: backendListPrice,
+                  price: Math.round(backendListPrice),
+                },
+                { origin: 'verdict_sync' },
+              )
+            } catch {
+              // Ignore storage errors
+            }
+          }
+
+          // Phase 2: non-blocking photo fetch — do not await; update property when done
+          if (propertyData.zpid) {
+            fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then(
+              (result) => {
+                if (generation !== fetchGenerationRef.current) return
+                if (result.status === 'success' && result.photos.length > 0) {
+                  setPropertyPhotos(result.photos)
+                  setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
+                }
+                try {
+                  const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
+                  const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                    .filter(Boolean)
+                    .join(', ')
+                  const photoPatch = {
+                    photoUrl: result.photos[0] ?? null,
+                    photoCount: result.photos.length,
+                    photos: result.photos,
+                    propertyId: propertyData.id,
+                  }
+                  const resolvedPhotoAddress = fullAddress || addressParam
+                  writeDealMakerOverrides(resolvedPhotoAddress, photoPatch, {
+                    origin: 'verdict_sync',
+                  })
+                  if (
+                    addressParam &&
+                    canonicalizeAddressForIdentity(addressParam) !==
+                      canonicalizeAddressForIdentity(resolvedPhotoAddress)
+                  ) {
+                    writeDealMakerOverrides(addressParam, photoPatch, { origin: 'verdict_sync' })
+                  }
+                } catch {
+                  /* ignore */
+                }
+              },
+            )
+          }
+        } catch (analysisErr) {
+          console.error('Error fetching analysis:', analysisErr)
+          // Without an error the page renders the loading logo indefinitely
+          // (isLoading is false but analysis never arrives).
+          if (generation === fetchGenerationRef.current) {
+            setError('We could not process the analysis for this property. Please try again.')
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching property:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load property')
+        if (isQuotaExceededError(err)) {
+          const usage = queryClient.getQueryData<BillingUsage>(BILLING_USAGE_QUERY_KEY)
+          setQuotaWall(quotaDetailFromError(err, usage))
+          setLimitError('free')
+          trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
+        } else if (err instanceof ApiError && err.status === 403) {
+          const limitType = err.detail?.limit_type
+          const code = err.code ?? err.detail?.code
+          if (
+            limitType === 'anonymous_analyses' ||
+            limitType === 'anonymous_ip_cap' ||
+            code === 'ANONYMOUS_LIMIT_REACHED'
+          ) {
+            setLimitError('anonymous')
+            trackEvent('analysis_limit_reached', { kind: 'anonymous_daily' })
+          }
+        }
+
+        // Parse address from URL parameter to preserve city/state/zip in fallback
+        const parsedFallback = parseAddressString(addressParam)
+
+        // Address-only fallback. Quota hits must not invent beds/price.
+        const isQuota =
+          isQuotaExceededError(err) ||
+          (err instanceof ApiError &&
+            err.status === 403 &&
+            (err.detail?.limit_type === 'anonymous_analyses' ||
+              err.detail?.limit_type === 'anonymous_ip_cap' ||
+              err.code === 'ANONYMOUS_LIMIT_REACHED' ||
+              err.detail?.code === 'ANONYMOUS_LIMIT_REACHED'))
+        const fallbackProperty: IQProperty = {
+          address: parsedFallback.street || addressParam || 'Unknown Address',
+          city: parsedFallback.city,
+          state: parsedFallback.state,
+          zip: parsedFallback.zip,
+          beds: isQuota ? 0 : FALLBACK_PROPERTY.beds,
+          baths: isQuota ? 0 : FALLBACK_PROPERTY.baths,
+          sqft: isQuota ? 0 : FALLBACK_PROPERTY.sqft,
+          price: isQuota ? 0 : FALLBACK_PROPERTY.price,
+          imageUrl: undefined,
+        }
+        setProperty(fallbackProperty)
+        setListingSignals(listingSignalsFromListing(null))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPropertyData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    addressParam,
+    isSavedPropertyMode,
+    hasRecord,
+    // Address-mode must not refetch when a deal record appears after save —
+    // that wipes analysis, unmounts Plan, and lets the Discovery tab's
+    // prefetched bare URL win the in-flight navigation.
+    isSavedPropertyMode ? dealMakerStore.record : null,
+    isSavedPropertyMode ? dealMakerStore.error : null,
+    isSavedPropertyMode ? dealMakerStore.isLoading : null,
+    isClient,
+    overridePurchasePrice,
+    overrideMonthlyRent,
+    overridePropertyTaxes,
+    overrideInsurance,
+    overrideArv,
+    urlMarketValue,
+    retryNonce,
+    quotaExceeded,
+  ])
+
+  // Signed-out 403s stay in the React Query cache after the modal succeeds.
+  // When auth flips to signed in (or we remount with a stale error), drop
+  // those queries and re-run the fetch as the signed-in user.
+  useEffect(() => {
+    if (quotaExceeded) return
+    if (authLoading) return
+    const wasAuthenticated = wasAuthenticatedRef.current
+    wasAuthenticatedRef.current = isAuthenticated
+    if (!isAuthenticated || !addressParam) return
+    const justSignedIn = wasAuthenticated === false
+    const stale = discoveryQueriesNeedAuthRefetch(queryClient, addressParam, limitError)
+    if (!justSignedIn && !stale) return
+    invalidateDiscoveryQueriesAfterAuth(queryClient, addressParam)
+    setLimitError(null)
+    setQuotaWall(null)
+    setError(null)
+    setRetryNonce((n) => n + 1)
+    void refreshSavedCheck()
+  }, [authLoading, isAuthenticated, addressParam, queryClient, refreshSavedCheck, limitError, quotaExceeded])
+
+  // Watchdog for the loading state: if neither data nor an error arrives
+  // within the timeout, show a recovery screen instead of spinning forever.
+  const awaitingAnalysis = !quotaExceeded && !limitError && (isLoading || (!analysis && !error))
+  useEffect(() => {
+    if (!awaitingAnalysis) {
+      setLoadTimedOut(false)
+      return
+    }
+    const timer = window.setTimeout(() => setLoadTimedOut(true), ANALYSIS_LOAD_TIMEOUT_MS)
+    return () => window.clearTimeout(timer)
+  }, [awaitingAnalysis, addressParam, propertyIdParam, retryNonce])
+
+  const retryAnalysis = useCallback(() => {
+    setLoadTimedOut(false)
+    setError(null)
+    setRetryNonce((n) => n + 1)
+  }, [])
+
+  // Parse backend analysis response into IQAnalysisResult
+  const parseAnalysisResponse = useCallback(
+    (analysisData: Record<string, any>, propertyId?: string): IQAnalysisResult => ({
+      propertyId: propertyId || property?.id,
+      analyzedAt: new Date().toISOString(),
+      dealScore: analysisData.deal_score ?? analysisData.dealScore ?? 0,
+      dealVerdict: (analysisData.deal_verdict ??
+        analysisData.dealVerdict ??
+        'pass') as IQAnalysisResult['dealVerdict'],
+      verdictDescription: (analysisData.verdict_description ??
+        analysisData.verdictDescription) as string,
+      discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
+      purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
+      incomeValue: analysisData.income_value ?? analysisData.incomeValue,
+      listPrice: analysisData.list_price ?? analysisData.listPrice,
+      incomeGapPercent:
+        analysisData.income_gap_percent ??
+        analysisData.incomeGapPercent ??
+        (() => {
+          const lp = analysisData.list_price ?? analysisData.listPrice
+          const iv = analysisData.income_value ?? analysisData.incomeValue
+          return lp != null && iv != null && lp > 0
+            ? Math.round(((lp - iv) / lp) * 1000) / 10
+            : undefined
+        })(),
+      incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
+      dealGapPercent:
+        analysisData.deal_gap_percent ??
+        analysisData.dealGapPercent ??
+        (() => {
+          const lp = analysisData.list_price ?? analysisData.listPrice
+          const pp = analysisData.purchase_price ?? analysisData.purchasePrice
+          return lp != null && pp != null && lp > 0
+            ? Math.round(((lp - pp) / lp) * 1000) / 10
+            : undefined
+        })(),
+      dealGapAmount: analysisData.deal_gap_amount ?? analysisData.dealGapAmount,
+      inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
+      strategies: (analysisData.strategies ?? []).map((s: any) => ({
+        id: s.id as IQStrategy['id'],
+        name: s.name,
+        icon: getStrategyIcon(s.id),
+        metric: s.metric,
+        metricLabel: (s.metric_label ?? s.metricLabel ?? '') as string,
+        metricValue: (s.metric_value ?? s.metricValue ?? 0) as number,
+        score: s.score,
+        rank: s.rank,
+        badge: s.badge as IQStrategy['badge'],
+      })),
+      opportunity: analysisData.opportunity,
+      opportunityFactors: (() => {
+        const raw = analysisData.opportunity_factors ?? analysisData.opportunityFactors
+        if (!raw) return undefined
+        return {
+          dealGap: raw.deal_gap ?? raw.dealGap,
+          motivation: raw.motivation,
+          motivationLabel: raw.motivation_label ?? raw.motivationLabel,
+          daysOnMarket: raw.days_on_market ?? raw.daysOnMarket,
+          buyerMarket: raw.buyer_market ?? raw.buyerMarket,
+          distressedSale: raw.distressed_sale ?? raw.distressedSale,
+        }
+      })(),
+      returnRating: analysisData.return_rating ?? analysisData.returnRating,
+      returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
+      dealFactors: (analysisData.deal_factors ?? analysisData.dealFactors ?? []).map((f: any) => ({
+        type: f.type as 'positive' | 'warning' | 'info',
+        text: f.text as string,
+      })),
+      discountBracketLabel: (analysisData.discount_bracket_label ??
+        analysisData.discountBracketLabel ??
+        '') as string,
+      dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as
+        | string
+        | null,
+      dealStructures: (() => {
+        const raw = analysisData.deal_structures ?? analysisData.dealStructures
+        return mapDealStructuresFromApi(raw as Record<string, unknown> | undefined)
+      })(),
+      dealProbabilityScore:
+        analysisData.deal_probability_score ?? analysisData.dealProbabilityScore ?? undefined,
+      cumulativeInvestorPct:
+        analysisData.cumulative_investor_pct ?? analysisData.cumulativeInvestorPct ?? undefined,
+      investorProbabilityRegionLabel:
+        analysisData.investor_probability_region_label ??
+        analysisData.investorProbabilityRegionLabel ??
+        undefined,
+    }),
+    [property?.id],
+  )
+
+  // Re-run verdict analysis when the user switches data sources
+  const recalculateVerdict = useCallback(
+    async (overrides: { list_price?: number; monthly_rent?: number }) => {
+      const base = analysisInputsRef.current
+      if (!base) return
+      try {
+        // Drop stale purchase_price so the backend computes a fresh Target Buy
+        // from the updated list_price / monthly_rent via calculate_buy_price().
+        const merged: Record<string, any> = { ...base, ...overrides }
+        analysisInputsRef.current = merged
+        const { purchase_price: _drop, ...body } = merged
+        const result = await refetchVerdictAnalysis<Record<string, any>>(
+          queryClient,
+          addressParam,
+          body,
+        )
+        setAnalysis(parseAnalysisResponse(result))
+      } catch (err) {
+        console.error('[IQ Verdict] Recalculation failed:', err)
+      }
+    },
+    [parseAnalysisResponse, queryClient, addressParam],
+  )
+
+  // Auto-redirect to DealMaker (flag off) or Plan (flag on) if navigated with openDealMaker=1
+  useEffect(() => {
+    if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
+      if (workflowV1Layout) {
+        const next = new URLSearchParams(searchParams.toString())
+        next.delete('openDealMaker')
+        next.set('view', 'workbench')
+        router.replace(`/discovery?${next.toString()}`)
+        return
+      }
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, property, analysis, workflowV1Layout])
+
+  // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
+  const handleBack = useCallback(() => {
+    router.back()
+  }, [router])
+
+  // Contextual "Back to map" breadcrumb. Shown only when a meaningful
+  // map-search session exists in sessionStorage (set by `useMapSearch` and
+  // `MapSearchView` whenever the user pans, filters, or draws). Hydrated in
+  // a useEffect to avoid SSR/client divergence — the server never has access
+  // to sessionStorage, so the initial paint must match (false). Clicking
+  // navigates with `router.push` rather than `router.back` so the map opens
+  // even from longer history chains (verdict A -> verdict B -> back).
+  const [hasMapSession, setHasMapSession] = useState(false)
+  useEffect(() => {
+    setHasMapSession(hasRestorableMapSnapshot())
+  }, [])
+
+  const handleBackToMap = useCallback(() => {
+    router.push('/map-search')
+  }, [router])
+
+  // Navigate to Deal Maker page with property data
+  const handleNavigateToDealMaker = useCallback(() => {
+    if (!property) return
+    if (workflowV1Layout) {
+      const next = new URLSearchParams(searchParams.toString())
+      next.set('view', 'workbench')
+      router.push(`/discovery?${next.toString()}`)
+      return
+    }
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
+  }, [property, router, workflowV1Layout, searchParams])
+
+  // Navigate to property details page - requires a Zillow zpid
+  // Property page requires address query param for backend fetch
+  const handlePropertyClick = useCallback(() => {
+    if (!property) return
+    // Build address for query param
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+
+    const zpid = property.zpid
+    if (zpid) {
+      router.push(`/property/${zpid}?address=${encodedAddress}`)
+    } else {
+      // Fallback: no zpid, try search instead
+      router.push(`/search?q=${encodedAddress}`)
+    }
+  }, [property, router])
+
+  // Handle change terms - navigate to Deal Maker to adjust assumptions
+  const handleChangeTerms = useCallback(() => {
+    handleNavigateToDealMaker()
+  }, [handleNavigateToDealMaker])
+
+  // Handle show methodology sheets
+  const handleShowMethodology = useCallback(() => {
+    setMethodologyScoreType('verdict')
+    setShowMethodologySheet(true)
+  }, [])
+
+  // Header navigation handlers
+  const handleLogoClick = useCallback(() => {
+    router.push('/')
+  }, [router])
+
+  const handleSearchClick = useCallback(() => {
+    router.push('/search')
+  }, [router])
+
+  const handleProfileClick = useCallback(() => {
+    router.push('/profile')
+  }, [router])
+
+  // Handle tab change - navigate to appropriate pages
+  const handleTabChange = useCallback(
+    (tab: 'analyze' | 'details' | 'price-checker' | 'dashboard') => {
+      if (!property) return
+
+      // Build base URL params - property page requires address query param
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      const encodedAddress = encodeURIComponent(fullAddress)
+      const zpid = property.zpid
+
+      switch (tab) {
+        case 'analyze':
+          // Already on analyze page - no action needed
+          break
+        case 'details':
+          // Navigate to property details page - requires address query param
+          if (zpid) {
+            router.push(`/property/${zpid}?address=${encodedAddress}`)
+          }
+          break
+        case 'price-checker':
+          // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
+          const compsQuery = new URLSearchParams({ address: fullAddress })
+          if (zpid) compsQuery.set('zpid', String(zpid))
+          if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+          if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+          router.push(`/price-intel?${compsQuery.toString()}`)
+          break
+        case 'dashboard':
+          router.push('/search')
+          break
+      }
+    },
+    [property, router],
+  )
+
+  // Must run before loading/error early returns — same hook count every render (React #310 if below returns).
+  const navigateToStrategy = useCallback(
+    (section?: StrategyWorksheetSection) => {
+      if (!property) return
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const parts = [property.address, property.city, stateZip].filter(Boolean)
+      let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+
+      if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+        fullAddress = backendFullAddressRef.current
+      }
+      retargetPlanContinuity(fullAddress)
+
+      setWorkbenchRequest((prev) => ({
+        address: fullAddress,
+        // R4 §7.1: auto-select (not auto-expand) the persona strategy.
+        // Prop is initial-only, so preserving prev keeps a user's later pick.
+        strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+        section: section ?? null,
+        scenario: prev?.scenario ?? null,
+      }))
+      // Keep the URL in sync so refresh / sign-in redirect re-open Level 3.
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.set('view', 'workbench')
+      nextParams.set('address', fullAddress)
+      if (section) nextParams.set('section', section)
+      else nextParams.delete('section')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
+    },
+    [property, preferredStrategyIds, searchParams, router],
+  )
+
+  const openThreePathInStrategy = useCallback(
+    (structure: DealStructure, index: number) => {
+      if (!property) return
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const parts = [property.address, property.city, stateZip].filter(Boolean)
+      let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+      if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+        fullAddress = backendFullAddressRef.current
+      }
+      trackEvent('path_opened_in_strategy', {
+        structure_id: structure.id,
+        family: structure.family,
+      })
+
+      const payload = buildScenarioPayload(structure, index)
+      writeLastAppliedScenario(payload)
+      retargetPlanContinuity(fullAddress)
+      const encoded = encodeScenario(payload)
+      setWorkbenchRequest((prev) => ({
+        address: fullAddress,
+        strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+        section: null,
+        scenario: encoded,
+      }))
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.set('view', 'workbench')
+      nextParams.set('address', fullAddress)
+      nextParams.set('scenario', encoded)
+      nextParams.delete('section')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
+    },
+    [property, preferredStrategyIds, searchParams, router],
+  )
+
+  // Make It Work wizard — opened from a tile (family pre-focused), the strip CTA,
+  // or the "deal already works" save tile. Captures the exact verdict body so the
+  // wizard re-runs the engine against the same property inputs.
+  const openMakeItWork = useCallback(
+    (family?: FourWayFamily, source: MakeItWorkState['source'] = 'tile') => {
+      const hasPaths = Boolean(analysis?.dealStructures?.hasPaths && analysis.dealStructures.paths.length > 0)
+      setMakeItWork({
+        open: true,
+        source: family ? 'tile' : source,
+        focusFamily: family ?? null,
+        saveOnly: !hasPaths,
+        baseInputs: analysisInputsRef.current ? { ...analysisInputsRef.current } : null,
+      })
+    },
+    [analysis?.dealStructures],
+  )
+
+  const closeMakeItWork = useCallback(() => setMakeItWork(MAKE_IT_WORK_CLOSED), [])
+
+  // Signed-in save from the wizard: persist the property, remember the chosen
+  // scenario so the workbench applies it on open.
+  const saveMakeItWorkPlan = useCallback(
+    async (structure: DealStructure | null) => {
+      await saveProperty()
+      if (structure) {
+        const index = Math.max(
+          0,
+          analysis?.dealStructures?.paths.findIndex((p) => p.id === structure.id) ?? 0,
+        )
+        writeLastAppliedScenario(buildScenarioPayload(structure, index))
+      }
+    },
+    [saveProperty, analysis?.dealStructures],
+  )
+
+  const navigateToAppraiser = useCallback(() => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const compsQuery = new URLSearchParams({ address: fullAddress })
+    if (property.zpid) compsQuery.set('zpid', String(property.zpid))
+    if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+    if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+    router.push(`/price-intel?${compsQuery.toString()}`)
+  }, [property, router])
+
+  const openDataSourcesAndScroll = useCallback(() => {
+    setIsDataSourcesOpen(true)
+    requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        dataSourcesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 120)
+    })
+  }, [])
+
+  // URL-driven expansion — deep links that used to hit /strategy now arrive as
+  // /discovery?view=workbench&… (301 in next.config.js, params passed through).
+  // Only auto-expands when collapsed, so it never clobbers in-page state.
+  const viewParam = searchParams.get('view')
+  const v1Tab = workflowV1Layout ? parseWorkflowV1View(viewParam) : null
+  const workDealId =
+    v1Tab === 'work' ? resolveWorkDealId(searchParams, savedPropertyId) : null
+  const strategyUrlParam = searchParams.get('strategy')
+  const scenarioUrlParam = searchParams.get('scenario')
+  const sectionUrlParam = searchParams.get('section')
+  useEffect(() => {
+    if (!isPlanView(viewParam) || !addressParam) {
+      if (!isPlanView(viewParam)) setWorkbenchRequest(null)
+      return
+    }
+    setWorkbenchRequest(
+      (prev) =>
+        prev ?? {
+          address: addressParam,
+          strategyId: strategyUrlParam ?? preferredStrategyIds[0] ?? null,
+          section: parseStrategyWorksheetSection(sectionUrlParam),
+          scenario: scenarioUrlParam,
+        },
+    )
+  }, [
+    viewParam,
+    addressParam,
+    strategyUrlParam,
+    sectionUrlParam,
+    scenarioUrlParam,
+    preferredStrategyIds,
+  ])
+
+  // Bring the expanded (or re-targeted) workbench into view. The dynamic chunk
+  // shows a fixed-height skeleton, so the anchor exists as soon as state is set.
+  useEffect(() => {
+    if (!workbenchRequest) return
+    requestAnimationFrame(() => {
+      workbenchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [workbenchRequest])
+
+  // Collapse Level 3 and return to the Discovery verdict. Clears view=workbench
+  // so a refresh does not re-expand.
+  const collapseWorkbench = useCallback(() => {
+    setWorkbenchRequest(null)
+    if (searchParams.get('view') == null && searchParams.get('scenario') == null) return
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.delete('view')
+    nextParams.delete('scenario')
+    nextParams.delete('section')
+    const qs = nextParams.toString()
+    router.replace(qs ? `/discovery?${qs}` : '/discovery', { scroll: false })
+  }, [searchParams, router])
+
+  // Sign-in URL with a redirect back here — same shape the /strategy shell builds.
+  const workbenchSignInUrl = useMemo(() => {
+    const cleanParams = new URLSearchParams(searchParams.toString())
+    cleanParams.delete('auth')
+    cleanParams.delete('redirect')
+    // Return to the expanded workbench after sign-in.
+    if (cleanParams.get('view') !== 'workbench') cleanParams.set('view', 'workbench')
+    const cleanQs = cleanParams.toString()
+    const fullPath = cleanQs ? `/discovery?${cleanQs}` : '/discovery?view=workbench'
+    const signInParams = new URLSearchParams(cleanQs)
+    signInParams.set('auth', 'required')
+    signInParams.set('redirect', fullPath)
+    return `/discovery?${signInParams.toString()}`
+  }, [searchParams])
+
+  // Once applied, a scenario must not re-apply on reload — clear it from both
+  // the expansion state and the URL (deep links carry it as ?scenario=).
+  const handleWorkbenchScenarioConsumed = useCallback(() => {
+    setWorkbenchRequest((prev) => (prev ? { ...prev, scenario: null } : prev))
+    if (searchParams.get('scenario') != null) {
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.delete('scenario')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
+    }
+  }, [searchParams, router])
+
+  // Loading state — pulsating IQ logo until data arrives.
+  // Also covers the case where property loaded from cache but analysis API is still in flight.
+  if (!quotaExceeded && !limitError && (isLoading || (!analysis && !error))) {
+    if (loadTimedOut) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
+          <div className="flex flex-col items-center gap-4 text-center px-4 max-w-md">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(8,145,178,0.15)' }}
+            >
+              <svg
+                className="w-8 h-8 text-[var(--accent-sky)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
+              This is taking longer than expected
+            </h2>
+            <p className="max-w-md" style={{ color: 'var(--text-body)' }}>
+              The analysis didn&apos;t come back in time. It may be a slow connection or a
+              temporary issue on our side.
+            </p>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={retryAnalysis}
+                className="px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleBack}
+                className="px-6 py-2 rounded-full font-bold transition-colors hover:bg-[var(--surface-elevated)]"
+                style={{ border: '1px solid var(--border-default)', color: 'var(--text-heading)' }}
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return <IQLoadingLogo />
+  }
+
+  if (error === 'No address provided') {
+    return <DiscoveryColdLanding />
+  }
+
+  // Usage-limit reached — wall/gate sits in the Verdict slot inside the page shell.
+  // AppHeader (logo, tabs, address from the URL) and UsageBar stay mounted in the layout.
+  if (
+    (quotaExceeded && !!addressParam && !hasCachedProperty) ||
+    (limitError === 'free' && (!property || !analysis))
+  ) {
+    return (
+      <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
+        <div id="workflow-tabpanel" role={workflowV1Layout ? 'tabpanel' : undefined}>
+          <UpgradeWall
+            resetsAt={quotaWall?.resetsAt ?? nextResetIso(usage)}
+            limit={quotaWall?.limit ?? limit ?? STARTER_VERDICTS_PER_MONTH}
+            used={quotaWall?.used ?? used}
+            plan={quotaWall?.plan ?? plan}
+            onStartTrial={() => {
+              void startTrial()
+            }}
+            onDismiss={() => {
+              trackEvent('upgrade_wall_dismissed')
+              router.push('/search')
+            }}
+          />
+          {trialError ? (
+            <p
+              className="px-4 pb-8 text-center text-sm"
+              style={{ color: 'var(--status-negative)' }}
+            >
+              {trialError}
+            </p>
+          ) : null}
+        </div>
+      </main>
+    )
+  }
+
+  if (limitError === 'anonymous' && (!property || !analysis)) {
+    return (
+      <main className="min-h-screen bg-[var(--surface-base)] w-full mx-auto">
+        <div
+          id="workflow-tabpanel"
+          role={workflowV1Layout ? 'tabpanel' : undefined}
+          className="px-3 sm:px-6 mt-4 max-w-3xl"
+        >
+          <DiscoveryQuotaGate
+            kind="anonymous"
+            workflowV1={workflowV1Layout}
+            onCreateAccount={() => openAuthModal('register')}
+            onSignIn={() => openAuthModal('login')}
+            onUpgrade={() => router.push('/pricing')}
+          />
+        </div>
+      </main>
+    )
+  }
+
+  // Error state with no property fallback
+  if (!property || !analysis) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-red-dim)' }}
+          >
+            <svg
+              className="w-8 h-8 text-[var(--status-negative)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
+            {error || 'Unable to load property'}
+          </h2>
+          <p className="max-w-md" style={{ color: 'var(--text-body)' }}>
+            We couldn&apos;t fetch the property data. Please try again or search for a different
+            address.
+          </p>
+          {error && error !== 'Unable to load property' && (
+            <p className="max-w-md text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
+              {error}
+              {(error === 'Failed to fetch' ||
+                error.toLowerCase().includes('network request failed') ||
+                error.toLowerCase().includes('allows this origin in cors')) && (
+                <span className="block mt-2">
+                  Check your connection and that the API backend is reachable. If you use a separate
+                  frontend URL (e.g. Vercel), ensure the backend allows your origin in CORS.
+                </span>
+              )}
+            </p>
+          )}
+          <button
+            onClick={handleBack}
+            className="mt-4 px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Derived values for display
+  const purchasePrice = analysis.purchasePrice ?? Math.round(property.price * 0.95)
+  const incomeValue = analysis.incomeValue ?? property.price
+  const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.7)
+  const monthlyRent = property.monthlyRent || 0
+  const isListed = isListedStatus(property.listingStatus)
+  const priceLabel = isListed ? 'Asking' : 'Market'
+  const of = analysis.opportunityFactors
+  // Deal Gap: discount from market/asking to Target Buy price.
+  // Positive = discount needed, zero = deal works at market price.
+  const rawDealGap =
+    property.price > 0 && purchasePrice > 0
+      ? ((property.price - purchasePrice) / property.price) * 100
+      : 0
+  const dealGapPct = analysis.dealGapPercent ?? rawDealGap
+  // Price Gap: how far income value sits above (positive) or below (negative) market
+  const priceGapPct =
+    property.price > 0 && incomeValue > 0
+      ? ((incomeValue - property.price) / property.price) * 100
+      : 0
+  const isPositiveIncomeCase = incomeValue > property.price && priceGapPct > 0.1
+  // Deal Gap (headline) — mirrors the slider's DEAL GAP bracket so both agree.
+  // When a Sweet Spot exists (Income Value above Market Price) and Target Buy is
+  // essentially at or above Market, surface the positive spread from Market to
+  // Income Value (the actual cash-flow opportunity) instead of the trivial
+  // Market-vs-Target Buy delta. Otherwise show the discount needed from Market
+  // down to Target Buy.
+  const isDealGain = dealGapPct < 0.5 && isPositiveIncomeCase
+  const effectiveDisplayPct = isDealGain ? priceGapPct : -dealGapPct
+  const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
+  const discountAmount = Math.max(0, property.price - purchasePrice)
+  const gapCloseLabel = dealGapPct > 0 ? formatGapAmount(discountAmount) : null
+  const propertyFullAddress = [
+    property.address,
+    property.city,
+    [property.state, property.zip].filter(Boolean).join(' '),
+  ]
+    .filter(Boolean)
+    .join(', ')
+  // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
+  const fallbackProbability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
+  const cumulativeInvestorPct =
+    analysis.cumulativeInvestorPct ?? analysis.dealProbabilityScore ?? fallbackProbability
+  const investorRegionLabel = analysis.investorProbabilityRegionLabel
+  const probabilityTail =
+    (cumulativeInvestorPct > 50
+      ? 'This is well within reach. '
+      : cumulativeInvestorPct >= 20
+        ? 'Achievable with the right approach. '
+        : "You'll need leverage, timing, or a motivated seller. ") +
+    'Calibrated regional estimate — not live transaction data. See Methodology.'
+  const isOffMarket = !isListed
+  const tier = getDealGapTier(-effectiveDisplayPct, isListed)
+  const hasFourWays = Boolean(
+    analysis.dealStructures?.hasPaths && analysis.dealStructures.paths.length > 0,
+  )
+  const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
+  const dataSourceCount = sourceKeys.filter((sourceKey) => {
+    const valueHasSource = iqSources.value[sourceKey] != null
+    const rentHasSource = iqSources.rent[sourceKey] != null
+    return valueHasSource || rentHasSource
+  }).length
+  const hasDataSources = dataSourceCount > 0
+  const analysisTimeSeconds = 4.2
+
+  const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
+
+  /** Comps tab in nav — PriceCheckerIQ at /price-intel. */
+  const navigateToComps = () => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const parts = [property.address, property.city, stateZip].filter(Boolean)
+    let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+
+    if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+      fullAddress = backendFullAddressRef.current
+    }
+
+    const compsQuery = new URLSearchParams({ address: fullAddress })
+    const zpid = property.zpid
+    if (zpid) compsQuery.set('zpid', String(zpid))
+    if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+    if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+
+    router.push(`/price-intel?${compsQuery.toString()}`)
+  }
+
+  const navigateToPlan = () => {
+    const address = addressParam || ''
+    // Same pathname + copied searchParams is a Next.js no-op, so the URL
+    // never changed. Open Plan the way the working tab does: set the
+    // workbench request, then push a freshly built Plan URL.
+    setWorkbenchRequest((prev) => ({
+      address: prev?.address || address,
+      strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+      section: prev?.section ?? null,
+      scenario: prev?.scenario ?? null,
+    }))
+    router.push(workflowV1TabHref('plan', address))
+  }
+
+  const handleBuildPlan = () => {
+    if (workflowV1Layout && !isAuthenticated) {
+      openAuthModal('register', workflowV1TabHref('plan', addressParam || ''))
+      return
+    }
+    navigateToPlan()
+  }
+
+  const navigateToSources = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('view', workflowV1Layout ? 'math' : 'sources')
+    if (workflowV1Layout) next.set('section', 'sources')
+    router.push(`/discovery?${next.toString()}`)
+  }
+
+  const signals = listingSignals ?? listingSignalsFromListing(null)
+  const signalBreakdown = countVerdictSignals(signals)
+  const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
+  const verdictCall = resolveCall(callGap, signalBreakdown.count, {
+    listPrice: property.price,
+    incomeValue,
+  })
+  const sellerPath = sellerPathFromDealStructures({
+    blendRecommendation: analysis.dealStructures?.blendRecommendation,
+    families: analysis.dealStructures?.paths.map((p) => p.family) ?? [],
+  })
+  const sellerRead = formatSellerRead(
+    { priceCuts: signals.priceCuts, daysOnMarket: signals.daysOnMarket },
+    sellerPath,
+  )
+  const verdictSentence = formatVerdictSentence({
+    listPrice: property.price,
+    targetBuy: purchasePrice,
+    gapPct: callGap,
+    sellerRead,
+    listed: isListed,
+    marketValue: property.price,
+  })
+  const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
+
+  const whySignals: WhySignal[] = (() => {
+    const items: WhySignal[] = [
+      {
+        id: 'listing-status',
+        kind: classifySignalKind(isOffMarket ? 'Off-market' : 'Actively listed'),
+        title: isOffMarket
+          ? 'Off-market — not listed for sale'
+          : 'Actively listed — competing buyers',
+        detail: isOffMarket
+          ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+          : 'Speed and terms matter when competing with other buyers.',
+      },
+    ]
+    motivatedInsights.forEach((insight, i) => {
+      const title = insight.highlight ? `${insight.label} ${insight.highlight}` : insight.label
+      items.push({
+        id: `motivated-${i}`,
+        kind: classifySignalKind(title),
+        title,
+        detail: insight.detail,
+      })
+    })
+    items.push({
+      id: 'target-buy',
+      kind: 'rest',
+      title: `Target buy: ${fmtShort(purchasePrice)} (${dealGapDisplay} gap)`,
+      detail: `A ${fmtShort(discountAmount)} discount below market to the profit zone (Target Buy). Cash flow breakeven is Income Value.`,
+    })
+    const investorTitle =
+      investorRegionLabel && investorRegionLabel !== 'U.S.'
+        ? `About ${cumulativeInvestorPct}% of investors close at this discount or deeper in ${investorRegionLabel} markets`
+        : `About ${cumulativeInvestorPct}% of investors close at this discount or deeper (U.S. baseline)`
+    items.push({
+      id: 'calibrated',
+      kind: 'rest',
+      title: investorTitle,
+      detail: probabilityTail,
+    })
+    items.push({
+      id: 'repairs',
+      kind: 'rest',
+      title: 'Repairs not included in initial analysis',
+      detail: workflowV1Layout
+        ? 'Use Plan to add a rehab budget and see the impact on returns.'
+        : 'Use DealMaker to add a rehab budget and see the impact on returns.',
+    })
+    items.push({
+      id: 'assumptions',
+      kind: 'rest',
+      title: 'Assumes 20% down · 6.0% · 30yr',
+      detail: workflowV1Layout
+        ? 'Edit financing terms in Plan to match your actual loan scenario.'
+        : 'Edit financing terms in DealMaker to match your actual loan scenario.',
+    })
+    if (
+      strMarketData?.str_regulatory?.rating &&
+      (strMarketData.str_regulatory.rating === 'Negative' ||
+        strMarketData.str_regulatory.rating === 'Restricted')
+    ) {
+      const dayLimit = strMarketData.str_regulatory.day_limit
+      items.push({
+        id: 'str-reg',
+        kind: 'rest',
+        title: `STR regulations: ${strMarketData.str_regulatory.rating}${
+          dayLimit ? ` — ${dayLimit} day limit` : ''
+        }`,
+        detail:
+          strMarketData.str_regulatory.rules_summary ||
+          'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.',
+      })
+    }
+    if (
+      strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
+      strMarketData.str_market_stats.yoy_occupancy_change < -20
+    ) {
+      items.push({
+        id: 'str-occ',
+        kind: classifySignalKind('STR occupancy'),
+        title: `STR occupancy down ${Math.abs(
+          strMarketData.str_market_stats.yoy_occupancy_change,
+        ).toFixed(0)}% year-over-year`,
+        detail:
+          'Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections.',
+      })
+    }
+    return items
+  })()
+
+  const photoGallery = (
+    <section
+      id="property-gallery"
+      className={workflowV1Layout ? 'px-3 sm:px-6 mt-6' : 'mx-0 sm:mx-5 mt-6'}
+    >
+      {property.zpid ? (
+        <PropertyPhotoGallery
+          zpid={String(property.zpid)}
+          initialImages={propertyPhotos}
+          hideThumbnails
+          address={property.address}
+          latitude={property.latitude}
+          longitude={property.longitude}
+        />
+      ) : property.imageUrl ? (
+        <div
+          className="rounded-[14px] overflow-hidden"
+          style={{ backgroundColor: 'var(--surface-elevated)' }}
+        >
+          <img
+            src={property.imageUrl}
+            alt={`Property at ${property.address}`}
+            className="w-full object-cover"
+            style={{ aspectRatio: '3/2' }}
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      ) : null}
+    </section>
+  )
+
+  const dataSourcesPanel = hasDataSources ? (
+    <div
+      ref={dataSourcesRef}
+      className="mt-3 rounded-xl overflow-hidden"
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsDataSourcesOpen((prev) => !prev)}
+        className="w-full px-4 py-3 flex items-center justify-between"
+        style={{ color: 'var(--text-heading)' }}
+        aria-expanded={isDataSourcesOpen}
+        aria-controls="verdict-data-sources-panel"
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={
+              workflowV1Layout
+                ? 'text-[13px] font-semibold tracking-wide'
+                : 'text-[12px] sm:text-[14px] font-bold uppercase tracking-wide'
+            }
+          >
+            {workflowV1Layout ? 'Data sources' : 'Data Sources'}
+          </span>
+          <span
+            className={workflowV1Layout ? 'text-[13px]' : 'text-[10px] sm:text-[12px]'}
+            style={{ color: 'var(--text-label)' }}
+          >
+            {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
+          </span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isDataSourcesOpen && (
+        <div
+          id="verdict-data-sources-panel"
+          className="px-3 pb-3 border-t"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
+          <IQEstimateSelector
+            sources={iqSources}
+            highlightIntro
+            showHeader={false}
+            compact
+            onSourceChange={(type, _sourceId, _value) => {
+              if (_value == null) return
+              setProperty((prev) => {
+                if (!prev) return prev
+                if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                if (type === 'value') return { ...prev, price: _value } as IQProperty
+                return prev
+              })
+              recalculateVerdict(
+                type === 'value' ? { list_price: _value } : { monthly_rent: _value },
+              )
+              try {
+                const stateZip = [property?.state, property?.zip]
+                  .filter(Boolean)
+                  .join(' ')
+                const fullAddress = [property?.address, property?.city, stateZip]
+                  .filter(Boolean)
+                  .join(', ')
+                if (type === 'value') {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      price: _value,
+                      listPrice: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                } else {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      monthlyRent: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                }
+              } catch {
+                // Ignore storage errors
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
+  ) : null
+
+  return (
+    <>
+        {/* Header and property bar are provided by AppHeader in layout */}
+
+        {/* Centered single-column container */}
+        <main
+          className={`min-h-screen bg-[var(--surface-base)] w-full mx-auto ${
+            workflowV1Layout ? 'px-0' : 'px-0 sm:px-8 lg:px-12 xl:px-16'
+          }`}
+          style={
+            workflowV1Layout
+              ? { fontFamily: V1_UI_FONT }
+              : { fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }
+          }
+        >
+          <div
+            id="workflow-tabpanel"
+            role={workflowV1Layout ? 'tabpanel' : undefined}
+            aria-labelledby={
+              workflowV1Layout
+                ? v1Tab === 'plan'
+                  ? 'workflow-tab-strategy'
+                  : v1Tab === 'discovery'
+                    ? 'workflow-tab-analyze'
+                    : `workflow-tab-${v1Tab}`
+                : undefined
+            }
+          >
+          {/* "Back to map" breadcrumb — only renders when the user arrived from
+              a meaningful map-search session (snapshot present). Low-emphasis
+              by design so it's a contextual nudge, not a primary CTA. */}
+          {hasMapSession && !workflowV1Layout && (
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
+              <button
+                type="button"
+                onClick={handleBackToMap}
+                className="inline-flex items-center gap-1 text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-heading)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to map
+              </button>
+            </div>
+          )}
+
+          {!workflowV1Layout && propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
+
+          {/* When Level 3 is open, collapse the verdict so Strategy does not
+              stack a second full page (and a second Deal Gap overview) under it. */}
+          {workbenchRequest && !workflowV1Layout ? (
+            <div
+              className={
+                workflowV1Layout
+                  ? 'px-3 sm:px-6 mt-4'
+                  : 'mx-0 sm:mx-5 mt-4 px-3 sm:px-0'
+              }
+            >
+              <button
+                type="button"
+                onClick={collapseWorkbench}
+                className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label="Back to Discovery overview"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to Discovery overview
+              </button>
+              <h2
+                className="mt-3 font-bold leading-tight"
+                style={{
+                  color: 'var(--text-heading)',
+                  fontSize: 'clamp(18px, 2vw, 24px)',
+                }}
+              >
+                Strategy Workbench
+              </h2>
+              <p
+                className="mt-1 text-sm leading-relaxed"
+                style={{ color: 'var(--text-body)' }}
+              >
+                {analysis?.dealStructures?.hasPaths &&
+                (analysis.dealStructures.paths?.length ?? 0) > 0
+                  ? 'We’ll show you how to make this deal work — pick an Option, then tune the worksheet.'
+                  : dealGapPct > 0
+                    ? 'Change price, financing, or income in the worksheet until the Deal Gap closes.'
+                    : 'The baseline works — stress-test assumptions, try another strategy, then save.'}
+              </p>
+            </div>
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'math' ? (
+            <MathTab
+              address={addressParam}
+              zpid={property.zpid != null ? String(property.zpid) : undefined}
+              lat={property.latitude ?? undefined}
+              lng={property.longitude ?? undefined}
+              compsView={searchParams.get('compsView') === 'rent' ? 'rent' : 'sale'}
+              section={sectionUrlParam}
+              dataSources={dataSourcesPanel}
+            />
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
+            workDealId ? (
+              <DealPageContent propertyId={workDealId} embedded />
+            ) : checkFailed ? (
+              <WorkCheckError onRetry={() => { void refreshSavedCheck() }} />
+            ) : hasChecked ? (
+              <WorkEmptyState onGoToPlan={navigateToPlan} />
+            ) : null
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' && !v1DiscoveryFailed ? (
+          <WorkflowV1ErrorBoundary
+            route="/discovery"
+            onCaught={() => setV1DiscoveryFailed(true)}
+          >
+          <>
+            <div className="px-3 sm:px-6 mt-4">
+              <VerdictCard
+                listPrice={property.price}
+                incomeValue={incomeValue}
+                targetBuy={purchasePrice}
+                dealGapDisplayPct={effectiveDisplayPct}
+                sentence={verdictSentence}
+                listed={isListed}
+                call={verdictCall}
+                callFired={signalBreakdown.fired}
+                propertyId={
+                  propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                }
+                propertyState={property.state || null}
+                gap={callGap}
+                signals={signalBreakdown.count}
+                closes={leverCloses}
+                isAuthenticated={isAuthenticated}
+                onShowMath={navigateToSources}
+                onBuildPlan={handleBuildPlan}
+                buildPlanLabel={
+                  workflowV1Layout && !isAuthenticated
+                    ? ANON_FUNNEL_COPY.buildPlanCta
+                    : undefined
+                }
+                sourceStatus={summarizeSourceStatus(iqSources)}
+                gapSlider={
+                  <VerdictGapSlider
+                    listPrice={property.price}
+                    incomeValue={incomeValue}
+                    targetBuy={purchasePrice}
+                    dealGapDisplayPct={effectiveDisplayPct}
+                  />
+                }
+              />
+            </div>
+            {analysis.dealStructures?.hasPaths ? (
+              <div className="px-3 sm:px-6 mt-4">
+                <HowThisCloses payload={analysis.dealStructures} />
+              </div>
+            ) : null}
+            {!isAuthenticated ? (
+              <div className="px-3 sm:px-6">
+                <VerdictEmailCapture
+                  variant="slim"
+                  address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
+                  propertyId={propertyIdParam || property.id || null}
+                  incomeValue={Number.isFinite(incomeValue) ? incomeValue : null}
+                  targetBuy={Number.isFinite(purchasePrice) ? purchasePrice : null}
+                  dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
+                />
+              </div>
+            ) : null}
+            <div className="px-3 sm:px-6 mt-4">
+              <WhyWeThinkSo signals={whySignals} />
+            </div>
+            {photoGallery}
+          </>
+          </WorkflowV1ErrorBoundary>
+          ) : null}
+
+          {!workbenchRequest && (!workflowV1Layout || v1DiscoveryFailed) && (
+          <>
+          {photoGallery}
+
+          {/* Main verdict content */}
+          <section
+            className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5 py-6 rounded-none sm:rounded-2xl"
+            style={{
+              background: 'var(--surface-card)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-card-hover)',
+            }}
+          >
+            {workflowV1 ? (
+              <div className="mb-6">
+                <VerdictCard
+                  listPrice={property.price}
+                  incomeValue={incomeValue}
+                  targetBuy={purchasePrice}
+                  dealGapDisplayPct={effectiveDisplayPct}
+                  sentence={verdictSentence}
+                  listed={isListed}
+                  call={verdictCall}
+                  callFired={signalBreakdown.fired}
+                  propertyId={
+                    propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                  }
+                  propertyState={property.state || null}
+                  gap={callGap}
+                  signals={signalBreakdown.count}
+                  closes={leverCloses}
+                isAuthenticated={isAuthenticated}
+                onShowMath={navigateToComps}
+                onBuildPlan={handleBuildPlan}
+                buildPlanLabel={
+                  workflowV1Layout && !isAuthenticated
+                    ? ANON_FUNNEL_COPY.buildPlanCta
+                    : undefined
+                }
+              />
+              </div>
+            ) : null}
+
+            {/* Investment Overview — 3 price cards. Hidden under workflow v1; the Verdict card owns the numbers. */}
+            {!workflowV1 ? (
+            <div data-tour="verdict-prices">
+              <div className="w-full flex items-start justify-between gap-3 mb-4">
+                <h2
+                  className="font-bold leading-tight"
+                  style={{
+                    color: 'var(--text-heading)',
+                    fontSize: 'clamp(18px, 2vw, 24px)',
+                  }}
+                >
+                  Investment Overview
+                </h2>
+                {isAuthenticated && (savedPropertyId || propertyIdParam) ? (
+                  <button
+                    type="button"
+                    onClick={() => setActionPlanOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] shrink-0"
+                    aria-label={ACTION_PLAN_COPY.buttonLabel}
+                  >
+                    <Route className="w-4 h-4" />
+                    {ACTION_PLAN_COPY.buttonLabel}
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
+                {[
+                  {
+                    title: 'Target Buy',
+                    subtitle: 'Profit Zone',
+                    value: purchasePrice,
+                    color: 'var(--accent-sky)',
+                    tooltip: 'The price you should aim to pay to create positive cash flow.',
+                  },
+                  {
+                    title: 'Income Value',
+                    subtitle: 'Break-Even',
+                    value: incomeValue,
+                    color: 'var(--status-warning)',
+                    tooltip: 'The break-even price\u2014where rent covers all costs.',
+                  },
+                  {
+                    title: 'Market Price',
+                    subtitle: 'Market Reality',
+                    value: property.price,
+                    color: 'var(--status-negative)',
+                    tooltip:
+                      'The current list price or, for off-market properties, the estimated value based on comparable sales.',
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.title}
+                    className="rounded-xl py-3 px-4 text-center sm:flex-1"
+                    style={{
+                      background: 'var(--surface-card)',
+                      border: `1px solid ${card.color}`,
+                      boxShadow: 'var(--shadow-card)',
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <p
+                        className="text-xs font-bold uppercase tracking-wide"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {card.title}
+                      </p>
+                      <InfoPopover
+                        ariaLabel={`What is ${card.title}?`}
+                        label={
+                          <svg
+                            className="w-3.5 h-3.5 opacity-40 hover:opacity-80 transition-opacity"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                        }
+                        content={
+                          <p
+                            style={{
+                              fontSize: '12px',
+                              lineHeight: '1.5',
+                              color: 'var(--chart-tooltip-text)',
+                              margin: 0,
+                            }}
+                          >
+                            {card.tooltip}
+                          </p>
+                        }
+                        panelClassName="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 rounded-lg border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 shadow-lg"
+                        className="inline-flex items-center"
+                      />
+                    </div>
+                    <p
+                      className="tabular-nums mb-1 font-bold leading-none"
+                      style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}
+                    >
+                      {fmtShort(card.value)}
+                    </p>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {card.subtitle}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            ) : null}
+
+            <VerdictEmailCapture
+              address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
+              propertyId={propertyIdParam || property.id || null}
+              incomeValue={Number.isFinite(incomeValue) ? incomeValue : null}
+              targetBuy={Number.isFinite(purchasePrice) ? purchasePrice : null}
+              dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
+            />
+
+            {/* "What is the Deal Gap?" video link — visible to all users, sits above the bar chart */}
+            <div className="mt-5 mb-1 flex items-center justify-start">
+              <button
+                type="button"
+                onClick={() => setShowDealGapVideo(true)}
+                className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors hover:underline"
+                style={{
+                  color: 'var(--accent-sky)',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                </svg>
+                Watch: What is the Deal Gap?
+              </button>
+            </div>
+
+            {/* Price scale bar (Deal Gap / Price Gap) — white panel so track reads on canvas */}
+            <div className="deal-gap-chart-panel relative mt-2">
+              {(() => {
+                const markers = [
+                  { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },
+                  { label: 'INCOME', price: incomeValue, dotColor: 'var(--status-warning)' },
+                  { label: 'MARKET', price: property.price, dotColor: 'var(--status-negative)' },
+                ]
+                  .filter((m) => m.price > 0)
+                  .sort((a, b) => a.price - b.price)
+
+                const allPrices = markers.map((m) => m.price)
+                const scaleMin = Math.min(...allPrices) * 0.95
+                const scaleMax = Math.max(...allPrices) * 1.05
+                const range = scaleMax - scaleMin
+                const pos = (v: number) => Math.min(96, Math.max(2, ((v - scaleMin) / range) * 100))
+
+                const targetBuyPos = purchasePrice > 0 ? pos(purchasePrice) : null
+                const marketPos = property.price > 0 ? pos(property.price) : null
+                const incomePos = incomeValue > 0 ? pos(incomeValue) : null
+
+                const dealBracketLeft =
+                  targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketPct =
+                  property.price > 0 && purchasePrice > 0
+                    ? ((property.price - purchasePrice) / property.price) * 100
+                    : 0
+                // Re-derive isDealGain locally with the slider's own bracket pct
+                // for the visual layout, but keep dealDisplayPct in sync with the
+                // headline `effectiveDisplayPct` so both surfaces always agree.
+                const isDealGainLocal = dealBracketPct < 0.5 && isPositiveIncomeCase
+                const dealBracketRight =
+                  isDealGainLocal && incomePos != null
+                    ? incomePos
+                    : targetBuyPos != null && marketPos != null
+                      ? Math.max(targetBuyPos, marketPos)
+                      : 0
+                const showDealBracket = isDealGainLocal
+                  ? dealBracketRight - dealBracketLeft >= 3
+                  : dealBracketRight - dealBracketLeft >= 3 && Math.abs(dealBracketPct) > 0.1
+                const dealDisplayPct = effectiveDisplayPct
+
+                const priceGapLeft =
+                  incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
+                const priceGapRight =
+                  incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
+                const priceGap =
+                  property.price > 0 && incomeValue > 0
+                    ? ((incomeValue - property.price) / property.price) * 100
+                    : 0
+                const showPriceGap =
+                  incomePos != null &&
+                  marketPos != null &&
+                  priceGap < -0.1 &&
+                  priceGapRight - priceGapLeft >= 3
+
+                const isBuyZone = dealDisplayPct >= 0
+                const bracketLabel = isBuyZone ? 'DEAL WORKS' : 'DEAL GAP'
+                const bracketColor = isBuyZone
+                  ? 'var(--status-positive)'
+                  : 'var(--accent-sky)'
+                const sweetSpotLeft =
+                  marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
+                const sweetSpotWidth =
+                  marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
+                const tbMarketOverlap =
+                  targetBuyPos != null &&
+                  marketPos != null &&
+                  Math.abs(targetBuyPos - marketPos) < 3
+                const fmtPrice = (v: number) =>
+                  v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}K`
+
+                return (
+                  <>
+                    {showDealBracket && (
+                      <div
+                        className="relative mb-1"
+                        style={{
+                          marginLeft: `${dealBracketLeft}%`,
+                          width: `${dealBracketRight - dealBracketLeft}%`,
+                        }}
+                      >
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
+                          style={{ color: bracketColor }}
+                        >
+                          {bracketLabel} &nbsp;{dealDisplayPct >= 0 ? '+' : ''}
+                          {dealDisplayPct.toFixed(1)}%
+                        </p>
+                        <div className="flex items-start">
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: bracketColor,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div style={{ height: 1, background: bracketColor, flex: 1 }} />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: bracketColor,
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bar with proportionally-positioned dots and optional Sweet Spot zone */}
+                    <div
+                      className="relative rounded-full"
+                      style={{
+                        height: 26,
+                        background: 'var(--deal-gap-track-bg)',
+                        border: '2px solid var(--deal-gap-track-border)',
+                        boxShadow: 'var(--deal-gap-track-shadow)',
+                      }}
+                    >
+                      {isPositiveIncomeCase && sweetSpotWidth > 0 && (
+                        <SweetSpotZone leftPercent={sweetSpotLeft} widthPercent={sweetSpotWidth} />
+                      )}
+                      {markers.map((m, i) => {
+                        const isRing = tbMarketOverlap && m.label === 'TARGET'
+                        return (
+                          <div
+                            key={i}
+                            className="absolute rounded-full deal-gap-marker"
+                            style={{
+                              width: isRing ? 24 : 18,
+                              height: isRing ? 24 : 18,
+                              top: '50%',
+                              left: `${pos(m.price)}%`,
+                              transform: 'translate(-50%, -50%)',
+                              background: isRing ? 'transparent' : m.dotColor,
+                              border: isRing
+                                ? `2px solid ${m.dotColor}`
+                                : '2px solid var(--surface-card)',
+                              color: m.dotColor,
+                              boxShadow: 'var(--deal-gap-marker-shadow)',
+                              zIndex: isRing ? 0 : 1,
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+
+                    {/* Price labels below dots (grouped when overlapping) */}
+                    <div className="relative" style={{ height: 18, marginTop: 4 }}>
+                      {(() => {
+                        const groups: {
+                          labels: string[]
+                          price: number
+                          colors: string[]
+                          left: number
+                        }[] = []
+                        markers.forEach((m) => {
+                          const p = pos(m.price)
+                          const existing = groups.find((g) => Math.abs(g.left - p) < 3)
+                          if (existing) {
+                            existing.labels.push(m.label)
+                            existing.colors.push(m.dotColor)
+                          } else {
+                            groups.push({
+                              labels: [m.label],
+                              price: m.price,
+                              colors: [m.dotColor],
+                              left: p,
+                            })
+                          }
+                        })
+                        return groups.map((g, i) => (
+                          <div
+                            key={i}
+                            className="absolute text-center"
+                            style={{ left: `${g.left}%`, transform: 'translateX(-50%)', top: 0 }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 600,
+                                lineHeight: 1.2,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {g.labels.map((l, j) => (
+                                <span key={j}>
+                                  {j > 0 && <span style={{ color: 'var(--text-muted)' }}> / </span>}
+                                  <span style={{ color: g.colors[j] }}>{l}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      })()}
+                    </div>
+
+                    {showPriceGap && (
+                      <div
+                        className="relative mt-1"
+                        style={{
+                          marginLeft: `${priceGapLeft}%`,
+                          width: `${priceGapRight - priceGapLeft}%`,
+                        }}
+                      >
+                        <div className="flex items-end">
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: 'var(--status-warning)',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{ height: 1, background: 'var(--status-warning)', flex: 1 }}
+                          />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: 'var(--status-warning)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+                        <p
+                          className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
+                          style={{ color: 'var(--status-warning)', marginBottom: 8 }}
+                        >
+                          PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}
+                          {priceGap.toFixed(1)}%
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              {hasDataSources && (
+                <p
+                  className="text-[12px] sm:text-[13px] leading-relaxed m-0 text-center"
+                  style={{ color: 'var(--text-body)' }}
+                >
+                  Rent or value look off?{' '}
+                  <button
+                    type="button"
+                    onClick={openDataSourcesAndScroll}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{
+                      color: 'var(--accent-sky)',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Open Data Sources
+                  </button>{' '}
+                  to switch provider, or use{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigateToStrategy()}
+                    className="font-semibold underline-offset-2 hover:underline"
+                    style={{
+                      color: 'var(--accent-sky)',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Change Terms
+                  </button>{' '}
+                  for full control.
+                </p>
+              )}
+            </div>
+
+            {dataSourcesPanel}
+
+            {/* Deal Gap Summary */}
+            <div
+              className="mt-6 rounded-xl px-5 py-5"
+              style={{
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
+              {/* Headline: DealGap % plus the dollar gap on the same row.
+                  Positive/neutral still show the tier badge. Severity labels
+                  remain on grade/analytics strings elsewhere. */}
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <div className="flex items-baseline gap-2">
+                  <span
+                    style={{
+                      fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif",
+                      fontSize: 'clamp(26px, 3vw, 36px)',
+                      fontWeight: 600,
+                      lineHeight: 1,
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-heading)' }}>DealGap</span>
+                  </span>
+                  <span
+                    className="tabular-nums"
+                    style={{
+                      fontSize: 'clamp(26px, 3vw, 36px)',
+                      fontWeight: 800,
+                      color:
+                        effectiveDisplayPct >= 0
+                          ? 'var(--status-positive)'
+                          : 'var(--text-heading)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {dealGapDisplay}
+                  </span>
+                </div>
+                {gapCloseLabel ? (
+                  <span
+                    className="tabular-nums text-[13px] sm:text-[17px] font-bold"
+                    style={{
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {gapCloseLabel} to close
+                  </span>
+                ) : dealGapPct <= 0 ? (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      borderRadius: 999,
+                      border: '1px solid var(--border-focus)',
+                      padding: '3px 10px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--text-heading)',
+                      background: 'var(--surface-card)',
+                    }}
+                  >
+                    {tier.label}
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Verdict copy — positive spread; neutral at anchor; challenging when discount is required */}
+              {effectiveDisplayPct > 0 ? (
+                <VerdictPositiveGuidance
+                  effectiveDisplayPct={effectiveDisplayPct}
+                  isListed={isListed}
+                  isAuthenticated={isAuthenticated}
+                  onNavigateAppraiser={navigateToAppraiser}
+                  onNavigateStrategy={navigateToStrategy}
+                  onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
+                  propertyAddress={propertyFullAddress}
+                  onMakeItWork={openMakeItWork}
+                />
+              ) : dealGapPct > 0 ? (
+                <VerdictGapGuidance
+                  tier={tier}
+                  dealGapPct={dealGapPct}
+                  effectiveDisplayPct={effectiveDisplayPct}
+                  isListed={isListed}
+                  isAuthenticated={isAuthenticated}
+                  hasDataSources={hasDataSources}
+                  onOpenDataSources={openDataSourcesAndScroll}
+                  onNavigateStrategy={navigateToStrategy}
+                  onDealMaker={handleNavigateToDealMaker}
+                  onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
+                  propertyAddress={propertyFullAddress}
+                  onMakeItWork={openMakeItWork}
+                />
+              ) : (
+                <VerdictPositiveGuidance
+                  effectiveDisplayPct={effectiveDisplayPct}
+                  isListed={isListed}
+                  isAuthenticated={isAuthenticated}
+                  onNavigateAppraiser={navigateToAppraiser}
+                  onNavigateStrategy={navigateToStrategy}
+                  onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
+                  propertyAddress={propertyFullAddress}
+                  onMakeItWork={openMakeItWork}
+                />
+              )}
+
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <FinancingProvenanceNote />
+                <button
+                  type="button"
+                  onClick={handleShowMethodology}
+                  className="text-[12px] sm:text-[13px] font-semibold transition-colors"
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
+                >
+                  How the gap works
+                </button>
+              </div>
+
+              <VideoModal
+                open={showDealGapVideo}
+                onClose={() => setShowDealGapVideo(false)}
+                src="/videos/what-is-dealgapiq.mp4"
+                title="What is DealGapIQ?"
+              />
+            </div>
+          </section>
+
+          {/* Key Insights card */}
+          <div className="mx-0 sm:mx-5 mt-4">
+            <div
+              className="rounded-none sm:rounded-[14px] overflow-hidden"
+              style={{
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
+              <div style={{ padding: '20px 24px 20px' }}>
+                <h3
+                  className="text-[14px] sm:text-[16px] font-bold uppercase tracking-wide"
+                  style={{
+                    margin: '0 0 18px',
+                    color: 'var(--text-heading)',
+                  }}
+                >
+                  Key Insights
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <InsightItem
+                    delay={0}
+                    title={
+                      isOffMarket ? (
+                        <span>
+                          <strong style={{ color: 'var(--text-heading)' }}>Off-market</strong> —{' '}
+                          <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
+                            not listed for sale
+                          </span>
+                        </span>
+                      ) : (
+                        <span>
+                          <strong style={{ color: 'var(--text-heading)' }}>Actively listed</strong>{' '}
+                          —{' '}
+                          <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
+                            competing buyers
+                          </span>
+                        </span>
+                      )
+                    }
+                    detail={
+                      isOffMarket
+                        ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+                        : 'Speed and terms matter when competing with other buyers.'
+                    }
+                  />
+                  {motivatedInsights.map((insight, i) => (
+                    <InsightItem
+                      key={`motivated-${i}`}
+                      delay={40 + i * 40}
+                      title={
+                        <span style={{ fontWeight: 600 }}>
+                          <span style={{ color: 'var(--text-heading)' }}>{insight.label}</span>
+                          {insight.highlight && (
+                            <span style={{ color: 'var(--accent-sky)' }}> {insight.highlight}</span>
+                          )}
+                        </span>
+                      }
+                      detail={insight.detail}
+                    />
+                  ))}
+                  <InsightItem
+                    delay={80}
+                    title={
+                      <span>
+                        Target buy:{' '}
+                        <strong style={{ color: 'var(--accent-sky)' }}>
+                          {fmtShort(purchasePrice)}
+                        </strong>{' '}
+                        ({dealGapDisplay} gap)
+                      </span>
+                    }
+                    detail={`A ${fmtShort(discountAmount)} discount below market to the profit zone (Target Buy). Cash flow breakeven is Income Value.`}
+                  />
+                  <InsightItem
+                    delay={160}
+                    title={
+                      <span>
+                        About{' '}
+                        <strong style={{ color: 'var(--accent-sky)' }}>
+                          {cumulativeInvestorPct}%
+                        </strong>{' '}
+                        of investors close at this discount or deeper
+                        {investorRegionLabel && investorRegionLabel !== 'U.S.' ? (
+                          <>
+                            {' '}
+                            in{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>
+                              {investorRegionLabel}
+                            </strong>{' '}
+                            markets
+                          </>
+                        ) : (
+                          <> (U.S. baseline)</>
+                        )}
+                      </span>
+                    }
+                    detail={probabilityTail}
+                  />
+
+                  {showAllInsights && (
+                    <>
+                      <InsightItem
+                        delay={0}
+                        title={
+                          <span>
+                            Repairs{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>not included</strong> in
+                            initial analysis
+                          </span>
+                        }
+                        detail="Use DealMaker to add a rehab budget and see the impact on returns."
+                      />
+                      <InsightItem
+                        delay={0}
+                        title={
+                          <span>
+                            Assumes{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>
+                              20% down · 6.0% · 30yr
+                            </strong>
+                          </span>
+                        }
+                        detail="Edit financing terms in DealMaker to match your actual loan scenario."
+                      />
+                      {strMarketData?.str_regulatory?.rating &&
+                        (strMarketData.str_regulatory.rating === 'Negative' ||
+                          strMarketData.str_regulatory.rating === 'Restricted') && (
+                          <InsightItem
+                            delay={0}
+                            title={
+                              <span>
+                                STR regulations:{' '}
+                                <strong style={{ color: '#F59E0B' }}>
+                                  {strMarketData.str_regulatory.rating}
+                                </strong>
+                                {strMarketData.str_regulatory.day_limit && (
+                                  <> — {strMarketData.str_regulatory.day_limit} day limit</>
+                                )}
+                              </span>
+                            }
+                            detail={
+                              strMarketData.str_regulatory.rules_summary ||
+                              'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.'
+                            }
+                          />
+                        )}
+                      {strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
+                        strMarketData.str_market_stats.yoy_occupancy_change < -20 && (
+                          <InsightItem
+                            delay={0}
+                            title={
+                              <span>
+                                STR occupancy{' '}
+                                <strong style={{ color: '#EF4444' }}>
+                                  down{' '}
+                                  {Math.abs(
+                                    strMarketData.str_market_stats.yoy_occupancy_change,
+                                  ).toFixed(0)}
+                                  %
+                                </strong>{' '}
+                                year-over-year
+                              </span>
+                            }
+                            detail="Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections."
+                          />
+                        )}
+                    </>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAllInsights((prev) => !prev)}
+                  className="flex items-center gap-1.5 mt-4 text-[12px] sm:text-[14px] font-semibold transition-colors"
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
+                >
+                  {showAllInsights ? 'Show less' : 'Show all insights'}
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${showAllInsights ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Plain-English narrative + mid-page "Continue to Strategy" now live
+              inside the Four Ways section (behind "See details") so the page
+              reads: overview → four ways → one CTA. */}
+
+          {/* Market Snapshot removed — deal factors now displayed in left column */}
+
+          {/* div-e gradient divider */}
+          <div
+            className="mx-0 sm:mx-5"
+            style={{
+              height: 1,
+              background:
+                'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          />
+
+          {/* CTA → Strategy — copy adapts to Deal Gap tier */}
+          <section className="px-3 sm:px-5 py-10 text-center">
+            <p
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: 'var(--accent-sky)' }}
+            >
+              {dealGapPct <= 10
+                ? 'This deal passed the screen'
+                : dealGapPct <= 20
+                  ? 'This deal needs a closer look'
+                  : `The numbers don't work at ${isListed ? 'asking price' : 'this estimate'}`}
+            </p>
+            <h2
+              className="text-[1.35rem] font-bold leading-snug mb-3"
+              style={{ color: 'var(--text-heading)' }}
+            >
+              {dealGapPct <= 10
+                ? 'Now Prove It.'
+                : dealGapPct <= 20
+                  ? 'Find the Angle.'
+                  : 'See What Would Work.'}
+            </h2>
+            <p
+              className="text-[0.95rem] leading-relaxed mx-auto mb-7"
+              style={{ color: 'var(--text-body)' }}
+            >
+              {dealGapPct <= 10
+                ? "Get a full financial breakdown across 6 investment strategies — what you'd pay, what you'd earn, and whether the numbers actually work."
+                : dealGapPct <= 20
+                  ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
+                  : 'See how far the numbers are off—and what would fix them. Price cuts are only one lever: better financing, more cash down, seller carry, verified rent, or tighter expenses can all close the gap. Strategy walks through each scenario.'}
+            </p>
+            {dealGapPct > 20 && !isAuthenticated && (
+              <p
+                className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Discovery is free.{' '}
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="font-semibold underline-offset-2 hover:underline"
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sign in
+                </button>{' '}
+                only if you want live sliders and saved assumptions.
+              </p>
+            )}
+            <button
+              onClick={() =>
+                MAKE_IT_WORK_ENABLED && hasFourWays
+                  ? openMakeItWork(undefined, 'cta')
+                  : navigateToStrategy()
+              }
+              className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
+              style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}
+            >
+              {MAKE_IT_WORK_ENABLED && hasFourWays ? 'Build my plan' : 'Show Me the Numbers'}
+              <svg
+                className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
+                fill="none"
+                stroke="white"
+                viewBox="0 0 24 24"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+            <div className="flex justify-center gap-6 mt-5">
+              {(dealGapPct > 20 && !isAuthenticated
+                ? ['Discovery is free', 'No card required', SPEED_CLAIM]
+                : ['Try it Free', 'No signup needed', SPEED_CLAIM]
+              ).map((f, i) => (
+                <div key={i} className="flex items-center gap-1.5 sm:gap-2">
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
+                    fill="none"
+                    stroke="var(--accent-sky)"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    className="text-xs sm:text-[0.94rem] font-medium"
+                    style={{ color: 'var(--text-body)' }}
+                  >
+                    {f}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+          </>
+          )}
+
+          {/* Level 3 — embedded Strategy Workbench (R4).
+              Mount/unmount only — never conditional hooks (React #310). */}
+          {workbenchRequest && (
+            <div
+              ref={workbenchSectionRef}
+              id="discovery-workbench"
+              style={{ scrollMarginTop: 16 }}
+            >
+              <StrategyWorkbench
+                address={workbenchRequest.address}
+                strategyId={workbenchRequest.strategyId}
+                condition={conditionParam}
+                location={locationParam}
+                initialSection={workbenchRequest.section}
+                scenarioParam={workbenchRequest.scenario}
+                onScenarioConsumed={handleWorkbenchScenarioConsumed}
+                signInUrl={workbenchSignInUrl}
+                embedded
+                initialDealStructures={analysis?.dealStructures ?? null}
+              />
+            </div>
+          )}
+
+          {/* Trust Strip — verdict-only; clutter under Level 3 */}
+          {!workbenchRequest && !workflowV1Layout && (
+            <div
+              className="px-3 sm:px-5 py-5 text-center border-t"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
+                DealGap IQ analyzes{' '}
+                <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                  rental income, expenses, market conditions
+                </span>{' '}
+                and{' '}
+                <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                  comparable sales
+                </span>{' '}
+                to calculate every Deal Gap. No guesswork — just data.
+              </p>
+            </div>
+          )}
+          </div>
+        </main>
+
+      {/* Deal Gap Methodology Sheet */}
+      <ScoreMethodologySheet
+        isOpen={showMethodologySheet}
+        onClose={() => setShowMethodologySheet(false)}
+        currentScore={undefined}
+        currentGrade={`${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}% Deal Gap — ${tier.label}`}
+        scoreType={methodologyScoreType}
+      />
+
+      <PitchScriptModal
+        structure={pitchModalStructure}
+        onClose={() => setPitchModalStructure(null)}
+        propertyAddress={
+          property
+            ? [
+                property.address,
+                property.city,
+                [property.state, property.zip].filter(Boolean).join(' '),
+              ]
+                .filter(Boolean)
+                .join(', ') || null
+            : null
+        }
+      />
+
+      {makeItWork.open && property && (
+        <MakeItWorkWizard
+          open={makeItWork.open}
+          onClose={closeMakeItWork}
+          source={makeItWork.source}
+          baseInputs={makeItWork.baseInputs}
+          address={propertyFullAddress}
+          addressParts={{
+            street: property.address,
+            city: property.city || undefined,
+            state: property.state || undefined,
+            zip: property.zip || undefined,
+          }}
+          zpid={property.zpid != null ? String(property.zpid) : null}
+          latitude={property.latitude ?? null}
+          longitude={property.longitude ?? null}
+          listPrice={property.price}
+          targetBuyPrice={analysis.purchasePrice ?? null}
+          incomeValue={analysis.incomeValue ?? null}
+          unitCount={null}
+          focusFamily={makeItWork.focusFamily}
+          saveOnly={makeItWork.saveOnly}
+          isAuthenticated={isAuthenticated}
+          propertySnapshot={{
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zip,
+            bedrooms: property.beds,
+            bathrooms: property.baths,
+            sqft: property.sqft,
+            listPrice: property.price,
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            zpid: property.zpid != null ? String(property.zpid) : undefined,
+            latitude: property.latitude,
+            longitude: property.longitude,
+          }}
+          onSaveAuthenticated={saveMakeItWorkPlan}
+          onOpenInStrategy={openThreePathInStrategy}
+          onOpenWorkbench={navigateToStrategy}
+        />
+      )}
+
+      {tourPhase && !workflowV1Layout ? (
+        <WorkbenchTour
+          phase={tourPhase}
+          joyrideIndex={tourJoyrideIndex}
+          onPhaseChange={setTourPhase}
+          onJoyrideIndexChange={setTourJoyrideIndex}
+          onDismiss={dismissTour}
+          onSaveDeal={() => {
+            void saveProperty()
+          }}
+        />
+      ) : null}
+
+      <ActionPlanSlideOver
+        open={actionPlanOpen}
+        onClose={() => setActionPlanOpen(false)}
+        propertyId={savedPropertyId ?? propertyIdParam}
+      />
+
+    </>
+  )
+}

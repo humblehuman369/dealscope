@@ -33,7 +33,7 @@ const FORBIDDEN_DARK_RE = /dark:bg-\[#[0-9a-fA-F]{3,8}\]/
 const FORBIDDEN_BG_BLACK_RE = /\bbg-black\b(?!\/)/
 
 const HIGH_CHURN_PAGES = [
-  'app/discovery/page.tsx',
+  'app/discovery/DiscoveryClient.tsx',
   'features/strategy-workbench/components/StrategyWorkbench.tsx',
   'features/strategy-workbench/components/DealGapBar.tsx',
   'features/strategy-workbench/components/NextStepsSection.tsx',

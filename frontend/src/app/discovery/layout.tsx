@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { BRAND_ASSETS, BRAND_OG_IMAGE } from '@/lib/brand'
 import { SPEED_CLAIM } from '@/lib/claims'
+import { DiscoveryExplainerVisibility } from './DiscoveryExplainerVisibility'
 import { DiscoveryPageExplainer } from './DiscoveryPageExplainer'
 
 export const metadata: Metadata = {
@@ -50,8 +51,12 @@ export default function DiscoveryLayout({ children }: { children: React.ReactNod
         dangerouslySetInnerHTML={{ __html: JSON.stringify(DISCOVERY_JSONLD) }}
       />
       {children}
-      <Suspense fallback={null}>
-        <DiscoveryPageExplainer />
+      {/* Fallback carries the same copy so the prerendered HTML has the H1 +
+          explainer; the client wrapper only decides whether to hide it. */}
+      <Suspense fallback={<DiscoveryPageExplainer />}>
+        <DiscoveryExplainerVisibility>
+          <DiscoveryPageExplainer />
+        </DiscoveryExplainerVisibility>
       </Suspense>
     </>
   )
