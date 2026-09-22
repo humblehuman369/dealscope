@@ -14,14 +14,29 @@ from app.services import markets_service
 from app.services.assumptions_service import MARKET_ADJUSTMENTS
 from app.services.cache_service import CacheService
 from app.services.markets_service import (
-    MIN_INDEXABLE_SECTIONS,
     US_STATES,
     assemble_state_market,
+    is_indexable,
     resolve_state_code,
     state_assumptions,
     state_slug,
 )
 from fastapi import HTTPException
+
+# Every jurisdiction with its own MARKET_ADJUSTMENTS row. FL_SOUTH is a
+# sub-region key, not a state, so it is deliberately absent.
+STATE_SPECIFIC = {"CA", "FL", "GA", "TX"}
+
+
+def _market(code, *, state_lenders=0, nationwide=90, buyers=0, cities=None, generated_at=None):
+    return assemble_state_market(
+        code,
+        state_lender_count=state_lenders,
+        nationwide_lender_count=nationwide,
+        buyer_count=buyers,
+        buyer_cities=cities or [],
+        generated_at=generated_at,
+    )
 
 
 class TestStateLookup:
@@ -70,38 +85,76 @@ class TestStateAssumptions:
 
 
 class TestIndexabilityGuard:
-    def test_specific_assumptions_plus_lenders_is_indexable(self):
-        detail = assemble_state_market("TX", lender_count=12, buyer_count=0, buyer_cities=[])
+    def test_only_four_states_have_specific_rows(self):
+        # If this changes, the indexable set changes with it — update the PR notes.
+        specific = {code for code in US_STATES if state_assumptions(code).is_state_specific}
+        assert specific == STATE_SPECIFIC
+
+    def test_specific_assumptions_plus_state_lenders_is_indexable(self):
+        detail = _market("TX", state_lenders=12)
         assert detail.data_sections == ["assumptions", "lenders"]
         assert detail.indexable is True
 
-    def test_lenders_plus_buyers_is_indexable_without_specific_assumptions(self):
-        detail = assemble_state_market(
-            "OH", lender_count=3, buyer_count=9, buyer_cities=[CityCount(city="Columbus", count=4)]
-        )
-        assert detail.has_state_specific_assumptions is False
-        assert detail.data_sections == ["lenders", "buyers"]
+    def test_specific_assumptions_plus_buyers_is_indexable(self):
+        detail = _market("CA", buyers=5, cities=[CityCount(city="Los Angeles", count=3)])
+        assert detail.data_sections == ["assumptions", "buyers"]
         assert detail.indexable is True
 
-    def test_single_section_is_noindex(self):
-        only_lenders = assemble_state_market("OH", lender_count=3, buyer_count=0, buyer_cities=[])
-        assert only_lenders.data_sections == ["lenders"]
-        assert only_lenders.indexable is False
+    def test_directory_data_without_specific_assumptions_is_noindex(self):
+        # Previously indexable: two directory sections. Now the baseline table
+        # would be the page's centrepiece while claiming to be about Ohio.
+        detail = _market("OH", state_lenders=3, buyers=9, cities=[CityCount(city="Columbus", count=4)])
+        assert detail.has_state_specific_assumptions is False
+        assert detail.data_sections == ["lenders", "buyers"]
+        assert detail.indexable is False
 
-        only_assumptions = assemble_state_market("CA", lender_count=0, buyer_count=0, buyer_cities=[])
-        assert only_assumptions.data_sections == ["assumptions"]
-        assert only_assumptions.indexable is False
+    def test_nationwide_lenders_never_count_as_a_state_section(self):
+        # The padding case from the audit: ~90 nationwide lenders on every state.
+        detail = _market("CA", state_lenders=0, nationwide=90, buyers=0)
+        assert detail.lender_count == 90
+        assert detail.state_lender_count == 0
+        assert detail.nationwide_lender_count == 90
+        assert detail.data_sections == ["assumptions"]
+        assert detail.indexable is False
+
+    def test_specific_assumptions_alone_is_noindex(self):
+        detail = _market("GA", nationwide=0)
+        assert detail.data_sections == ["assumptions"]
+        assert detail.indexable is False
 
     def test_baseline_alone_never_indexes(self):
-        # The national baseline is not evidence about the state.
-        detail = assemble_state_market("WY", lender_count=0, buyer_count=0, buyer_cities=[])
+        detail = _market("WY", nationwide=0)
         assert detail.data_sections == []
         assert detail.indexable is False
-        assert MIN_INDEXABLE_SECTIONS == 2
+
+    def test_lender_count_is_the_sum_of_both_kinds(self):
+        detail = _market("FL", state_lenders=130, nationwide=90, buyers=200)
+        assert detail.lender_count == 220
+        assert detail.indexable is True
+
+    @pytest.mark.parametrize(
+        "specific,state_lenders,buyers,expected",
+        [
+            (True, 1, 0, True),
+            (True, 0, 1, True),
+            (True, 0, 0, False),
+            (False, 50, 50, False),
+            (False, 0, 0, False),
+        ],
+    )
+    def test_is_indexable_rule(self, specific, state_lenders, buyers, expected):
+        assert (
+            is_indexable(
+                has_state_specific_assumptions=specific,
+                state_lender_count=state_lenders,
+                buyer_count=buyers,
+            )
+            is expected
+        )
 
     def test_generated_at_is_iso(self):
         stamp = datetime(2026, 9, 3, 12, 0, tzinfo=UTC)
-        detail = assemble_state_market("FL", lender_count=1, buyer_count=1, buyer_cities=[], generated_at=stamp)
+        detail = _market("FL", state_lenders=1, buyers=1, generated_at=stamp)
         assert detail.generated_at == "2026-09-03T12:00:00+00:00"
 
 
@@ -123,7 +176,7 @@ class TestRouter:
 
         async def fake_detail(db, code):
             calls["n"] += 1
-            return assemble_state_market(code, lender_count=5, buyer_count=7, buyer_cities=[])
+            return _market(code, state_lenders=5, buyers=7)
 
         monkeypatch.setattr(markets_router, "get_state_market", fake_detail)
 
@@ -135,19 +188,36 @@ class TestRouter:
         assert second.model_dump() == first.model_dump()
         assert calls["n"] == 1, "second request must be served from cache"
 
+    async def test_cache_keys_are_versioned_past_v1(self):
+        # v1 payloads lack the split lender counts; reading one would 500.
+        assert markets_router._LIST_KEY != "markets:states:v1"
+        assert not markets_router._detail_key("FL").startswith("markets:state:v1:")
+
     async def test_list_returns_every_state(self, memory_cache, monkeypatch):
         async def fake_lenders(db):
             return {code: (4 if code == "FL" else 0) for code in US_STATES}
 
+        async def fake_nationwide(db):
+            return 90
+
         async def fake_buyers(db):
-            return {code: (2 if code == "FL" else 0) for code in US_STATES}
+            return {code: (2 if code in {"FL", "OH"} else 0) for code in US_STATES}
 
         monkeypatch.setattr(markets_service, "lender_counts_by_state", fake_lenders)
+        monkeypatch.setattr(markets_service, "nationwide_lender_count", fake_nationwide)
         monkeypatch.setattr(markets_service, "buyer_counts_by_state", fake_buyers)
 
         result = await markets_router.get_states(db=AsyncMock())
         assert len(result.states) == 51
         by_code = {s.code: s for s in result.states}
         assert by_code["FL"].indexable is True
+        assert by_code["FL"].lender_count == 94
+        assert by_code["FL"].state_lender_count == 4
+        # Buyers but a baseline assumptions row: rendered, not indexed.
+        assert by_code["OH"].indexable is False
+        # Nationwide padding alone is not a state section.
         assert by_code["WY"].indexable is False
-        assert by_code["WY"].lender_count == 0
+        assert by_code["WY"].lender_count == 90
+        assert by_code["WY"].state_lender_count == 0
+        assert by_code["WY"].nationwide_lender_count == 90
+        assert {s.code for s in result.states if s.indexable} == {"FL"}

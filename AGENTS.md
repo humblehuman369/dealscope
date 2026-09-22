@@ -282,7 +282,17 @@ Everything else in the app is either fully static or fully dynamic.
 - The only sources are first-party: `MARKET_ADJUSTMENTS`, active lender counts,
   strict-filter cash buyer counts. No third-party API is called and nothing is
   estimated. A state whose backend `indexable` flag is false renders the sections
-  that have data under `NOINDEX_FOLLOW` and is omitted from `sitemap.ts`.
+  that have data under `NOINDEX_FOLLOW`, emits no `Dataset` node, and is omitted
+  from `sitemap.ts`.
+- `indexable` is decided once, in `markets_service.is_indexable()`: the state
+  must have its **own** `MARKET_ADJUSTMENTS` row **and** at least one in-state
+  directory section (`state_lender_count > 0` or `buyer_count > 0`). The
+  national baseline row and nationwide lenders (`nationwide_lender_count`,
+  identical for every state) never count as evidence about a state; they are
+  reported so the page can label them honestly ("National baseline
+  assumptions (no {State}-specific adjustments yet)", "N lenders licensed in
+  {State} + M nationwide"). Adding a state row to `MARKET_ADJUSTMENTS` is what
+  makes a state eligible; do not loosen the rule instead.
 - A backend fetch failure resolves to `null`, not a throw, so a build or a
   revalidation never fails on it; the page degrades to its noindex fallback and
   the next revalidation retries.

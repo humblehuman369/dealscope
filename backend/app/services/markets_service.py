@@ -5,18 +5,23 @@ Sources, all first-party:
   - active lender counts by state served (``lenders`` table)
   - strict-filter cash buyer counts and top cities by state (``cash_buyers`` table)
 
-Nothing here calls a third-party API. A state page is indexable only when at
-least ``MIN_INDEXABLE_SECTIONS`` of those sections carry real data; otherwise
-the frontend renders what exists under ``noindex, follow``. The national
-baseline row is deliberately *not* counted as a section, or every state would
-qualify on it alone.
+Nothing here calls a third-party API. A state page is indexable only when the
+state has its *own* ``MARKET_ADJUSTMENTS`` row **and** at least one directory
+section holds state-scoped records (lenders licensed in the state, or buyers
+based there). Otherwise the frontend renders what exists under
+``noindex, follow``. Two things deliberately never count as evidence about a
+state: the national baseline row (every state would qualify on it alone) and
+nationwide lenders (they are the same ~90 records for all 51 states, so they
+would pad every state's lender count and collapse the rule to
+``buyer_count > 0``). Both are still reported — as ``is_state_specific=False``
+and ``nationwide_lender_count`` — so the page can say honestly what it shows.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.cash_buyer import CashBuyer
@@ -32,7 +37,6 @@ from app.services.assumptions_service import MARKET_ADJUSTMENTS
 from app.services.buyers_service import STRICT_FILTER
 from app.services.lenders_service import ACTIVE_FILTER
 
-MIN_INDEXABLE_SECTIONS = 2
 TOP_CITY_LIMIT = 8
 
 US_STATES: dict[str, str] = {
@@ -119,10 +123,22 @@ def state_assumptions(code: str) -> StateAssumptions:
     )
 
 
+def is_indexable(*, has_state_specific_assumptions: bool, state_lender_count: int, buyer_count: int) -> bool:
+    """The noindex rule for /markets/[state], shared by the list and detail payloads.
+
+    Both halves are required: a state-specific assumptions row (so the
+    assumptions table is about *this* state, not the baseline) and at least one
+    directory section with in-state records. ``nationwide_lender_count`` is
+    intentionally not a parameter.
+    """
+    return has_state_specific_assumptions and (state_lender_count > 0 or buyer_count > 0)
+
+
 def assemble_state_market(
     code: str,
     *,
-    lender_count: int,
+    state_lender_count: int,
+    nationwide_lender_count: int,
     buyer_count: int,
     buyer_cities: list[CityCount],
     generated_at: datetime | None = None,
@@ -132,7 +148,7 @@ def assemble_state_market(
     sections: list[str] = []
     if assumptions.is_state_specific:
         sections.append("assumptions")
-    if lender_count > 0:
+    if state_lender_count > 0:
         sections.append("lenders")
     if buyer_count > 0:
         sections.append("buyers")
@@ -141,10 +157,16 @@ def assemble_state_market(
         code=code,
         name=US_STATES[code],
         slug=state_slug(code),
-        lender_count=lender_count,
+        lender_count=state_lender_count + nationwide_lender_count,
+        state_lender_count=state_lender_count,
+        nationwide_lender_count=nationwide_lender_count,
         buyer_count=buyer_count,
         has_state_specific_assumptions=assumptions.is_state_specific,
-        indexable=len(sections) >= MIN_INDEXABLE_SECTIONS,
+        indexable=is_indexable(
+            has_state_specific_assumptions=assumptions.is_state_specific,
+            state_lender_count=state_lender_count,
+            buyer_count=buyer_count,
+        ),
         assumptions=assumptions,
         buyer_cities=buyer_cities,
         data_sections=sections,
@@ -153,16 +175,23 @@ def assemble_state_market(
 
 
 async def lender_counts_by_state(db: AsyncSession) -> dict[str, int]:
-    """Active lenders serving each state. Nationwide lenders count toward every state."""
+    """Active non-nationwide lenders licensed in each state.
+
+    Nationwide lenders also enumerate all 51 states in ``states_served``, so they
+    are excluded here and counted once by :func:`nationwide_lender_count`.
+    """
     served_stmt = (
         select(func.unnest(Lender.states_served).label("st"), func.count())
         .where(ACTIVE_FILTER, Lender.nationwide.is_not(True))
         .group_by("st")
     )
     counts = {str(state).upper(): int(count) for state, count in (await db.execute(served_stmt)).all() if state}
-    nationwide_stmt = select(func.count()).select_from(Lender).where(ACTIVE_FILTER, Lender.nationwide.is_(True))
-    nationwide = int((await db.execute(nationwide_stmt)).scalar_one())
-    return {code: counts.get(code, 0) + nationwide for code in US_STATES}
+    return {code: counts.get(code, 0) for code in US_STATES}
+
+
+async def nationwide_lender_count(db: AsyncSession) -> int:
+    stmt = select(func.count()).select_from(Lender).where(ACTIVE_FILTER, Lender.nationwide.is_(True))
+    return int((await db.execute(stmt)).scalar_one())
 
 
 async def buyer_counts_by_state(db: AsyncSession) -> dict[str, int]:
@@ -187,10 +216,11 @@ async def buyer_cities_for_state(db: AsyncSession, code: str) -> list[CityCount]
 
 
 async def lender_count_for_state(db: AsyncSession, code: str) -> int:
+    """Active non-nationwide lenders licensed in ``code``; see :func:`lender_counts_by_state`."""
     stmt = (
         select(func.count())
         .select_from(Lender)
-        .where(ACTIVE_FILTER, or_(Lender.nationwide.is_(True), Lender.states_served.any(code)))
+        .where(ACTIVE_FILTER, Lender.nationwide.is_not(True), Lender.states_served.any(code))
     )
     return int((await db.execute(stmt)).scalar_one())
 
@@ -202,12 +232,14 @@ async def buyer_count_for_state(db: AsyncSession, code: str) -> int:
 
 async def list_state_markets(db: AsyncSession) -> StateMarketListResponse:
     lenders = await lender_counts_by_state(db)
+    nationwide = await nationwide_lender_count(db)
     buyers = await buyer_counts_by_state(db)
     now = datetime.now(UTC)
     states = [
         assemble_state_market(
             code,
-            lender_count=lenders[code],
+            state_lender_count=lenders[code],
+            nationwide_lender_count=nationwide,
             buyer_count=buyers[code],
             buyer_cities=[],
             generated_at=now,
@@ -219,12 +251,14 @@ async def list_state_markets(db: AsyncSession) -> StateMarketListResponse:
 
 
 async def get_state_market(db: AsyncSession, code: str) -> StateMarketDetail:
-    lender_count = await lender_count_for_state(db, code)
+    state_lenders = await lender_count_for_state(db, code)
+    nationwide = await nationwide_lender_count(db)
     buyer_count = await buyer_count_for_state(db, code)
     cities = await buyer_cities_for_state(db, code)
     return assemble_state_market(
         code,
-        lender_count=lender_count,
+        state_lender_count=state_lenders,
+        nationwide_lender_count=nationwide,
         buyer_count=buyer_count,
         buyer_cities=cities,
     )
