@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
+import { DEAL_STRUCTURES_PATH } from '@/lib/dealStructures/recomputeStructures'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import { requestPlanNarrative, type PlanNarrative } from '@/lib/api/plans'
 import type { DealStructure } from '@/components/iq-verdict/PathOptionCard'
@@ -31,7 +32,7 @@ export interface PlanNumbers {
 
 export interface UseMakeItWorkArgs {
   open: boolean
-  /** The exact body last sent to `/api/v1/analysis/verdict` for this property. */
+  /** Verdict inputs for this property, without the address (added at request time). */
   baseInputs: Record<string, unknown> | null
   address: string
   listPrice: number
@@ -182,29 +183,33 @@ export function useMakeItWork({
           dismissed_families: _dismissed,
           ...body
         } = baseInputs as Record<string, unknown>
-        const request = { ...body, ...answersToVerdictOverrides(finalAnswers, listPrice) }
-        const result = await api.post<Record<string, unknown>>('/api/v1/analysis/verdict', request, {
+        // Structures-only re-solve. POST /analysis/verdict counts as a new
+        // anonymous analysis, and this body has no address so it is not a
+        // repeat of the Discovery view — signed-out users (1/day) 403 here.
+        const request = {
+          ...body,
+          address,
+          ...answersToVerdictOverrides(finalAnswers, listPrice),
+        }
+        const result = await api.post<Record<string, unknown>>(DEAL_STRUCTURES_PATH, request, {
           softAuth: true,
         })
         if (computeGeneration.current !== generation) return
 
-        const mapped = mapDealStructuresFromApi(
-          (result.deal_structures ?? result.dealStructures) as Record<string, unknown> | undefined,
-        )
+        const mapped = mapDealStructuresFromApi(result)
         const nextPaths = mapped?.paths ?? []
+        const summary = mapped?.breakevenSummary
         const pick = pickRecommended(nextPaths, finalAnswers, focusFamily, {
-          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
+          monthlyShortfall: summary?.monthlyShortfall ?? null,
         })
-        const num = (v: unknown): number | null =>
-          typeof v === 'number' && Number.isFinite(v) ? v : null
 
         setPaths(nextPaths)
         setRecommended(pick)
         setNumbers({
-          listPrice: num(result.list_price ?? result.listPrice) ?? listPrice,
-          targetBuyPrice: num(result.purchase_price ?? result.purchasePrice) ?? targetBuyPrice,
-          incomeValue: num(result.income_value ?? result.incomeValue) ?? incomeValue,
-          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
+          listPrice: summary?.listPrice ?? listPrice,
+          targetBuyPrice: summary?.targetBuyPrice ?? targetBuyPrice,
+          incomeValue: summary?.incomeValue ?? incomeValue,
+          monthlyShortfall: summary?.monthlyShortfall ?? null,
         })
         setPhase('result')
         trackEvent('make_it_work_plan_viewed', {
@@ -216,13 +221,14 @@ export function useMakeItWork({
           terms: finalAnswers.terms ?? undefined,
         })
         if (pick) void loadNarrative(pick, finalAnswers, generation)
-      } catch {
+      } catch (err) {
         if (computeGeneration.current !== generation) return
+        console.error('[Make it work] plan solve failed', err)
         setErrorMessage("We couldn't run the numbers just now. Try again in a moment.")
         setPhase('error')
       }
     },
-    [baseInputs, listPrice, targetBuyPrice, incomeValue, focusFamily, loadNarrative],
+    [address, baseInputs, listPrice, targetBuyPrice, incomeValue, focusFamily, loadNarrative],
   )
 
   const advance = useCallback(
