@@ -202,12 +202,12 @@ export function VerdictCard({
         <NumberTile
           value={formatMoneyExact(targetBuy)}
           label={NUMBER_LABELS.target}
-          color="var(--status-positive)"
+          color="var(--accent-sky)"
         />
         <NumberTile
           value={formatMoneyExact(incomeValue)}
           label={NUMBER_LABELS.income}
-          color="var(--status-income-value)"
+          color="var(--status-warning)"
         />
         <NumberTile
           value={formatMoneyExact(listPrice)}
@@ -395,7 +395,7 @@ function NumberTile({
       >
         {value}
       </p>
-      <p className="text-[13px] leading-snug mt-1 mb-0" style={{ color: 'var(--text-secondary)' }}>
+      <p className="text-[13px] leading-snug mt-1 mb-0" style={{ color: 'var(--text-heading)' }}>
         {label}
       </p>
     </div>

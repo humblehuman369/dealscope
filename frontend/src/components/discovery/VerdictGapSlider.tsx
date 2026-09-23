@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react'
 
+import { V1_NUM } from '@/components/workflow/v1-style'
 import { formatMoneyExact } from '@/lib/verdictCopy'
 
 export const GAP_LABEL_MIN_GAP_PX = 16
@@ -31,8 +32,8 @@ const MARKERS: {
   color: string
   priceKey: keyof GapMarkerInput
 }[] = [
-  { id: 'target', name: 'Target', color: 'var(--status-positive)', priceKey: 'targetBuy' },
-  { id: 'income', name: 'Income', color: 'var(--status-income-value)', priceKey: 'incomeValue' },
+  { id: 'target', name: 'Target', color: 'var(--accent-sky)', priceKey: 'targetBuy' },
+  { id: 'income', name: 'Income', color: 'var(--status-warning)', priceKey: 'incomeValue' },
   { id: 'market', name: 'Market', color: 'var(--status-negative)', priceKey: 'listPrice' },
 ]
 
@@ -183,7 +184,7 @@ export function VerdictGapSlider({
           style={{
             height: 10,
             background:
-              'linear-gradient(90deg, var(--status-positive) 0%, var(--status-income-value) 14%, var(--status-negative) 100%)',
+              'linear-gradient(90deg, var(--accent-sky) 0%, var(--status-warning) 14%, var(--status-negative) 100%)',
           }}
         />
         {markers.map((marker) => (
@@ -208,8 +209,8 @@ export function VerdictGapSlider({
               }}
               className="absolute left-1/2 whitespace-nowrap text-[13px] tabular-nums"
               style={{
-                color: 'var(--text-secondary)',
-                fontVariantNumeric: 'tabular-nums',
+                color: marker.color,
+                ...V1_NUM,
                 top: marker.stack === 'above' ? -28 : 26,
                 transform: labelTransform(marker.pct),
               }}
