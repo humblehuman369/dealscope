@@ -1,0 +1,17 @@
+{
+  "name": "DealGapIQ (backend + frontend)",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "backend (FastAPI :8000)",
+      "command": "cd backend && ./.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    },
+    {
+      "name": "frontend (Next.js :3000)",
+      "command": "cd frontend && npm run dev"
+    }
+  ],
+  "ports": [3000, 8000]
+}
