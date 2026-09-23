@@ -872,3 +872,12 @@ main > .home-dark-wash:nth-child(odd) .home-dark-bloom {
 [data-theme='dark'] main:has(> #home-hero) .home-dark-wash.bg-\[var\(--surface-section\)\] {
   background-color: #08101c;
 }
+
+/* Homepage section headings: cap desktop size so they balance the subtext.
+   Phones (<640px) keep their current Tailwind sizes. */
+@media (min-width: 640px) {
+  main > section.home-dark-wash h2 {
+    font-size: clamp(1.875rem, 2.2vw + 1rem, 2.25rem);
+    line-height: 1.15;
+  }
+}
