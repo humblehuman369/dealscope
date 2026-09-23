@@ -3,6 +3,7 @@ import {
   buildScanPath,
   isMobileUserAgent,
   parseScanSource,
+  HOME_QR_URL,
   scanQrUrl,
 } from '@/lib/scanQr'
 import { generateScanQrSvg } from '@/lib/scanQrSvg'
@@ -19,12 +20,16 @@ describe('scan QR helpers', () => {
     expect(parseScanSource('qr_home', 'header')).toBe('qr_home')
   })
 
-  it('encodes the homepage QR with the tracking-plan UTMs', () => {
+  it('encodes scanner QRs with the tracking-plan UTMs', () => {
     expect(scanQrUrl('qr_home')).toBe(
       'https://dealgapiq.com/scan?src=qr_home&utm_source=web&utm_medium=qr&utm_campaign=scan',
     )
     expect(scanQrUrl('qr_dialog')).toContain('src=qr_dialog')
     expect(scanQrUrl('qr_getapp')).toContain('src=qr_getapp')
+  })
+
+  it('points the homepage QR at the site root so the phone browser opens it', () => {
+    expect(HOME_QR_URL).toBe('https://dealgapiq.com')
   })
 
   it('treats phone UAs as camera targets', () => {

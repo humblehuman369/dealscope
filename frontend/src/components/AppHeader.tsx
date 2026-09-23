@@ -773,11 +773,12 @@ export function AppHeader({
         />
 
         <header className="relative z-50" aria-label="Site">
-          {/* Brand Bar — logo | centered search | tools + theme + account */}
-          <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 pt-safe-header">
+          {/* Brand bar. On phones the address field sits on its own row so
+              Scan / Tools / theme stay intact instead of painting over it. */}
+          <div className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-4 py-2 pt-safe-header sm:gap-x-3 sm:py-3">
             <button
               onClick={handleLogoClick}
-              className="shrink-0 flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
+              className="col-start-1 row-start-1 shrink-0 flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
               aria-label="DealGapIQ home"
             >
               <Image
@@ -791,11 +792,11 @@ export function AppHeader({
               />
             </button>
 
-            <div className="flex-1 flex justify-center min-w-0 px-1 sm:px-2">
+            <div className="col-span-3 row-start-2 flex min-w-0 justify-center sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:px-2">
               <HeaderPropertySearch />
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <div className="col-start-3 row-start-1 flex items-center gap-1 sm:gap-2 shrink-0">
               {isHomepage && (
                 <>
                   <Link
@@ -839,7 +840,7 @@ export function AppHeader({
               <button
                 type="button"
                 onClick={handleScanProperty}
-                className="min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] flex items-center gap-1.5 whitespace-nowrap"
+                className="shrink-0 min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] flex items-center gap-1.5 whitespace-nowrap"
                 style={{
                   borderColor: 'var(--border-default)',
                   color: 'var(--text-secondary)',

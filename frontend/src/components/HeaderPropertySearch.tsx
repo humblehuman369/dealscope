@@ -232,7 +232,7 @@ export function HeaderPropertySearch() {
   const showPanel = validationStatus === 'error' || validationStatus === 'issues'
 
   return (
-    <div className="relative w-full max-w-[14rem] sm:max-w-xs md:max-w-sm min-w-0">
+    <div className="relative w-full min-w-0 sm:max-w-xs md:max-w-sm">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -274,8 +274,8 @@ export function HeaderPropertySearch() {
             onPlaceSelect={handlePlaceSelect}
             onManualSubmit={(text) => void submitAddress(text)}
             name="header-address"
-            className="flex-1 min-w-0 bg-transparent border-none outline-none text-[13px] sm:text-sm font-medium truncate py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: 'var(--text-heading)', outlineColor: 'var(--accent-sky)' }}
+            className="basis-0 flex-1 min-w-0 w-0 bg-transparent border-none outline-none text-[13px] sm:text-sm font-medium truncate py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-sky)]"
+            style={{ color: 'var(--text-heading)' }}
           />
           {validationStatus === 'validating' && (
             <Loader2

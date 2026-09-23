@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { ScanQR } from '@/components/landing/ScanQR'
+import { HOME_QR_URL } from '@/lib/scanQr'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
 import { HOME_UPDATED_AT } from '@/config/site'
@@ -40,7 +41,17 @@ export default function HomePage() {
       {/* React hoists <meta> into <head>; Next's `openGraph` has no modified_time for type=website. */}
       <meta property="article:modified_time" content={HOME_UPDATED_AT} />
       <JsonLd data={buildHomeJsonLd()} />
-      <HomePageClient scanQr={<ScanQR src="qr_home" size={72} framed={false} />} />
+      <HomePageClient
+        scanQr={
+          <ScanQR
+            src="qr_home"
+            url={HOME_QR_URL}
+            size={72}
+            framed={false}
+            alt="QR code that opens dealgapiq.com in your phone's browser."
+          />
+        }
+      />
     </>
   )
 }

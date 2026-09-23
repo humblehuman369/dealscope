@@ -20,9 +20,9 @@ const STAT_STYLE: React.CSSProperties = {
 
 const SKY = '#0EA5E9'
 
-/** Product labels and counts (counts ~15% below label scale). */
-const CARD_LABEL_SIZE = 'clamp(2.125rem, 5.1vw, 2.7625rem)'
-const CARD_STAT_SIZE = 'clamp(1.9125rem, 4.59vw, 2.48625rem)'
+/** Product labels and counts. Labels stay under the 36px section heading. */
+const CARD_LABEL_SIZE = 'clamp(1.5rem, 2vw + 0.75rem, 1.75rem)'
+const CARD_STAT_SIZE = 'clamp(1.25rem, 1.7vw + 0.65rem, 1.5rem)'
 
 const HOMEPAGE_BUYER_STAT = BUYER_COUNT
 
@@ -45,7 +45,7 @@ function DirectoryCard({
 }) {
   return (
     <div
-      className="flex flex-col rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)]"
+      className="flex flex-col rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 shadow-[var(--shadow-card)]"
       style={{ borderTopWidth: 3, borderTopColor: SKY }}
     >
       <div
@@ -114,7 +114,7 @@ export function DirectoriesPromoSection() {
       </div>
 
       <div className="home-dark-bloom">
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         <DirectoryCard
           productLabel="Cash Buyers"
           stat={HOMEPAGE_BUYER_STAT}

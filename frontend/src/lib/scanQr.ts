@@ -35,6 +35,9 @@ export function buildScanPath(src: ScanSource): string {
   return `/scan?src=${src}`
 }
 
+/** Homepage QR payload. The site root is not an iOS universal link, so a phone camera opens the browser. */
+export const HOME_QR_URL = SCAN_ORIGIN
+
 export function scanQrUrl(src: ScanQrSource): string {
   const params = new URLSearchParams({
     src,
