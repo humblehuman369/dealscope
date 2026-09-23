@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
+import { DEAL_STRUCTURES_PATH } from '@/lib/dealStructures/recomputeStructures'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import { requestPlanNarrative, type PlanNarrative } from '@/lib/api/plans'
 import type { DealStructure } from '@/components/iq-verdict/PathOptionCard'
@@ -71,6 +72,34 @@ function templateNarrative(structure: DealStructure): PlanNarrative {
     summary: structure.summary,
     pitch: structure.pitchScript ?? '',
     source: 'template',
+  }
+}
+
+function finiteNumber(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null
+}
+
+/**
+ * Re-solve body for the wizard. Drops the stale Target Buy so the engine
+ * re-derives it from the new down payment, drops localStorage dismissals so
+ * the wizard's own answers win, and stamps the property address.
+ */
+export function buildMakeItWorkRequest(
+  baseInputs: Record<string, unknown>,
+  answers: WizardAnswers,
+  listPrice: number,
+  address: string,
+): Record<string, unknown> {
+  const {
+    purchase_price: _purchase,
+    dismissed_families: _dismissed,
+    ...body
+  } = baseInputs
+  const trimmed = address.trim()
+  return {
+    ...body,
+    ...answersToVerdictOverrides(answers, listPrice),
+    ...(trimmed ? { address: trimmed } : {}),
   }
 }
 
@@ -175,36 +204,35 @@ export function useMakeItWork({
       setPhase('computing')
       setErrorMessage(null)
       try {
-        // Drop the stale Target Buy so the engine re-derives it from the new down payment,
-        // and drop any localStorage dismissals — the wizard's own answers decide here.
-        const {
-          purchase_price: _purchase,
-          dismissed_families: _dismissed,
-          ...body
-        } = baseInputs as Record<string, unknown>
-        const request = { ...body, ...answersToVerdictOverrides(finalAnswers, listPrice) }
-        const result = await api.post<Record<string, unknown>>('/api/v1/analysis/verdict', request, {
+        const request = buildMakeItWorkRequest(baseInputs, finalAnswers, listPrice, address)
+        // Structures-only re-solve: same knobs as the verdict engine, no
+        // anonymous-quota fingerprint. /analysis/verdict would 403 signed-out
+        // users who already spent today's one free analysis on this house.
+        const result = await api.post<Record<string, unknown>>(DEAL_STRUCTURES_PATH, request, {
           softAuth: true,
         })
         if (computeGeneration.current !== generation) return
 
         const mapped = mapDealStructuresFromApi(
-          (result.deal_structures ?? result.dealStructures) as Record<string, unknown> | undefined,
+          (result.deal_structures ?? result.dealStructures ?? result) as Record<string, unknown>,
         )
         const nextPaths = mapped?.paths ?? []
+        const summary = mapped?.breakevenSummary
         const pick = pickRecommended(nextPaths, finalAnswers, focusFamily, {
-          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
+          monthlyShortfall: summary?.monthlyShortfall ?? null,
         })
-        const num = (v: unknown): number | null =>
-          typeof v === 'number' && Number.isFinite(v) ? v : null
 
         setPaths(nextPaths)
         setRecommended(pick)
         setNumbers({
-          listPrice: num(result.list_price ?? result.listPrice) ?? listPrice,
-          targetBuyPrice: num(result.purchase_price ?? result.purchasePrice) ?? targetBuyPrice,
-          incomeValue: num(result.income_value ?? result.incomeValue) ?? incomeValue,
-          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
+          listPrice: finiteNumber(result.list_price ?? result.listPrice) ?? summary?.listPrice ?? listPrice,
+          targetBuyPrice:
+            finiteNumber(result.purchase_price ?? result.purchasePrice) ??
+            summary?.targetBuyPrice ??
+            targetBuyPrice,
+          incomeValue:
+            finiteNumber(result.income_value ?? result.incomeValue) ?? summary?.incomeValue ?? incomeValue,
+          monthlyShortfall: summary?.monthlyShortfall ?? null,
         })
         setPhase('result')
         trackEvent('make_it_work_plan_viewed', {
@@ -222,7 +250,7 @@ export function useMakeItWork({
         setPhase('error')
       }
     },
-    [baseInputs, listPrice, targetBuyPrice, incomeValue, focusFamily, loadNarrative],
+    [address, baseInputs, listPrice, targetBuyPrice, incomeValue, focusFamily, loadNarrative],
   )
 
   const advance = useCallback(

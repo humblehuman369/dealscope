@@ -960,7 +960,7 @@ export function DiscoveryClient() {
           ...(purchasePriceOverride != null ? { purchasePrice: purchasePriceOverride } : {}),
           ...(savedExpenseOverrides ?? {}),
         })
-        analysisInputsRef.current = analysisBody
+        analysisInputsRef.current = { ...analysisBody, address: addressParam }
 
         const analysisData = await fetchVerdictAnalysis<
           IQVerdictResponse & Record<string, any>
