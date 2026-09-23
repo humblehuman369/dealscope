@@ -6,6 +6,7 @@ import {
   splitWhySignals,
   type WhySignal,
 } from '@/lib/whyWeThinkSo'
+import { V1_CARD, V1_SECTION_CLASS, V1_SECTION_STYLE } from '@/components/workflow/v1-style'
 
 export interface WhyWeThinkSoProps {
   signals: readonly WhySignal[]
@@ -18,7 +19,7 @@ function SignalRow({ signal, first }: { signal: WhySignal; first?: boolean }) {
       style={{ borderTop: first ? 'none' : '1px solid var(--border-default)' }}
     >
       <p
-        className="m-0 text-[13px] font-semibold tabular-nums"
+        className="m-0 text-[14px] font-bold tabular-nums"
         style={{ color: 'var(--text-heading)' }}
       >
         {signal.title}
@@ -41,19 +42,8 @@ export function WhyWeThinkSo({ signals }: WhyWeThinkSoProps) {
   if (visible.length === 0) return null
 
   return (
-    <article
-      aria-labelledby={headingId}
-      className="rounded-2xl px-3 sm:px-5 py-6"
-      style={{
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
-      }}
-    >
-      <h2
-        id={headingId}
-        className="m-0 mb-3 text-[16px] font-semibold"
-        style={{ color: 'var(--text-heading)' }}
-      >
+    <article aria-labelledby={headingId} className="px-3 sm:px-5 py-6" style={V1_CARD}>
+      <h2 id={headingId} className={`${V1_SECTION_CLASS} mb-3`} style={V1_SECTION_STYLE}>
         Why we think so
       </h2>
       <div>

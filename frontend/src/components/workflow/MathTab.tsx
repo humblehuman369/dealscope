@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import { V1_SECTION_CLASS, V1_SECTION_STYLE } from '@/components/workflow/v1-style'
 
 const PriceCheckerIQScreen = dynamic(
   () =>
@@ -63,8 +64,8 @@ export function MathTab({
       <section aria-labelledby="math-sources-heading">
         <h2
           id="math-sources-heading"
-          className="text-[16px] font-semibold mb-3"
-          style={{ color: 'var(--text-heading)' }}
+          className={`${V1_SECTION_CLASS} mb-3`}
+          style={V1_SECTION_STYLE}
         >
           Data sources
         </h2>
@@ -73,8 +74,8 @@ export function MathTab({
       <section ref={compsRef} aria-labelledby="math-comps-heading">
         <h2
           id="math-comps-heading"
-          className="text-[16px] font-semibold mb-3"
-          style={{ color: 'var(--text-heading)' }}
+          className={`${V1_SECTION_CLASS} mb-3`}
+          style={V1_SECTION_STYLE}
         >
           Comps
         </h2>
@@ -96,8 +97,8 @@ export function MathTab({
       <section ref={estimatorRef} aria-labelledby="math-estimator-heading">
         <h2
           id="math-estimator-heading"
-          className="text-[16px] font-semibold mb-3"
-          style={{ color: 'var(--text-heading)' }}
+          className={`${V1_SECTION_CLASS} mb-3`}
+          style={V1_SECTION_STYLE}
         >
           Estimator
         </h2>

@@ -4,7 +4,18 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode 
 import type { PlanViewModel } from '@/lib/dealStructures/planSnapshot'
 import { PLAN_WHY_TWO_GAPS } from '@/lib/planCopy'
 import { PHASE_15_COPY } from '@/lib/phase15Copy'
-import { V1_NUM } from '@/components/workflow/v1-style'
+import {
+  V1_BTN_PRIMARY_CLASS,
+  V1_BTN_PRIMARY_STYLE,
+  V1_BTN_SECONDARY_CLASS,
+  V1_BTN_SECONDARY_STYLE,
+  V1_CARD,
+  V1_NUM,
+  V1_SECTION_CLASS,
+  V1_SECTION_STYLE,
+  V1_TITLE_CLASS,
+  V1_TITLE_STYLE,
+} from '@/components/workflow/v1-style'
 
 export interface PlanViewProps {
   model: PlanViewModel
@@ -20,17 +31,10 @@ export interface PlanViewProps {
   debugThrow?: boolean
 }
 
-const CARD: CSSProperties = {
-  background: 'var(--surface-card)',
-  border: '1px solid var(--border-default)',
-  borderRadius: 16,
-}
+const CARD = V1_CARD
 
 const HERO: CSSProperties = {
   ...CARD,
-  background:
-    'radial-gradient(120% 120% at 0% 0%, rgba(14,165,233,0.09), transparent 60%), var(--surface-card)',
-  border: '1px solid var(--border-subtle)',
   boxShadow: 'var(--shadow-card)',
 }
 
@@ -103,18 +107,14 @@ export function PlanView({
     <div className="flex flex-col gap-4">
       <article aria-labelledby={titleId} className="px-4 sm:px-5 py-6" style={HERO}>
         <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-          <h2
-            id={titleId}
-            className="m-0 text-[16px] font-semibold"
-            style={{ color: 'var(--text-heading)' }}
-          >
+          <h2 id={titleId} className={V1_TITLE_CLASS} style={V1_TITLE_STYLE}>
             {model.title}
           </h2>
           <button
             type="button"
             onClick={onTune}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[13px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
+            className={V1_BTN_SECONDARY_CLASS}
+            style={V1_BTN_SECONDARY_STYLE}
           >
             Tune the numbers
           </button>
@@ -140,7 +140,7 @@ export function PlanView({
               style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
               <div
-                className="text-[20px] font-semibold leading-tight"
+                className="text-[20px] font-bold leading-tight"
                 style={{
                   ...NUM,
                   color:
@@ -166,11 +166,15 @@ export function PlanView({
       </article>
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
-        <h2
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold m-0 mb-3"
-          style={{ color: 'var(--accent-sky)' }}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <h2 className={`inline-flex items-center gap-1.5 mb-3 ${V1_SECTION_CLASS}`} style={V1_SECTION_STYLE}>
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="currentColor"
+            aria-hidden="true"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" />
           </svg>
           Guide
@@ -181,8 +185,8 @@ export function PlanView({
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[13px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
+            className={V1_BTN_PRIMARY_CLASS}
+            style={V1_BTN_PRIMARY_STYLE}
             onClick={() => {
               if (model.guideApplyKind === 'start') onStartDeal()
               else if (model.guideApplyStructureId) onApply(model.guideApplyStructureId)
@@ -198,7 +202,7 @@ export function PlanView({
       {model.options.length > 0 ? (
       <article className="px-4 sm:px-5 py-6" style={CARD}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-          <h2 className="m-0 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+          <h2 className={V1_SECTION_CLASS} style={V1_SECTION_STYLE}>
             Four levers, one blend
           </h2>
           <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>
@@ -221,7 +225,7 @@ export function PlanView({
                 outlineColor: 'var(--accent-sky)',
               }}
             >
-              <div className="text-[13px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+              <div className="text-[14px] font-bold" style={{ color: 'var(--text-heading)' }}>
                 {option.title}
               </div>
               <div className="mt-1 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>
@@ -256,7 +260,7 @@ export function PlanView({
       ) : null}
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
-        <h2 className="m-0 mb-3 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+        <h2 className={`${V1_SECTION_CLASS} mb-3`} style={V1_SECTION_STYLE}>
           Against your targets
         </h2>
         <div className="overflow-x-auto">
@@ -295,7 +299,7 @@ export function PlanView({
       </article>
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
-        <h2 className="m-0 mb-3 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+        <h2 className={`${V1_SECTION_CLASS} mb-3`} style={V1_SECTION_STYLE}>
           If this closes
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -305,7 +309,7 @@ export function PlanView({
               className="rounded-xl px-3 py-3"
               style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}
             >
-              <div className="text-[20px] font-semibold leading-tight" style={{ ...NUM, color: 'var(--text-heading)' }}>
+              <div className="text-[20px] font-bold leading-tight" style={{ ...NUM, color: 'var(--text-heading)' }}>
                 {cell.value}
               </div>
               <div className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
@@ -320,7 +324,7 @@ export function PlanView({
       </article>
 
       <article className="px-4 sm:px-5 py-6" style={CARD}>
-        <h2 className="m-0 mb-3 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+        <h2 className={`${V1_SECTION_CLASS} mb-3`} style={V1_SECTION_STYLE}>
           Next moves
         </h2>
         <ol className="m-0 mb-4 pl-5 text-[14px] leading-[1.5]" style={{ color: 'var(--text-body)' }}>
@@ -335,8 +339,8 @@ export function PlanView({
             type="button"
             onClick={onStartDeal}
             disabled={startingDeal}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border-0 cursor-pointer disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
+            className={V1_BTN_PRIMARY_CLASS}
+            style={V1_BTN_PRIMARY_STYLE}
           >
             {startingDeal ? PHASE_15_COPY.startingDeal : 'Start working this deal'}
           </button>
@@ -348,8 +352,8 @@ export function PlanView({
               aria-expanded={shareOpen}
               aria-controls={shareMenuId}
               onClick={() => setShareOpen((prev) => !prev)}
-              className="inline-flex items-center justify-center min-h-11 px-5 text-[14px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
+              className={V1_BTN_SECONDARY_CLASS}
+              style={V1_BTN_SECONDARY_STYLE}
             >
               Share
             </button>

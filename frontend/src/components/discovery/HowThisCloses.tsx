@@ -9,6 +9,7 @@ import {
   startHereRowId,
   type LeverTag,
 } from '@/lib/leverTags'
+import { V1_CARD, V1_SECTION_CLASS, V1_SECTION_STYLE } from '@/components/workflow/v1-style'
 
 export interface HowThisClosesProps {
   payload: DealStructuresPayload
@@ -26,7 +27,7 @@ const TAG_COLOR: Record<LeverTag['tone'], string> = {
 function Tag({ tag }: { tag: LeverTag }) {
   return (
     <span
-      className="inline-flex items-center text-[13px] leading-snug"
+      className="inline-flex items-center text-[13px] font-semibold leading-snug"
       style={{
         padding: '3px 10px',
         borderRadius: 6,
@@ -50,19 +51,8 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
   const paragraph = howThisClosesParagraph(payload)
 
   return (
-    <article
-      aria-labelledby={headingId}
-      className="rounded-2xl px-3 sm:px-5 py-6"
-      style={{
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
-      }}
-    >
-      <h2
-        id={headingId}
-        className="m-0 mb-3 text-[16px] font-semibold"
-        style={{ color: 'var(--text-heading)' }}
-      >
+    <article aria-labelledby={headingId} className="px-3 sm:px-5 py-6" style={V1_CARD}>
+      <h2 id={headingId} className={`${V1_SECTION_CLASS} mb-3`} style={V1_SECTION_STYLE}>
         How this closes
       </h2>
       <p
@@ -105,7 +95,7 @@ export function HowThisCloses({ payload }: HowThisClosesProps) {
                 }}
               >
                 <span
-                  className="w-[84px] shrink-0 text-[14px] font-semibold"
+                  className="w-[84px] shrink-0 text-[15px] font-bold"
                   style={{ color: row.startHere ? 'var(--accent-sky)' : 'var(--text-heading)' }}
                 >
                   {row.name}

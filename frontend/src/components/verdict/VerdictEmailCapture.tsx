@@ -142,9 +142,7 @@ export function VerdictEmailCapture({
         <button
           type="submit"
           disabled={state === 'submitting'}
-          className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold text-white ${
-            isSlim ? 'rounded-full' : 'rounded-xl'
-          }`}
+          className="inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold text-white rounded-xl"
           style={{ background: 'var(--accent-brand-blue)' }}
         >
           <Mail size={16} aria-hidden />

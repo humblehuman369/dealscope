@@ -246,7 +246,7 @@ export function WorkflowPropertyHeader({
 
         <div className="min-w-0 flex-1">
           <h1
-            className="m-0 font-semibold leading-tight text-[24px]"
+            className="m-0 font-bold leading-tight text-[24px]"
             style={{ color: 'var(--text-heading)' }}
           >
             {address}

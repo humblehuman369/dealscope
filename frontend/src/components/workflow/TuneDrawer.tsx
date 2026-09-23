@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useFocusTrap } from '@/components/ui/useFocusTrap'
+import {
+  V1_BTN_PRIMARY_CLASS,
+  V1_BTN_PRIMARY_STYLE,
+  V1_BTN_SECONDARY_CLASS,
+  V1_BTN_SECONDARY_STYLE,
+  V1_TITLE_CLASS,
+  V1_TITLE_STYLE,
+} from '@/components/workflow/v1-style'
 
 export interface TuneDrawerProps {
   open: boolean
@@ -79,7 +87,7 @@ export function TuneDrawer({
           className="flex items-center justify-between gap-3 px-4 pt-4 pb-3 shrink-0"
           style={{ borderBottom: '1px solid var(--border-default)' }}
         >
-          <h2 className="m-0 text-[16px] font-semibold" style={{ color: 'var(--text-heading)' }}>
+          <h2 className={V1_TITLE_CLASS} style={V1_TITLE_STYLE}>
             Tune the numbers
           </h2>
           <button
@@ -106,8 +114,8 @@ export function TuneDrawer({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center min-h-11 px-4 text-[13px] font-semibold rounded-full border bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: 'var(--text-body)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent-sky)' }}
+            className={V1_BTN_SECONDARY_CLASS}
+            style={V1_BTN_SECONDARY_STYLE}
           >
             {resetLabel}
           </button>
@@ -117,8 +125,8 @@ export function TuneDrawer({
               if (onDone) onDone()
               else onClose()
             }}
-            className="inline-flex items-center justify-center min-h-11 px-5 text-[13px] font-semibold rounded-full border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', outlineColor: 'var(--accent-sky)' }}
+            className={V1_BTN_PRIMARY_CLASS}
+            style={V1_BTN_PRIMARY_STYLE}
           >
             Done
           </button>

@@ -171,20 +171,20 @@ export function VerdictGapSlider({
   if (markers.length === 0) return null
 
   return (
-    <div className="relative mx-1 mt-1 mb-1" style={{ minHeight: 88 }}>
+    <div className="relative mx-1 mt-1 mb-1" style={{ minHeight: 100 }}>
       <div
         ref={trackRef}
         className="relative mx-4"
-        style={{ height: 10, marginTop: 36, marginBottom: 32 }}
+        style={{ height: 26, marginTop: 36, marginBottom: 32 }}
         role="img"
         aria-label={describeGap(markers, dealGapDisplayPct)}
       >
         <div
-          className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
+          className="absolute inset-0 rounded-full"
           style={{
-            height: 10,
-            background:
-              'linear-gradient(90deg, var(--accent-sky) 0%, var(--status-warning) 14%, var(--status-negative) 100%)',
+            background: 'var(--deal-gap-track-bg)',
+            border: '2px solid var(--deal-gap-track-border)',
+            boxShadow: 'var(--deal-gap-track-shadow)',
           }}
         />
         {markers.map((marker) => (
@@ -194,24 +194,26 @@ export function VerdictGapSlider({
             style={{
               left: `${marker.pct}%`,
               top: '50%',
-              width: 22,
-              height: 22,
-              marginTop: -11,
-              marginLeft: -11,
+              width: 18,
+              height: 18,
+              marginTop: -9,
+              marginLeft: -9,
               borderRadius: 999,
               background: marker.color,
-              border: '3px solid var(--surface-card)',
+              color: marker.color,
+              border: '2px solid var(--surface-card)',
+              boxShadow: 'var(--deal-gap-marker-shadow)',
             }}
           >
             <small
               ref={(node) => {
                 labelRefs.current[marker.id] = node
               }}
-              className="absolute left-1/2 whitespace-nowrap text-[13px] tabular-nums"
+              className="absolute left-1/2 whitespace-nowrap text-[13px] font-bold tabular-nums"
               style={{
                 color: marker.color,
                 ...V1_NUM,
-                top: marker.stack === 'above' ? -28 : 26,
+                top: marker.stack === 'above' ? -34 : 30,
                 transform: labelTransform(marker.pct),
               }}
             >

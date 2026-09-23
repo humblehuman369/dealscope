@@ -23,7 +23,15 @@ import {
   type VerdictCall,
 } from '@/lib/verdictRules'
 import { useDiscoveryTipsSeen } from '@/hooks/useDiscoveryTipsSeen'
-import { V1_NUM } from '@/components/workflow/v1-style'
+import {
+  V1_BTN_PRIMARY_CLASS,
+  V1_BTN_PRIMARY_STYLE,
+  V1_BTN_SECONDARY_CLASS,
+  V1_BTN_SECONDARY_STYLE,
+  V1_NUM,
+  V1_TITLE_CLASS,
+  V1_TITLE_STYLE,
+} from '@/components/workflow/v1-style'
 
 export interface VerdictCardProps {
   listPrice: number
@@ -148,18 +156,21 @@ export function VerdictCard({
       data-tour="verdict-prices"
       className="rounded-2xl px-3 sm:px-5 py-6"
       style={{
-        background:
-          'radial-gradient(120% 120% at 0% 0%, rgba(14,165,233,0.09), transparent 60%), var(--surface-card)',
+        background: 'var(--surface-card)',
         border: '1px solid var(--border-subtle)',
         boxShadow: 'var(--shadow-card)',
       }}
     >
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <h2
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold m-0"
-          style={{ color: 'var(--accent-sky)' }}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <h2 className={`inline-flex items-center gap-2 ${V1_TITLE_CLASS}`} style={V1_TITLE_STYLE}>
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="currentColor"
+            aria-hidden="true"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             <path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" />
           </svg>
           The verdict
@@ -254,7 +265,7 @@ export function VerdictCard({
       ) : null}
 
       <p
-        className="text-center tabular-nums text-[15px] font-semibold mt-5 mb-2"
+        className="text-center tabular-nums text-[16px] sm:text-[20px] font-bold uppercase mt-6 mb-2"
         style={{
           color: 'var(--accent-sky)',
           ...V1_NUM,
@@ -288,10 +299,10 @@ export function VerdictCard({
             <button
               type="button"
               onClick={dismissTips}
-              className="inline-flex items-center justify-center min-h-9 px-3.5 rounded-full text-[13px] font-semibold"
+              className="inline-flex items-center justify-center min-h-9 px-3.5 rounded-xl text-[13px] font-bold"
               style={{
                 background: 'transparent',
-                border: '1px solid var(--border-strong)',
+                border: '1px solid var(--border-default)',
                 color: 'var(--text-heading)',
               }}
             >
@@ -329,25 +340,16 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onShowMath}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--border-strong)',
-            color: 'var(--text-heading)',
-            outlineColor: 'var(--accent-sky)',
-          }}
+          className={V1_BTN_SECONDARY_CLASS}
+          style={V1_BTN_SECONDARY_STYLE}
         >
           Show the math
         </button>
         <button
           type="button"
           onClick={onBuildPlan}
-          className="inline-flex items-center justify-center min-h-11 px-5 rounded-full text-[14px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{
-            background: 'var(--accent-sky)',
-            color: 'var(--text-inverse)',
-            outlineColor: 'var(--accent-sky)',
-          }}
+          className={V1_BTN_PRIMARY_CLASS}
+          style={V1_BTN_PRIMARY_STYLE}
         >
           {buildPlanLabel}
         </button>
@@ -378,25 +380,44 @@ function NumberTile({
   label: string
   color: string
 }) {
+  const split = label.indexOf('. ')
+  const title = split === -1 ? label : label.slice(0, split)
+  const subtitle = split === -1 ? '' : label.slice(split + 2)
   return (
     <div
-      className="rounded-xl px-4 py-3"
+      className="flex flex-col rounded-xl px-4 py-3 text-center"
       style={{
-        background: 'var(--surface-elevated)',
-        border: '1px solid var(--border-default)',
+        background: 'var(--surface-card)',
+        border: `1px solid ${color}`,
+        boxShadow: 'var(--shadow-card)',
       }}
     >
+      <p className="sr-only">{label}</p>
+      <span
+        aria-hidden="true"
+        className="order-1 text-[12px] font-bold uppercase tracking-wide leading-snug"
+        style={{ color: 'var(--text-heading)' }}
+      >
+        {title}
+      </span>
+      {subtitle ? (
+        <span
+          aria-hidden="true"
+          className="order-3 mt-1 text-[13px] font-medium leading-snug"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {subtitle}
+        </span>
+      ) : null}
       <p
-        className="tabular-nums font-semibold leading-tight text-[22px] m-0"
+        className="order-2 tabular-nums font-bold leading-none mt-1.5 mb-0"
         style={{
           color,
+          fontSize: 'clamp(22px, 1.94vw, 28px)',
           ...V1_NUM,
         }}
       >
         {value}
-      </p>
-      <p className="text-[13px] leading-snug mt-1 mb-0" style={{ color: 'var(--text-heading)' }}>
-        {label}
       </p>
     </div>
   )
