@@ -518,14 +518,16 @@ function DealGapSection() {
       className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 max-w-3xl">
-          <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
-          <h2
-            className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
-            style={DISPLAY_STYLE}
-          >
-            What is a deal gap in real estate?
-          </h2>
+        <div className="mx-auto mb-12 max-w-3xl">
+          <div className="text-center">
+            <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
+            <h2
+              className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
+              style={DISPLAY_STYLE}
+            >
+              What is a deal gap in real estate?
+            </h2>
+          </div>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
             {DEAL_GAP_DEFINITION} If a house lists at {WORKED_EXAMPLE.listPrice} and the numbers say
             an investor should pay {WORKED_EXAMPLE.targetBuy} at 20 percent down, the deal gap is 6.4
@@ -646,7 +648,7 @@ function ClosePathsSection() {
       className="home-dark-wash border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
     >
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 max-w-3xl">
+        <div className="mx-auto mb-12 max-w-3xl text-center">
           <h2
             className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
@@ -654,8 +656,8 @@ function ClosePathsSection() {
             How do you close the gap between list price and target buy price?
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            DealGapIQ gives four paths plus a Blend: Price, Income, Terms and Equity, and a Blend
-            that combines them.
+            DealGap<span className="text-[var(--accent-sky)]">IQ</span> gives four paths plus a
+            Blend: Price, Income, Terms and Equity, and a Blend that combines them.
           </p>
         </div>
 

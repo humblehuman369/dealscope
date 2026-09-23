@@ -21,10 +21,10 @@ export function FaqSection() {
       <div className="mx-auto max-w-7xl px-6">
         <h2
           id="faq-heading"
-          className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
+          className="text-center text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
           style={DISPLAY_STYLE}
         >
-          What do real estate investors ask about DealGapIQ?
+          What do real estate investors ask about DealGap<span className="text-[var(--accent-sky)]">IQ</span>?
         </h2>
         <div className="home-dark-bloom mt-10">
         <div className="grid gap-8 md:grid-cols-2">
