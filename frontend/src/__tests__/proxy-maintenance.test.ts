@@ -31,6 +31,14 @@ describe('proxy maintenance mode', () => {
       },
     )
 
+    it('serves /coming-soon directly with noindex', () => {
+      vi.stubEnv('MAINTENANCE_MODE', 'true')
+      const res = proxy(request('/coming-soon'))
+      expect(rewriteTarget(res)).toBeNull()
+      expect(res.headers.get('location')).toBeNull()
+      expect(res.headers.get('X-Robots-Tag')).toBe('noindex, follow')
+    })
+
     it.each(['/privacy', '/terms', '/robots.txt', '/.well-known/apple-app-site-association'])(
       'passes %s through untouched',
       (path) => {
