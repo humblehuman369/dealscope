@@ -32,7 +32,14 @@ function FirstTouchCapture() {
   return null
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  withAuth = true,
+}: {
+  children: React.ReactNode
+  /** False while the site is paused: the auth modals poll the backend for a session. */
+  withAuth?: boolean
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -51,8 +58,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <CapacitorBridge />
         <FirstTouchCapture />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
-        <AuthModal />
-        <ProWelcomeModal />
+        {withAuth && (
+          <>
+            <AuthModal />
+            <ProWelcomeModal />
+          </>
+        )}
       </ThemeProvider>
     </QueryClientProvider>
   )

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { COMING_SOON_PATH, isMaintenanceMode, isMaintenancePassthrough } from '@/lib/maintenance'
 
 const INDEXABLE_TOOL_PATHS = new Set(['/discovery'])
 
@@ -46,6 +47,26 @@ export function proxy(request: NextRequest) {
     if (target.href !== request.nextUrl.href) {
       return NextResponse.redirect(target, 308)
     }
+  }
+
+  if (isMaintenanceMode()) {
+    if (isMaintenancePassthrough(pathname)) {
+      const passthrough = NextResponse.next()
+      if (pathname === COMING_SOON_PATH) {
+        passthrough.headers.set('X-Robots-Tag', 'noindex, follow')
+      }
+      return passthrough
+    }
+    const rewritten = NextResponse.rewrite(new URL(COMING_SOON_PATH, request.url))
+    // Only the homepage stays indexed while paused; deep pages drop out.
+    if (pathname !== '/' || searchParams.toString().length > 0) {
+      rewritten.headers.set('X-Robots-Tag', 'noindex, follow')
+    }
+    return rewritten
+  }
+
+  if (pathname === COMING_SOON_PATH) {
+    return NextResponse.redirect(new URL('/', request.url), 307)
   }
 
   const response = NextResponse.next()

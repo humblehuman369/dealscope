@@ -8,6 +8,7 @@ import { PERSONA_PAGES } from '@/lib/seo/persona-pages'
 import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
 import { COMPARISON_PAGES } from '@/lib/seo/comparison-pages'
 import { HOME_UPDATED_AT } from '@/config/site'
+import { isMaintenanceMode } from '@/lib/maintenance'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -69,6 +70,10 @@ function lastModifiedFromContent(item: ContentFile, fallback: Date): Date {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buildDate = new Date()
+
+  if (isMaintenanceMode()) {
+    return [{ url: `${SITE_URL}/`, lastModified: buildDate, changeFrequency: 'weekly', priority: 1.0 }]
+  }
 
   const [glossary, blog, investorIntelligence, stateMarkets] = await Promise.all([
     getAllContent('glossary').catch(() => []),

@@ -10,6 +10,7 @@ import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
 import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
 import { SiteJsonLd } from '@/components/seo/SiteJsonLd'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { isMaintenanceMode } from '@/lib/maintenance'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -113,14 +114,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans min-h-screen flex flex-col text-[var(--text-body)] transition-colors duration-300">
         <SentryInit />
-        <Providers>
-          {/* Layout with unified AppHeader */}
-          <LayoutWrapper scanQr={<ScanQR src="qr_dialog" />}>{children}</LayoutWrapper>
+        {isMaintenanceMode() ? (
+          <Providers withAuth={false}>
+            {children}
+            <AnalyticsAndConsent />
+          </Providers>
+        ) : (
+          <Providers>
+            {/* Layout with unified AppHeader */}
+            <LayoutWrapper scanQr={<ScanQR src="qr_dialog" />}>{children}</LayoutWrapper>
 
-          {/* Toast notifications */}
-          <Toaster />
-          <AnalyticsAndConsent />
-        </Providers>
+            {/* Toast notifications */}
+            <Toaster />
+            <AnalyticsAndConsent />
+          </Providers>
+        )}
       </body>
     </html>
   )
